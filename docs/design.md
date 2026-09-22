@@ -8,8 +8,10 @@ The launcher compiles a single translation unit with `-std=c++17 -g -O0
 -fno-omit-frame-pointer`. GCC is the default; `--compiler clang++` is supported.
 Compilation diagnostics and execution failures are trace results, not HTTP errors.
 Phase 1 is a local CLI and a browser trace viewer with a code/stdin submission pane.
-A loopback-only Python API on port 8765 accepts requests through Vite on port 5173;
-there is no public execution server. Only run trusted programs until isolation is implemented.
+`stackbloom.py` builds the viewer when its sources change, then one loopback-only
+Python server on port 8765 serves those files and accepts submissions from its own
+origin. Vite on port 5173 stays available for frontend development and proxies `/api`
+to the same server. There is no public execution server. Only run trusted programs until isolation is implemented.
 
 GDB is used instead of LLDB because Ubuntu 22.04 ships a convenient Python-enabled
 GDB and GCC/libstdc++ integration. The Python recorder runs **inside GDB**, not in

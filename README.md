@@ -71,11 +71,8 @@ MSYS2 one above rather than a plain MinGW build.
 (tick *Add python.exe to PATH*) and **Node.js 22.12+ or 24 LTS** from
 [nodejs.org](https://nodejs.org/).
 
-**4. Install the web dependencies** from the repository root:
-
-```sh
-npm --prefix web ci
-```
+That is all the setup needed: `python stackbloom.py` installs the web dependencies and
+builds the viewer on its first run.
 
 A note specific to Windows: several programs ship their own copy of the C++ runtime
 (Git for Windows is a common one). StackBloom passes the compiler's own directory
@@ -90,29 +87,27 @@ gdb -nx -batch -ex 'python import sys; print(sys.version)'
 ```
 
 Use Node.js **22.12+ or 24 LTS**; Ubuntu 22.04's default Node package is too old for
-this Vite setup. See [Vite's prerequisites](https://vite.dev/guide/). Then
-`npm --prefix web ci`.
+this Vite setup. See [Vite's prerequisites](https://vite.dev/guide/).
 
 ## Run it
 
-StackBloom needs two terminals, both from the repository root.
-
-**Terminal 1 — the tracer API:**
+One command from the repository root:
 
 ```sh
-python tracer/server.py
+python stackbloom.py
 ```
 
-**Terminal 2 — the viewer:**
+It builds the viewer if needed, serves it, and opens your browser at
+**http://127.0.0.1:8765**. Press Ctrl+C to stop. There is one process and one port;
+Node.js is used only for that build step, never to run the app.
 
-```sh
-npm --prefix web run dev
-```
+`--port 9000` moves it, `--no-browser` skips opening a window, and `--skip-build` uses
+the existing build as-is. Rebuilds happen automatically when the viewer's sources
+change, so pulling new code needs no extra step.
 
-Open **http://127.0.0.1:5173** (use `127.0.0.1`, not `localhost`). Paste a single-file
-C++17 program into **C++ source**, add **stdin** if your program reads input, and click
-**Run & visualize**. The buttons at the top load ready-made examples: factorial,
-Fibonacci, a linked list and a binary search tree.
+Paste a single-file C++17 program into **C++ source**, add **stdin** if your program
+reads input, and click **Run & visualize**. The buttons at the top load ready-made
+examples: factorial, Fibonacci, a linked list and a binary search tree.
 
 The trace opens on its own screen. Step with **Forward** / **Back**, the arrow keys or
 the timeline. **Deepest call** jumps to the deepest point of the stack, **Next memory
@@ -121,10 +116,24 @@ tree**, **Memory** and **Output** tabs sit beside the source; arrow keys move be
 them once a tab has focus. **Hide code** gives a wide graph the whole window, and
 **← Edit code** returns to your program with it still there.
 
-The API listens only on `127.0.0.1:8765`, accepts only the local viewer's origin and
-request header, and runs one job at a time. That stops unrelated web pages from
-submitting code; it does **not** contain malicious C++. Never expose either server or
-put it behind a public tunnel.
+The server listens only on `127.0.0.1`, serves the viewer only from `web/dist`, accepts
+submissions only from its own origin with a custom request header, and runs one job at
+a time. That stops unrelated web pages from submitting code; it does **not** contain
+malicious C++. Never expose the server or put it behind a public tunnel.
+
+### Working on the viewer itself
+
+For hot reloading while editing the React code, run the tracer and Vite separately:
+
+```sh
+python tracer/server.py
+```
+
+```sh
+npm --prefix web run dev
+```
+
+Then use **http://127.0.0.1:5173**, which proxies `/api` to the tracer on port 8765.
 
 ## Command line
 
@@ -158,7 +167,8 @@ differ on Ubuntu.
 - `tracer/memory.py`: allocation ledger replay and the bounded pointer walker.
 - `tracer/alloc_ledger.cpp`: in-program allocation recorder linked into traced builds.
 - `tracer/compact.py`: checkpoint/delta storage and exact reconstruction.
-- `tracer/server.py`: local submission API and request validation.
+- `stackbloom.py`: one-command launcher: builds the viewer when stale, serves it, opens the browser.
+- `tracer/server.py`: loopback server for the viewer and the submission API.
 - `web/src/main.tsx`: two-screen shell, replay controls, tabs and change navigation.
 - `web/src/StackTree.tsx`: connected call bubbles, locals and pointer states.
 - `web/src/CallTree.tsx`: branching recursion tree built from recorded invocations.
@@ -178,7 +188,7 @@ python -m unittest discover -s tests -v
 npm --prefix web run build
 ```
 
-28 tests run real compilers and debuggers, not fixtures:
+33 tests run real compilers and debuggers, not fixtures:
 
 - `tests/test_trace.py`: nested locals, loop stops, stdin, output truncation, shadowing,
   library callbacks, thread detection, compile errors, signals, step limits, wall
@@ -188,7 +198,8 @@ npm --prefix web run build
   `operator new`.
 - `tests/test_compact.py`: compact round trip, random seek against the full-snapshot
   baseline, explicit deletion records and size reduction.
-- `tests/test_server.py`: submission forwarding, origin rejection, invalid input and
+- `tests/test_server.py`: viewer file serving, refusing paths outside the build, the
+  missing-build message, submission forwarding, origin rejection, invalid input and
   missing-toolchain errors.
 
 CI runs the suite and the web build on Ubuntu 22.04.
