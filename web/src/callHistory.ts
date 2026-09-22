@@ -1,0 +1,48 @@
+import type {Frame, Trace} from './trace';
+
+export type CallNode = {id: string; parent: string | null; children: string[]; frame: Frame;
+  first: number; last: number; state: 'active' | 'waiting' | 'completed' | 'interrupted'; label: string;
+  returned: boolean; returnValue: string | null};
+
+/** Replay only the prefix: backward seeking must not reveal future calls. */
+export function callHistory(trace: Trace, index: number) {
+  const nodes = new Map<string, CallNode>();
+  let previous: CallNode[] = [];
+  let serial = 0;
+  let approximate = false;
+  for (let i = 0; i <= index; i++) {
+    const stop = trace.snapshots[i];
+    const path: CallNode[] = [];
+    let matching = true;
+    for (const [depth, frame] of [...stop.frames].reverse().entries()) {
+      if (!frame.call_id) approximate = true;
+      matching = matching && previous[depth]?.frame.function === frame.function;
+      const id = frame.call_id ?? (matching ? previous[depth].id : `legacy-${serial++}`);
+      let node = nodes.get(id);
+      if (!node) {
+        node = {id, parent: path.at(-1)?.id ?? null, children: [], frame, first: i, last: i,
+          state: 'completed', label: frame.function, returned: false, returnValue: null};
+        nodes.set(id, node);
+        if (node.parent) nodes.get(node.parent)?.children.push(id);
+      }
+      node.frame = frame;
+      node.last = i;
+      // Display observed parameter values, not guessed locals or inferred returns.
+      // A call's first stop is its entry address, before the prologue stores arguments.
+      const entering = i === node.first && i > 0;
+      const args = frame.locals.filter(local => local.is_argument).map(local =>
+        !entering && local.status === 'readable' ? local.value ?? '?' : '?');
+      node.label = `${frame.function}(${args.join(', ')})`;
+      path.push(node);
+    }
+    for (const {call_id, value} of stop.returns ?? []) {
+      const node = nodes.get(call_id);
+      if (node) {node.returned = true; node.returnValue = value;}
+    }
+    previous = path;
+  }
+  previous.forEach((node, i) => {node.state = i === previous.length - 1 ? 'active' : 'waiting';});
+  const stop = trace.snapshots[index];
+  if (!['step', 'exit'].includes(stop.event)) previous.forEach(node => {node.state = 'interrupted';});
+  return {nodes, roots: [...nodes.values()].filter(node => node.parent === null), approximate};
+}

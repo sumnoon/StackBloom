@@ -1,0 +1,2420 @@
+{
+  "schema_version": "1.0",
+  "source": {
+    "path": "main.cpp",
+    "text": "#include <iostream>\n\nint square(int value) {\n    int result = value * value;\n    return result;\n}\n\nint main() {\n    int count = 3;\n    std::cin >> count;\n    int total = 0;\n    for (int i = 1; i <= count; ++i) {\n        int term = square(i);\n        total += term;\n        std::cout << \"total=\" << total << std::endl;\n    }\n    return 0;\n}\n"
+  },
+  "limits": {
+    "max_steps": 1000,
+    "timeout_seconds": 15,
+    "max_output_bytes": 65536
+  },
+  "snapshots": [
+    {
+      "id": 0,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 9
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 9
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "6291104",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "0:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "32758",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 1,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 10
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 10
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "0:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "32758",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 2,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 11
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 11
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "0:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "32758",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 3,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 12
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 12
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "-580947904",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 4,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 12
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 12
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 5,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 13
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 6,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 3
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "square",
+          "location": {
+            "file": "main.cpp",
+            "line": 3
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f1490:value",
+              "name": "value",
+              "type": "int",
+              "value": "-580947904",
+              "address": "0x5ffe50",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": true
+            },
+            {
+              "id": "0:0x7ff6dd5f1490:result",
+              "name": "result",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe3c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-1"
+        },
+        {
+          "id": "t1:f1",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 7,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 4
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "square",
+          "location": {
+            "file": "main.cpp",
+            "line": 4
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f1490:value",
+              "name": "value",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe50",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": true
+            },
+            {
+              "id": "0:0x7ff6dd5f1490:result",
+              "name": "result",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe3c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-1"
+        },
+        {
+          "id": "t1:f1",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 8,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 5
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "square",
+          "location": {
+            "file": "main.cpp",
+            "line": 5
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f1490:value",
+              "name": "value",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe50",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": true
+            },
+            {
+              "id": "0:0x7ff6dd5f1490:result",
+              "name": "result",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe3c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-1"
+        },
+        {
+          "id": "t1:f1",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 9,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 6
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "square",
+          "location": {
+            "file": "main.cpp",
+            "line": 6
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f1490:value",
+              "name": "value",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe50",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": true
+            },
+            {
+              "id": "0:0x7ff6dd5f1490:result",
+              "name": "result",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe3c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-1"
+        },
+        {
+          "id": "t1:f1",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 10,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 14
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 14
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": [
+        {
+          "call_id": "call-1",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 15
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 15
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 12,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 12
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 12
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 13,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 13
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "2",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 14,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 3
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "square",
+          "location": {
+            "file": "main.cpp",
+            "line": 3
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f1490:value",
+              "name": "value",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe50",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": true
+            },
+            {
+              "id": "0:0x7ff6dd5f1490:result",
+              "name": "result",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe3c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-2"
+        },
+        {
+          "id": "t1:f1",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "2",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 15,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 4
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "square",
+          "location": {
+            "file": "main.cpp",
+            "line": 4
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f1490:value",
+              "name": "value",
+              "type": "int",
+              "value": "2",
+              "address": "0x5ffe50",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": true
+            },
+            {
+              "id": "0:0x7ff6dd5f1490:result",
+              "name": "result",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe3c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-2"
+        },
+        {
+          "id": "t1:f1",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "2",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 16,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 5
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "square",
+          "location": {
+            "file": "main.cpp",
+            "line": 5
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f1490:value",
+              "name": "value",
+              "type": "int",
+              "value": "2",
+              "address": "0x5ffe50",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": true
+            },
+            {
+              "id": "0:0x7ff6dd5f1490:result",
+              "name": "result",
+              "type": "int",
+              "value": "4",
+              "address": "0x5ffe3c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-2"
+        },
+        {
+          "id": "t1:f1",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "2",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 17,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 6
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "square",
+          "location": {
+            "file": "main.cpp",
+            "line": 6
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f1490:value",
+              "name": "value",
+              "type": "int",
+              "value": "2",
+              "address": "0x5ffe50",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": true
+            },
+            {
+              "id": "0:0x7ff6dd5f1490:result",
+              "name": "result",
+              "type": "int",
+              "value": "4",
+              "address": "0x5ffe3c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-2"
+        },
+        {
+          "id": "t1:f1",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "2",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 18,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 14
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 14
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "4",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "2",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "1",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": [
+        {
+          "call_id": "call-2",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 15
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 15
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "4",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "2",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "5",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 20,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 12
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 12
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "2",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "5",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\ntotal=5\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 21,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 13
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "4",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "5",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\ntotal=5\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 22,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 3
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "square",
+          "location": {
+            "file": "main.cpp",
+            "line": 3
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f1490:value",
+              "name": "value",
+              "type": "int",
+              "value": "2",
+              "address": "0x5ffe50",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": true
+            },
+            {
+              "id": "0:0x7ff6dd5f1490:result",
+              "name": "result",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe3c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-3"
+        },
+        {
+          "id": "t1:f1",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "4",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "5",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\ntotal=5\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 23,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 4
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "square",
+          "location": {
+            "file": "main.cpp",
+            "line": 4
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f1490:value",
+              "name": "value",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe50",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": true
+            },
+            {
+              "id": "0:0x7ff6dd5f1490:result",
+              "name": "result",
+              "type": "int",
+              "value": "0",
+              "address": "0x5ffe3c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-3"
+        },
+        {
+          "id": "t1:f1",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "4",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "5",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\ntotal=5\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 24,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 5
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "square",
+          "location": {
+            "file": "main.cpp",
+            "line": 5
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f1490:value",
+              "name": "value",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe50",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": true
+            },
+            {
+              "id": "0:0x7ff6dd5f1490:result",
+              "name": "result",
+              "type": "int",
+              "value": "9",
+              "address": "0x5ffe3c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-3"
+        },
+        {
+          "id": "t1:f1",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "4",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "5",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\ntotal=5\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 25,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 6
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "square",
+          "location": {
+            "file": "main.cpp",
+            "line": 6
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f1490:value",
+              "name": "value",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe50",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": true
+            },
+            {
+              "id": "0:0x7ff6dd5f1490:result",
+              "name": "result",
+              "type": "int",
+              "value": "9",
+              "address": "0x5ffe3c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-3"
+        },
+        {
+          "id": "t1:f1",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 13
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "4",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "5",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\ntotal=5\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 26,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 14
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 14
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "9",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "5",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\ntotal=5\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": [
+        {
+          "call_id": "call-3",
+          "value": "9"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 15
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 15
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14e4:term",
+              "name": "term",
+              "type": "int",
+              "value": "9",
+              "address": "0x5ffe74",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "2:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "14",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\ntotal=5\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 28,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 12
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 12
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14db:i",
+              "name": "i",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe78",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "1:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "14",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\ntotal=5\r\ntotal=14\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 29,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 17
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 17
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "0:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "14",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\ntotal=5\r\ntotal=14\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 30,
+      "event": "step",
+      "location": {
+        "file": "main.cpp",
+        "line": 18
+      },
+      "thread_id": 1,
+      "frames": [
+        {
+          "id": "t1:f0",
+          "function": "main",
+          "location": {
+            "file": "main.cpp",
+            "line": 18
+          },
+          "locals": [
+            {
+              "id": "0:0x7ff6dd5f14ad:count",
+              "name": "count",
+              "type": "int",
+              "value": "3",
+              "address": "0x5ffe70",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            },
+            {
+              "id": "0:0x7ff6dd5f14ad:total",
+              "name": "total",
+              "type": "int",
+              "value": "14",
+              "address": "0x5ffe7c",
+              "status": "readable",
+              "initialization": "unknown",
+              "is_argument": false
+            }
+          ],
+          "truncated": false,
+          "call_id": "call-0"
+        }
+      ],
+      "heap": {},
+      "stdout": "total=1\r\ntotal=5\r\ntotal=14\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": null,
+      "returns": []
+    },
+    {
+      "id": 31,
+      "event": "exit",
+      "location": null,
+      "thread_id": null,
+      "frames": [],
+      "heap": {},
+      "stdout": "total=1\r\ntotal=5\r\ntotal=14\r\n",
+      "stderr": "",
+      "output_truncated": false,
+      "diagnostic": {
+        "kind": "exit",
+        "message": "Program exited with code 0",
+        "signal": null,
+        "exit_code": 0
+      },
+      "returns": []
+    }
+  ]
+}
