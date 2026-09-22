@@ -37,6 +37,63 @@ int main() {
 }
 `;
 
+const linkedList = `#include <iostream>
+
+struct Node {
+    int value;
+    Node* next;
+};
+
+int main() {
+    Node* head = new Node{1, nullptr};
+    head->next = new Node{2, nullptr};
+    head->next->next = new Node{3, nullptr};
+
+    Node* alias = head->next;   // a second pointer to one node
+    int total = 0;
+    for (Node* walk = head; walk != nullptr; walk = walk->next) {
+        total += walk->value;
+    }
+    std::cout << "total=" << total << " alias=" << alias->value << std::endl;
+
+    Node* stale = head;
+    delete head;                // stale now dangles
+    head = nullptr;
+    std::cout << "freed the head" << std::endl;
+    return total;
+}
+`;
+
+const bst = `#include <iostream>
+
+struct Node {
+    int key;
+    Node* left;
+    Node* right;
+};
+
+Node* insert(Node* node, int key) {
+    if (node == nullptr) return new Node{key, nullptr, nullptr};
+    if (key < node->key) node->left = insert(node->left, key);
+    else node->right = insert(node->right, key);
+    return node;
+}
+
+int sum(Node* node) {
+    if (node == nullptr) return 0;
+    return node->key + sum(node->left) + sum(node->right);
+}
+
+int main() {
+    Node* root = nullptr;
+    for (int key : {5, 3, 8, 4}) {
+        root = insert(root, key);
+    }
+    std::cout << "sum=" << sum(root) << std::endl;
+    return 0;
+}
+`;
+
 export function SubmissionPane({initialSource, onTrace}: {initialSource: string; onTrace: (trace: Trace) => void}) {
   const [source, setSource] = useState(initialSource);
   const [stdin, setStdin] = useState('3\n');
@@ -64,6 +121,8 @@ export function SubmissionPane({initialSource, onTrace}: {initialSource: string;
     <div className="panel-title"><h2>Your program</h2><div className="example-buttons">
       <button disabled={busy} onClick={() => {setSource(recursion); setStdin('4\n'); setError('');}}>Factorial (linear recursion)</button>
       <button disabled={busy} onClick={() => {setSource(fibonacci); setStdin('4\n'); setError('');}}>Fibonacci (branching recursion)</button>
+      <button disabled={busy} onClick={() => {setSource(linkedList); setStdin(''); setError('');}}>Linked list (pointers)</button>
+      <button disabled={busy} onClick={() => {setSource(bst); setStdin(''); setError('');}}>Binary search tree</button>
     </div></div>
     <div className="submission-fields">
       <label className="editor-label">C++ source<textarea aria-label="C++ source" spellCheck={false} value={source} onChange={e => setSource(e.target.value)} disabled={busy} /></label>

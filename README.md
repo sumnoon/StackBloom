@@ -11,9 +11,10 @@ memory graphs, STL, layouts, replay, threading, sanitizers, sandboxing and perfo
 Phase 1 is a working local pipeline: C++ + optional stdin → GCC/GDB → JSON → React.
 The viewer shows source stops, connected rounded call bubbles, typed locals,
 captured output, and forward/backward navigation. A submission pane accepts C++
-and stdin through a loopback-only development API. Heap/STL visualization and a
-public execution service are future phases. **Run only trusted source locally.
-The MVP is not a sandbox.**
+and stdin through a loopback-only development API. A recursion tree shows every
+invocation with its arguments and return value, and a memory graph shows pointers,
+heap objects, aliases, cycles and dangling pointers. A public execution service is
+a future phase. **Run only trusted source locally. The MVP is not a sandbox.**
 
 ## Ubuntu 22.04 setup
 
@@ -96,9 +97,13 @@ fixture or a claim of Ubuntu runtime validation.
 - `tracer/trace.py`: compiler invocation, deadlines, resource limits, journal recovery.
 - `tracer/gdb_trace.py`: GDB line-table breakpoints, events, frames and streams.
 - `tracer/values.py`: bounded lexical-local inspection without inferior calls.
+- `tracer/memory.py`: allocation ledger replay and the bounded pointer walker.
+- `tracer/alloc_ledger.cpp`: in-program allocation recorder linked into traced builds.
 - `tracer/server.py`: local submission API and request validation.
 - `web/src/main.tsx`: source/stack/output viewer and replay controls.
 - `web/src/StackTree.tsx`: connected call bubbles and expandable local values.
+- `web/src/MemoryGraph.tsx`: pointer and heap-object graph for the current stop.
+- `web/src/CallTree.tsx`: branching recursion tree built from recorded invocations.
 - `web/src/SubmissionPane.tsx`: C++ editor, stdin and submission status.
 - `web/src/trace.ts`: runtime JSON Schema validation and TypeScript types.
 - `tests/test_trace.py`: real compiler/debugger integration tests.

@@ -1,4 +1,8 @@
-import type {Frame} from './trace';
+import type {Frame, PointerState} from './trace';
+
+const pointerText: Record<PointerState, string> = {
+  null: 'null', heap: 'heap object', stack: 'stack', dangling: 'dangling', unknown: 'unproven',
+};
 
 /** A snapshot contains the active branch, not the history of completed calls. */
 export function StackTree({frames}: {frames: Frame[]}) {
@@ -19,6 +23,8 @@ export function StackTree({frames}: {frames: Frame[]}) {
             <div className="bubble-locals">{frame.locals.map(local => <div className="local-box" key={local.id}>
               <div><strong>{local.name}</strong><small>{local.type}</small></div>
               <code title={local.address ?? undefined}>{local.status === 'readable' ? local.value : local.status.replace('_', ' ')}</code>
+              {local.pointers?.length ? <div className="pointer-chips">{local.pointers.map(edge =>
+                <span key={edge.path} className={`pointer-chip ${edge.state}`}>{edge.path ? `${edge.path} ` : ''}{pointerText[edge.state]}</span>)}</div> : null}
             </div>)}</div>
             {!frame.locals.length && <p className="note">No visible locals.</p>}
             </details>

@@ -7,6 +7,7 @@ from pathlib import Path
 import gdb
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from memory import Ledger, capture
 from values import locals_for
 
 CFG = json.loads(Path(os.environ["CPPV_CONFIG"]).read_text(encoding="utf-8"))
@@ -20,6 +21,7 @@ index = 0
 active_calls = []
 finished_calls = set()
 returned_values = []
+ledger = Ledger()
 next_call_id = 0
 MAX_RETURN_TEXT = 512
 
@@ -115,6 +117,7 @@ def snapshot(event, diagnostic=None):
     global index
     frames = []
     native_frames = []
+    frame_values = []
     thread = gdb.selected_thread()
     if thread:
         frame = gdb.newest_frame()
@@ -123,20 +126,29 @@ def snapshot(event, diagnostic=None):
         while frame is not None and depth < 128:
             loc = location(frame)
             if loc:
-                items, truncated = locals_for(frame)
+                items, values, truncated = locals_for(frame)
                 frames.append(dict(id=f"t{thread.num}:f{depth}", function=frame.name() or "?",
                                    location=loc, locals=items, truncated=truncated))
                 native_frames.append(frame)
+                frame_values.append((f"t{thread.num}:f{depth}",
+                                     list(zip((item["id"] for item in items), values))))
             frame = frame.older()
             depth += 1
         if frame is not None and frames:
             frames[-1]["truncated"] = True
     identify_calls(frames, native_frames)
+    # Outermost frame first, so long-lived structures get the node budget.
+    heap, pointers, heap_truncated = memory_graph(list(reversed(frame_values)))
+    for frame in frames:
+        for local in frame["locals"]:
+            edges = pointers.get(f"{frame['id']}|{local['id']}")
+            if edges:
+                local["pointers"] = edges
     stdout, stderr, truncated = streams()
     result = dict(id=index, event=event, location=frames[0]["location"] if frames else None,
-                  thread_id=thread.num if thread else None, frames=frames, heap={},
+                  thread_id=thread.num if thread else None, frames=frames, heap=heap,
                   stdout=stdout, stderr=stderr, output_truncated=truncated, diagnostic=diagnostic,
-                  returns=list(returned_values))
+                  returns=list(returned_values), heap_truncated=heap_truncated)
     returned_values.clear()
     with open(CFG["journal"], "a", encoding="utf-8") as stream:
         stream.write(json.dumps(result, ensure_ascii=True) + "\n")
@@ -161,6 +173,16 @@ def load_printers():
     except Exception:
         # Values then fall back to raw layouts, as before printers existed.
         pass
+
+
+def memory_graph(frame_values):
+    """Never let graph construction break an otherwise valid trace."""
+    if not frame_values:
+        return {}, {}, False
+    try:
+        return capture(ledger, frame_values)
+    except Exception:
+        return {}, {}, True
 
 
 def diagnostic(kind, message, signal=None, code=None):

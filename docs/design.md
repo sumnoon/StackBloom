@@ -28,7 +28,8 @@ At each stop, record the newest user frame first and walk its lexical blocks for
 arguments and locals. Preserve shadowed names with separate IDs. Skip globals and
 library frames. Values are bounded GDB renderings, using the toolchain's libstdc++
 printers (never auto-loaded ones) for standard library types; do not execute inferior
-functions, `operator<<`, or method calls. Pointers are addresses only in Phase 1.
+functions, `operator<<`, or method calls. Pointers carry a classified target
+(`null`, `heap`, `stack`, `dangling`, `unknown`); only proven heap extents are read.
 Stack arrays and structures have bounded textual renderings, not graphical children.
 
 The highlighted line is about to execute. Multiple statements on a line cannot be
@@ -92,7 +93,15 @@ arguments, so argument values there are not meaningful.
 The reserved heap contract maps hexadecimal addresses to nodes with `type`, `kind`,
 `allocation_id`, `size_bytes`, `fields`, and `truncated`. Fields have `name`, `type`,
 `value`, and nullable `target` addresses. A snapshot contains one node per address;
-future allocation IDs distinguish address reuse across time. Phase 1 emits `{}`.
+allocation IDs distinguish address reuse across time. Phase 2 populates this map
+from an allocation ledger: `tracer/alloc_ledger.cpp` is linked into each traced
+program, replaces global `operator new`/`delete` and wraps the malloc family with
+`ld --wrap`, and records extents into a fixed ring buffer that the recorder reads
+as ordinary memory. No breakpoints and no inferior calls are involved. A program
+that replaces `operator new` itself fails to link against the ledger and is relinked
+without it; extents are then unknown and no pointer is followed. Locals carry an
+optional `pointers` array of `{path, target, state}` edges, and `target_local`
+names the stack slot a stack pointer refers to.
 Edges into stack objects must resolve to stack-local addresses rather than inventing
 heap ownership. Interior pointers need explicit base/offset metadata in a future
 schema revision. Do not silently repurpose this contract.

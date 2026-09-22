@@ -93,9 +93,26 @@ def generate(source, stdin="", max_steps=1000, timeout=15, compiler="g++", debug
         trace["source"]["path"] = "main.cpp"
         binary = work / ("program.exe" if os.name == "nt" else "program")
         build_log = work / "build.log"
+        flags = ["-std=c++17", "-g", "-O0", "-fno-omit-frame-pointer"]
+        obj, ledger = work / "main.o", work / "cppv_ledger.o"
         with build_log.open("wb") as log:
-            code, timed_out = supervise([compiler, "-std=c++17", "-g", "-O0", "-fno-omit-frame-pointer",
-                                        str(submitted), "-o", str(binary)], work, 30, log)
+            code, timed_out = supervise([compiler, *flags, "-c", str(submitted), "-o", str(obj)], work, 30, log)
+        # A submitted program may replace operator new itself, which collides with
+        # the ledger at link time; it is then simply left out and heap extents are
+        # unknown. Its diagnostics stay out of the user's compile error message.
+        tracked = False
+        if not (code or timed_out):
+            with (work / "ledger.log").open("wb") as log:
+                built, ledger_timeout = supervise(
+                    [compiler, *flags, "-c", str(ROOT / "alloc_ledger.cpp"), "-o", str(ledger)], work, 30, log)
+                if not (built or ledger_timeout):
+                    linked, link_timeout = supervise(
+                        [compiler, *flags, str(obj), str(ledger), "-o", str(binary),
+                         "-Wl,--wrap=malloc,--wrap=calloc,--wrap=realloc,--wrap=free"], work, 30, log)
+                    tracked = not (linked or link_timeout)
+        if not (code or timed_out) and not tracked:
+            with build_log.open("ab") as log:
+                code, timed_out = supervise([compiler, *flags, str(obj), "-o", str(binary)], work, 30, log)
         if code or timed_out:
             with build_log.open("rb") as log:
                 message = log.read(MAX_OUTPUT).decode("utf-8", "replace")
@@ -106,10 +123,16 @@ def generate(source, stdin="", max_steps=1000, timeout=15, compiler="g++", debug
             Path(cfg[name]).touch()
         Path(cfg["stdin"]).write_text(stdin, encoding="utf-8")
         cfg.update(source=submitted.as_posix(), max_steps=max_steps, max_output_bytes=MAX_OUTPUT,
-                   printers=printer_directory(compiler))
+                   printers=printer_directory(compiler), ledger=tracked)
         config = work / "config.json"
         config.write_text(json.dumps(cfg), encoding="utf-8")
         env = dict(os.environ, CPPV_CONFIG=str(config))
+        if os.name == "nt":
+            # Load the runtime DLLs of the compiler that built the program, not an
+            # unrelated toolchain that happens to come first on the developer's PATH.
+            found = shutil.which(compiler)
+            if found:
+                env["PATH"] = str(Path(found).resolve().parent) + os.pathsep + env.get("PATH", "")
         with (work / "gdb.log").open("wb") as log:
             code, timed_out = supervise([debugger, "-nx", "-nh", "-batch",
                                         "-iex", "set auto-load off", "-x", str(ROOT / "gdb_trace.py"),

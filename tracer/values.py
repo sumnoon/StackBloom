@@ -15,6 +15,7 @@ def render(value):
 
 
 def read_local(symbol, frame, scope):
+    """Return (item, value); the value feeds the memory graph, never the trace."""
     item = dict(id=f"{scope}:{symbol.name}", name=symbol.name, type=str(symbol.type),
                 value=None, address=None, status="unavailable", initialization="unknown",
                 is_argument=bool(symbol.is_argument))
@@ -22,13 +23,15 @@ def read_local(symbol, frame, scope):
         value = symbol.value(frame)
         if value.is_optimized_out:
             item["status"] = "optimized_out"
-            return item
+            return item, None
         typ = value.type.strip_typedefs()
-        # Never auto-dereference char*, references, or arbitrary pointers.
+        # Never auto-dereference char* or arbitrary pointers; the graph walker
+        # follows pointers only into allocations whose extent the ledger proved.
         if typ.code == gdb.TYPE_CODE_PTR:
             item["value"] = hex(int(value))
         elif typ.code in (gdb.TYPE_CODE_REF, gdb.TYPE_CODE_RVALUE_REF):
-            item["value"] = "reference (target deferred to Phase 2)"
+            # A reference aliases existing storage; show the referent itself.
+            item["value"] = render(value.referenced_value())[:MAX_TEXT]
         else:
             item["value"] = render(value)[:MAX_TEXT]
         try:
@@ -36,14 +39,18 @@ def read_local(symbol, frame, scope):
         except (gdb.error, ValueError):
             pass
         item["status"] = "readable"
+        return item, value
     except (gdb.error, RuntimeError, ValueError) as exc:
         item["value"] = str(exc)[:MAX_TEXT]
-    return item
+    return item, None
 
 
 def locals_for(frame):
-    """Walk inner-to-outer lexical scopes, stopping before static/global blocks."""
-    result = []
+    """Walk inner-to-outer lexical scopes, stopping before static/global blocks.
+
+    Returns (items, values, truncated), with values positionally aligned to items.
+    """
+    result, values = [], []
     try:
         block = frame.block()
         depth = 0
@@ -52,10 +59,12 @@ def locals_for(frame):
             for symbol in block:
                 if symbol.name and (symbol.is_argument or symbol.is_variable):
                     if len(result) >= MAX_LOCALS:
-                        return result, True
-                    result.append(read_local(symbol, frame, scope))
+                        return result, values, True
+                    item, value = read_local(symbol, frame, scope)
+                    result.append(item)
+                    values.append(value)
             block = block.superblock
             depth += 1
     except gdb.error:
-        return result, True
-    return result, False
+        return result, values, True
+    return result, values, False

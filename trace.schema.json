@@ -28,6 +28,15 @@
       "type": "object", "additionalProperties": false, "required": ["file", "line"],
       "properties": {"file": {"type": "string"}, "line": {"type": "integer", "minimum": 1}}
     },
+    "pointerState": {"enum": ["null", "heap", "stack", "dangling", "unknown"]},
+    "pointerEdge": {
+      "type": "object", "additionalProperties": false, "required": ["path", "target", "state"],
+      "properties": {
+        "path": {"type": "string"}, "target": {"$ref": "#/$defs/nullableAddress"},
+        "state": {"$ref": "#/$defs/pointerState"},
+        "target_local": {"type": "string"}
+      }
+    },
     "local": {
       "type": "object", "additionalProperties": false,
       "required": ["id", "name", "type", "value", "address", "status", "initialization"],
@@ -36,7 +45,8 @@
         "value": {"type": ["string", "null"]}, "address": {"$ref": "#/$defs/nullableAddress"},
         "status": {"enum": ["readable", "optimized_out", "unavailable"]},
         "initialization": {"const": "unknown"}
-        ,"is_argument": {"type": "boolean"}
+        ,"is_argument": {"type": "boolean"},
+        "pointers": {"type": "array", "maxItems": 32, "items": {"$ref": "#/$defs/pointerEdge"}}
       }
     },
     "frame": {
@@ -54,7 +64,8 @@
       "type": "object", "additionalProperties": false, "required": ["name", "type", "value", "target"],
       "properties": {
         "name": {"type": "string"}, "type": {"type": "string"},
-        "value": {"type": ["string", "null"]}, "target": {"$ref": "#/$defs/nullableAddress"}
+        "value": {"type": ["string", "null"]}, "target": {"$ref": "#/$defs/nullableAddress"},
+        "state": {"anyOf": [{"$ref": "#/$defs/pointerState"}, {"type": "null"}]}
       }
     },
     "heapNode": {
@@ -64,7 +75,7 @@
         "type": {"type": "string"}, "kind": {"enum": ["object", "array", "opaque", "container"]},
         "allocation_id": {"type": ["string", "null"]},
         "size_bytes": {"type": ["integer", "null"], "minimum": 0},
-        "fields": {"type": "array", "items": {"$ref": "#/$defs/heapField"}},
+        "fields": {"type": "array", "maxItems": 64, "items": {"$ref": "#/$defs/heapField"}},
         "truncated": {"type": "boolean"}
       }
     },
@@ -93,7 +104,8 @@
         "stdout": {"type": "string"}, "stderr": {"type": "string"},
         "output_truncated": {"type": "boolean"},
         "diagnostic": {"anyOf": [{"$ref": "#/$defs/diagnostic"}, {"type": "null"}]},
-        "returns": {"type": "array", "maxItems": 5000, "items": {"$ref": "#/$defs/callReturn"}}
+        "returns": {"type": "array", "maxItems": 5000, "items": {"$ref": "#/$defs/callReturn"}},
+        "heap_truncated": {"type": "boolean"}
       },
       "allOf": [{
         "if": {"properties": {"event": {"const": "step"}}},
