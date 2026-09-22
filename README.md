@@ -36,6 +36,10 @@ with your permissions.
   output, or drag the timeline. Replay never re-runs your program; it only reads what
   was recorded.
 
+Both graphs scale to fit their panel, so a wide recursion tree or a long list is
+visible without scrolling. Pick a zoom level from the dropdown to read the details,
+and **Hide code** gives the graph the whole window.
+
 Read the [design and data flow](docs/design.md), the exact
 [JSON trace schema](trace.schema.json), and the [phased roadmap](docs/roadmap.md).
 
@@ -160,6 +164,7 @@ differ on Ubuntu.
 - `web/src/CallTree.tsx`: branching recursion tree built from recorded invocations.
 - `web/src/MemoryGraph.tsx`: pointer and heap-object graph for the current stop.
 - `web/src/layout.ts`: structure heuristics (list, tree, grid, graph) and positions.
+- `web/src/zoom.tsx`: fit-to-panel zoom shared by both graph panels.
 - `web/src/compact.ts`: reader for compact traces.
 - `web/src/trace.ts`: runtime JSON Schema validation and TypeScript types.
 

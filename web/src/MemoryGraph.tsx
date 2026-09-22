@@ -1,4 +1,5 @@
 import {useMemo, useRef, useState} from 'react';
+import {useZoom, ZoomControl} from './zoom';
 import {CELL, HEADER, isCells, layoutHeap, MAX_ROWS, NODE_WIDTH, ROW, type Placed} from './layout';
 import type {HeapNode, PointerEdge, PointerState, Snapshot, Trace} from './trace';
 
@@ -32,7 +33,7 @@ function fieldRows(node: HeapNode, place: Placed) {
 }
 
 export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
-  const [zoom, setZoom] = useState(1);
+  // view.width/height come from the layout below, so zoom is wired after it.
   const snapshot = trace.snapshots[index];
   const previous = index > 0 ? trace.snapshots[index - 1] : null;
   // Keeping the last drawn position of a surviving node avoids distracting jumps.
@@ -69,6 +70,8 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
     };
   }, [snapshot]);
 
+  // Declared before the empty-state return so hook order stays stable.
+  const {ref, zoom, mode, setMode, fit} = useZoom(view.width, view.height);
   const {sources, slots, stackSlots} = view;
   if (!sources.length && !Object.keys(snapshot.heap).length)
     return <section className="memory-graph" aria-label="Memory graph">
@@ -114,13 +117,12 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
     <div className="tree-controls">
       <div className="tree-legend"><span className="heap">Heap object</span><span className="fresh">New here</span>
         <span className="dangling">Dangling</span><span className="unknown">Unproven</span></div>
-      <label>Zoom <select aria-label="Memory zoom" value={zoom} onChange={e => setZoom(Number(e.target.value))}>
-        <option value={0.5}>50%</option><option value={0.75}>75%</option><option value={1}>100%</option><option value={1.3}>130%</option></select></label>
+      <ZoomControl label="Memory zoom" mode={mode} setMode={setMode} fit={fit} />
     </div>
     <p className="note">Detected shape: <strong>{shapeText[view.shape]}</strong>. Field names are only hints, so a shared
       child or a cycle is drawn as a graph rather than a tree. Only allocations recorded by the ledger are followed.</p>
     {snapshot.heap_truncated && <p className="note">Graph truncated: the node budget or the allocation record filled up.</p>}
-    <div className="graph-canvas" tabIndex={0} aria-label="Scrollable memory graph">
+    <div className="graph-canvas" ref={ref} tabIndex={0} aria-label="Scrollable memory graph">
       <svg width={view.width * zoom} height={view.height * zoom} viewBox={`0 0 ${view.width} ${view.height}`}
         role="group" aria-label="Pointers and heap objects">
         <defs><marker id="heap-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
