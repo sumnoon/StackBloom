@@ -6,7 +6,14 @@ StackBloom runs a single-file C++ program under GDB and turns it into something 
 can step through: every source stop, every call frame with its typed locals, the
 recursion as a branching tree, and the heap as a graph of real pointers.
 
-![StackBloom stepping through a binary search tree: source, call stack and the memory graph](docs/screenshot.png)
+Paste a program and press **Run & visualize**:
+
+![The StackBloom editor screen with a binary search tree program and example buttons](docs/editor.png)
+
+Then step through it. The source stays on the left while the call stack, recursion
+tree, memory graph and output share tabs on the right, so nothing needs scrolling:
+
+![StackBloom stepping through a binary search tree, with the memory graph beside the source](docs/screenshot.png)
 
 **Run only code you trust. This is not a sandbox** — your program runs on your machine
 with your permissions.
@@ -103,9 +110,12 @@ C++17 program into **C++ source**, add **stdin** if your program reads input, an
 **Run & visualize**. The buttons at the top load ready-made examples: factorial,
 Fibonacci, a linked list and a binary search tree.
 
-Step with **Forward** / **Back**, the arrow keys or the timeline. **Deepest call** jumps
-to the deepest point of the stack, **Next memory change** to the next stop where a heap
-object changes. Selecting a node in the recursion tree revisits that call.
+The trace opens on its own screen. Step with **Forward** / **Back**, the arrow keys or
+the timeline. **Deepest call** jumps to the deepest point of the stack, **Next memory
+change** to the next stop where a heap object changes. The **Call stack**, **Recursion
+tree**, **Memory** and **Output** tabs sit beside the source; arrow keys move between
+them once a tab has focus. **Hide code** gives a wide graph the whole window, and
+**← Edit code** returns to your program with it still there.
 
 The API listens only on `127.0.0.1:8765`, accepts only the local viewer's origin and
 request header, and runs one job at a time. That stops unrelated web pages from
@@ -145,7 +155,7 @@ differ on Ubuntu.
 - `tracer/alloc_ledger.cpp`: in-program allocation recorder linked into traced builds.
 - `tracer/compact.py`: checkpoint/delta storage and exact reconstruction.
 - `tracer/server.py`: local submission API and request validation.
-- `web/src/main.tsx`: viewer shell, replay controls and change navigation.
+- `web/src/main.tsx`: two-screen shell, replay controls, tabs and change navigation.
 - `web/src/StackTree.tsx`: connected call bubbles, locals and pointer states.
 - `web/src/CallTree.tsx`: branching recursion tree built from recorded invocations.
 - `web/src/MemoryGraph.tsx`: pointer and heap-object graph for the current stop.
