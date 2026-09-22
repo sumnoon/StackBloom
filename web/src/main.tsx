@@ -5,6 +5,7 @@ import {parseTrace, type Trace} from './trace';
 import './style.css';
 import {StackTree} from './StackTree';
 import {CallTree} from './CallTree';
+import {MemoryGraph} from './MemoryGraph';
 import {SubmissionPane} from './SubmissionPane';
 
 function App() {
@@ -69,6 +70,7 @@ function App() {
       </section>
       <StackTree frames={step.frames} />
     </div>
+    <MemoryGraph trace={trace} index={index} />
     <CallTree trace={trace} index={index} onSeek={setIndex} />
     <section className="timeline"><label htmlFor="timeline">Execution timeline</label><input id="timeline" type="range" min="0" max={last} value={index} onChange={e => setIndex(Number(e.target.value))} /><small>Use ← / → to step through recorded state.</small></section>
     {step.diagnostic && <div className={`diagnostic ${step.event === 'exit' && step.diagnostic.exit_code === 0 ? 'success' : ''}`} role="status"><strong>{step.event.replace('_', ' ')}</strong><pre>{step.diagnostic.message}</pre></div>}

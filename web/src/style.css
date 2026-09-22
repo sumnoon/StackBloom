@@ -106,5 +106,29 @@ footer {font-size: 12px; color: #5a6e84; margin-top: 22px;}
 .node-label {font: 600 13px Consolas, 'Liberation Mono', monospace; fill: #203449;}
 .node-status {font: 11px 'Segoe UI', system-ui, sans-serif; fill: #5a6e84;}
 .repeat-halo {fill: none; stroke: #3f9b6e; stroke-width: 2; stroke-dasharray: 5 4;}
+.memory-graph {border: 1px solid var(--line); background: white; border-radius: 8px; margin-top: 26px; overflow: hidden;}
+.tree-legend .heap::before {background: #eef3fb; border-color: #5b7fb9;}
+.tree-legend .fresh::before {background: #e4f4ea; border-color: #3f9b6e;}
+.tree-legend .dangling::before {background: #fdecea; border-color: #b54a3c;}
+.tree-legend .unknown::before {background: #f3f4f6; border-color: #9aabbf; border-style: dashed;}
+.graph-canvas {overflow: auto; max-height: 620px; background: #f9fbfe; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);}
+.graph-canvas svg {display: block;}
+.stack-box rect {fill: #fffaf0; stroke: #c0891f; stroke-width: 1.5;}
+.heap-box rect {fill: #eef3fb; stroke: #5b7fb9; stroke-width: 1.5;}
+.heap-box.opaque rect {fill: #f3f4f6; stroke: #9aabbf; stroke-dasharray: 5 4;}
+.heap-box.fresh rect {stroke: #3f9b6e; stroke-width: 2.5;}
+.box-title {font: 600 12px Consolas, 'Liberation Mono', monospace; fill: #203449;}
+.box-meta {font: 10px 'Segoe UI', system-ui, sans-serif; fill: #5a6e84;}
+.box-row {font: 12px Consolas, 'Liberation Mono', monospace; fill: #33475e;}
+.box-row.changed {fill: #b1620b; font-weight: 700;}
+.box-row .state.null, .box-row .state.unknown {fill: #7d8fa4;}
+.box-row .state.dangling {fill: #b54a3c; font-weight: 700;}
+.box-row .state.stack {fill: #8a6d1f;}
+.heap-edge {fill: none; stroke: #5b7fb9; stroke-width: 1.6;}
+.pointer-chips {display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; justify-content: flex-end;}
+.pointer-chip {font-size: 10px; padding: 2px 7px; border-radius: 10px; background: #eef3fb; color: #33517d; border: 1px solid #c3d3ea;}
+.pointer-chip.dangling {background: #fdecea; color: #93392c; border-color: #e2b3ab;}
+.pointer-chip.null, .pointer-chip.unknown {background: #f3f4f6; color: #5a6e84; border-color: #d8dee7;}
+.pointer-chip.stack {background: #fffaf0; color: #8a6d1f; border-color: #e6cf9a;}
 @media (max-width: 800px) {.submission-fields {grid-template-columns: 1fr;} .stack-tree {padding: 4px 12px 16px;} .call-bubble {padding: 12px;}}
 @media (max-width: 800px) {main {padding: 20px 16px;} .workspace {grid-template-columns: 1fr;} .source-panel {border-right: 0; border-bottom: 1px solid var(--line);} .source {max-height: 360px;} .timeline {flex-wrap: wrap; gap: 12px;} .timeline small {width: 100%;} .output {grid-template-columns: 1fr;} h1 {font-size: 23px;} header {align-items: flex-start;} header p {font-size: 13px;} .upload {padding: 8px;} }
