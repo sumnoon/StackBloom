@@ -16,6 +16,17 @@ function App() {
   const step = trace.snapshots[index];
   const last = trace.snapshots.length - 1;
   const move = (delta: number) => setIndex(i => Math.max(0, Math.min(last, i + delta)));
+  /** Skip ahead to the next stop that actually changes memory or output. */
+  const nextChange = (kind: 'heap' | 'output') => {
+    for (let i = index + 1; i <= last; i++) {
+      const before = trace.snapshots[i - 1], now = trace.snapshots[i];
+      const moved = kind === 'heap'
+        ? JSON.stringify(now.heap) !== JSON.stringify(before.heap)
+        : now.stdout !== before.stdout || now.stderr !== before.stderr;
+      if (moved) return i;
+    }
+    return index;
+  };
 
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
@@ -57,6 +68,8 @@ function App() {
       <button onClick={() => move(-1)} disabled={index === 0}>← Back</button>
       <button className="primary" onClick={() => move(1)} disabled={index === last}>Forward →</button>
       <button onClick={() => setIndex(trace.snapshots.reduce((best, stop, i, stops) => stop.frames.length >= stops[best].frames.length ? i : best, 0))} disabled={!trace.snapshots.some(stop => stop.frames.length > 1)}>Deepest call</button>
+      <button onClick={() => setIndex(nextChange('heap'))} disabled={nextChange('heap') === index} title="Next stop where a heap object changes">Next memory change</button>
+      <button onClick={() => setIndex(nextChange('output'))} disabled={nextChange('output') === index} title="Next stop that flushes new output">Next output</button>
       <span aria-live="polite">Stop {index + 1} of {last + 1}</span><span className={`event ${step.event}`}>{step.event.replace('_', ' ')}</span>
     </div>
     <div className="workspace">

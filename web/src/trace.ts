@@ -1,4 +1,5 @@
 import Ajv2020 from 'ajv/dist/2020';
+import {expandCompact, isCompact} from './compact';
 import schema from '../../trace.schema.json';
 
 export type Location = {file: string; line: number};
@@ -21,6 +22,7 @@ export type Trace = {schema_version: '1.0'; source: {path: string; text: string}
 
 const validate = new Ajv2020({allErrors: false}).compile(schema);
 export function parseTrace(value: unknown): Trace {
+  if (isCompact(value)) value = expandCompact(value);
   if (!validate(value)) throw new Error(`Invalid trace: ${validate.errors?.[0]?.instancePath || '/'} ${validate.errors?.[0]?.message}`);
   const trace = value as Trace;
   if (trace.snapshots.some((s, i) => s.id !== i)) throw new Error('Snapshot IDs must be contiguous.');

@@ -130,5 +130,12 @@ footer {font-size: 12px; color: #5a6e84; margin-top: 22px;}
 .pointer-chip.dangling {background: #fdecea; color: #93392c; border-color: #e2b3ab;}
 .pointer-chip.null, .pointer-chip.unknown {background: #f3f4f6; color: #5a6e84; border-color: #d8dee7;}
 .pointer-chip.stack {background: #fffaf0; color: #8a6d1f; border-color: #e6cf9a;}
+.heap-edge.cycle {stroke: #9b59b6; stroke-dasharray: 6 4;}
+.cell rect {fill: #ffffff; stroke: #9fb6d6; stroke-width: 1.2;}
+.cell.changed rect {stroke: #b1620b; stroke-width: 2.2; fill: #fff6e8;}
+.cell-value {font: 600 12px Consolas, 'Liberation Mono', monospace; fill: #203449;}
+.cell-index {font: 9px 'Segoe UI', system-ui, sans-serif; fill: #7d8fa4;}
+.heap-box, .stack-box {transition: transform .18s ease-out;}
+@media (prefers-reduced-motion: reduce) {.heap-box, .stack-box {transition: none;}}
 @media (max-width: 800px) {.submission-fields {grid-template-columns: 1fr;} .stack-tree {padding: 4px 12px 16px;} .call-bubble {padding: 12px;}}
 @media (max-width: 800px) {main {padding: 20px 16px;} .workspace {grid-template-columns: 1fr;} .source-panel {border-right: 0; border-bottom: 1px solid var(--line);} .source {max-height: 360px;} .timeline {flex-wrap: wrap; gap: 12px;} .timeline small {width: 100%;} .output {grid-template-columns: 1fr;} h1 {font-size: 23px;} header {align-items: flex-start;} header p {font-size: 13px;} .upload {padding: 8px;} }
