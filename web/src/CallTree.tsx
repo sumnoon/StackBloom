@@ -1,6 +1,7 @@
-import {useMemo, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {callHistory, type CallNode} from './callHistory';
 import type {Trace} from './trace';
+import {useZoom, ZoomControl} from './zoom';
 
 const WIDTH = 148, HEIGHT = 58, GAP = 22, LEVEL = 106, MAX_NODES = 250;
 
@@ -20,7 +21,9 @@ function statusText(node: CallNode) {
 }
 
 export function CallTree({trace, index, onSeek}: {trace: Trace; index: number; onSeek: (index: number) => void}) {
-  const [zoom, setZoom] = useState(1);
+  // Placeholder extents; the real ones are known once the layout below is built.
+  const [extent, setExtent] = useState({width: 0, height: 0});
+  const {ref, zoom, mode, setMode, fit} = useZoom(extent.width, extent.height);
   const history = useMemo(() => callHistory(trace, index), [trace, index]);
   // Cap the drawing independently of the trace budget to bound SVG/layout work.
   const visible = [...history.nodes.values()].slice(0, MAX_NODES);
@@ -43,16 +46,19 @@ export function CallTree({trace, index, onSeek}: {trace: Trace; index: number; o
   const frequencies = new Map<string, number>();
   visible.forEach(node => frequencies.set(node.label, (frequencies.get(node.label) ?? 0) + 1));
   const seek = (node: CallNode) => onSeek(node.last);
+  useEffect(() => {
+    if (extent.width !== width || extent.height !== height) setExtent({width, height});
+  }, [width, height]);
 
   return <section className="history-tree" aria-label="Recursion call tree">
     <div className="panel-title"><h2>Recursion tree</h2><span>{history.nodes.size} calls recorded so far</span></div>
     <div className="tree-controls">
       <div className="tree-legend"><span className="active">Executing</span><span className="waiting">Waiting</span><span className="completed">Returned</span><span className="repeat">Repeated arguments</span></div>
-      <label>Zoom <select aria-label="Tree zoom" value={zoom} onChange={e => setZoom(Number(e.target.value))}><option value={0.35}>35%</option><option value={0.6}>60%</option><option value={1}>100%</option><option value={1.4}>140%</option></select></label>
+      <ZoomControl label="Tree zoom" mode={mode} setMode={setMode} fit={fit} />
     </div>
     <p className="note">Each call branches downward into the calls it makes, in call order: with two calls, the first is the left branch (L) and the second the right (R). Returned calls stay visible with their return value. Select a node to revisit its last recorded stop.</p>
     {history.approximate && <p className="note">Legacy trace: call boundaries are approximate. Run the code again for invocation tracking.</p>}
-    <div className="tree-canvas" tabIndex={0} aria-label="Scrollable call tree">
+    <div className="tree-canvas" ref={ref} tabIndex={0} aria-label="Scrollable call tree">
       {visible.length ? <svg width={width * zoom} height={height * zoom} viewBox={`0 0 ${width} ${height}`} role="group" aria-label="Function invocation tree">
         <defs><marker id="call-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" className="tree-arrow" /></marker></defs>
         {visible.filter(node => node.parent && positions.has(node.parent)).map(node => {

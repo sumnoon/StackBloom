@@ -278,3 +278,4 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
   .workspace {padding: 12px;}
   .brand p {display: none;}
 }
+.zoom-control {display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;}
