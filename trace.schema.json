@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cpp-visualizer.example/trace-1.0.schema.json",
+  "title": "C++ execution trace 1.0",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "source", "limits", "snapshots"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "source": {
+      "type": "object", "additionalProperties": false, "required": ["path", "text"],
+      "properties": {"path": {"type": "string"}, "text": {"type": "string"}}
+    },
+    "limits": {
+      "type": "object", "additionalProperties": false,
+      "required": ["max_steps", "timeout_seconds", "max_output_bytes"],
+      "properties": {
+        "max_steps": {"type": "integer", "minimum": 1, "maximum": 5000},
+        "timeout_seconds": {"type": "number", "exclusiveMinimum": 0, "maximum": 120},
+        "max_output_bytes": {"type": "integer", "minimum": 1}
+      }
+    },
+    "snapshots": {"type": "array", "minItems": 1, "maxItems": 5002, "items": {"$ref": "#/$defs/snapshot"}}
+  },
+  "$defs": {
+    "address": {"type": "string", "pattern": "^0x[0-9a-f]+$"},
+    "nullableAddress": {"anyOf": [{"$ref": "#/$defs/address"}, {"type": "null"}]},
+    "location": {
+      "type": "object", "additionalProperties": false, "required": ["file", "line"],
+      "properties": {"file": {"type": "string"}, "line": {"type": "integer", "minimum": 1}}
+    },
+    "local": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "type", "value", "address", "status", "initialization"],
+      "properties": {
+        "id": {"type": "string"}, "name": {"type": "string"}, "type": {"type": "string"},
+        "value": {"type": ["string", "null"]}, "address": {"$ref": "#/$defs/nullableAddress"},
+        "status": {"enum": ["readable", "optimized_out", "unavailable"]},
+        "initialization": {"const": "unknown"}
+        ,"is_argument": {"type": "boolean"}
+      }
+    },
+    "frame": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "function", "location", "locals", "truncated"],
+      "properties": {
+        "id": {"type": "string"}, "function": {"type": "string"},
+        "call_id": {"type": "string"},
+        "location": {"$ref": "#/$defs/location"},
+        "locals": {"type": "array", "maxItems": 100, "items": {"$ref": "#/$defs/local"}},
+        "truncated": {"type": "boolean"}
+      }
+    },
+    "heapField": {
+      "type": "object", "additionalProperties": false, "required": ["name", "type", "value", "target"],
+      "properties": {
+        "name": {"type": "string"}, "type": {"type": "string"},
+        "value": {"type": ["string", "null"]}, "target": {"$ref": "#/$defs/nullableAddress"}
+      }
+    },
+    "heapNode": {
+      "type": "object", "additionalProperties": false,
+      "required": ["type", "kind", "allocation_id", "size_bytes", "fields", "truncated"],
+      "properties": {
+        "type": {"type": "string"}, "kind": {"enum": ["object", "array", "opaque", "container"]},
+        "allocation_id": {"type": ["string", "null"]},
+        "size_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "fields": {"type": "array", "items": {"$ref": "#/$defs/heapField"}},
+        "truncated": {"type": "boolean"}
+      }
+    },
+    "callReturn": {
+      "type": "object", "additionalProperties": false, "required": ["call_id", "value"],
+      "properties": {"call_id": {"type": "string"}, "value": {"type": ["string", "null"]}}
+    },
+    "diagnostic": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "message", "exit_code", "signal"],
+      "properties": {
+        "kind": {"type": "string"}, "message": {"type": "string"},
+        "exit_code": {"type": ["integer", "null"]}, "signal": {"type": ["string", "null"]}
+      }
+    },
+    "snapshot": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "event", "location", "thread_id", "frames", "heap", "stdout", "stderr", "output_truncated", "diagnostic"],
+      "properties": {
+        "id": {"type": "integer", "minimum": 0},
+        "event": {"enum": ["step", "exit", "signal", "limit", "timeout", "compile_error", "tracer_error", "unsupported"]},
+        "location": {"anyOf": [{"$ref": "#/$defs/location"}, {"type": "null"}]},
+        "thread_id": {"type": ["integer", "null"], "minimum": 1},
+        "frames": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/frame"}},
+        "heap": {"type": "object", "propertyNames": {"pattern": "^0x[0-9a-f]+$"}, "additionalProperties": {"$ref": "#/$defs/heapNode"}},
+        "stdout": {"type": "string"}, "stderr": {"type": "string"},
+        "output_truncated": {"type": "boolean"},
+        "diagnostic": {"anyOf": [{"$ref": "#/$defs/diagnostic"}, {"type": "null"}]},
+        "returns": {"type": "array", "maxItems": 5000, "items": {"$ref": "#/$defs/callReturn"}}
+      },
+      "allOf": [{
+        "if": {"properties": {"event": {"const": "step"}}},
+        "then": {"properties": {"diagnostic": {"type": "null"}}},
+        "else": {"properties": {"diagnostic": {"$ref": "#/$defs/diagnostic"}}}
+      }]
+    }
+  }
+}
