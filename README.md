@@ -1,24 +1,76 @@
 # StackBloom
 
-*Watch your C++ grow, one call at a time.* A C++ execution visualizer: step through
-your program, inspect every call frame, and see recursion bloom into a tree.
+*Watch your C++ grow, one call at a time.*
 
-Start with the [design and data flow](docs/design.md) and the exact
-[JSON trace schema](trace.schema.json), then the [Phase 1 implementation](tracer/trace.py).
-The [phased roadmap](docs/roadmap.md) includes extension snippets and limitations for
-memory graphs, STL, layouts, replay, threading, sanitizers, sandboxing and performance.
+StackBloom runs a single-file C++ program under GDB and turns it into something you
+can step through: every source stop, every call frame with its typed locals, the
+recursion as a branching tree, and the heap as a graph of real pointers.
 
-Phase 1 is a working local pipeline: C++ + optional stdin → GCC/GDB → JSON → React.
-The viewer shows source stops, connected rounded call bubbles, typed locals,
-captured output, and forward/backward navigation. A submission pane accepts C++
-and stdin through a loopback-only development API. A recursion tree shows every
-invocation with its arguments and return value, and a memory graph shows pointers,
-heap objects, aliases, cycles and dangling pointers. A public execution service is
-a future phase. **Run only trusted source locally. The MVP is not a sandbox.**
+![StackBloom stepping through a binary search tree: source, call stack and the memory graph](docs/screenshot.png)
 
-## Ubuntu 22.04 setup
+**Run only code you trust. This is not a sandbox** — your program runs on your machine
+with your permissions.
 
-Install the compiler, Python and Python-enabled GDB:
+## What it shows
+
+- **Source stops and locals.** A stop happens *before* the highlighted line runs. Each
+  call bubble carries its own locals, with standard library values (`std::string`,
+  `vector`, `map`, smart pointers) shown as contents rather than internal layout.
+- **A recursion tree.** Every invocation with the arguments it received and the value
+  it returned. With two calls the first is the left branch (L) and the second the
+  right (R), so `fib(n-1)` and `fib(n-2)` sit where you expect.
+
+  ![The recursion tree for fib(4), with returned values on every call](docs/recursion-tree.png)
+
+- **A memory graph.** Pointers, heap objects, aliases meeting at one box, cycles that
+  loop back, and dangling pointers after `delete`. The shape is detected per stop —
+  list, tree, grid or general graph — and nodes keep their position as you step.
+- **Time travel.** Step forward and back, jump to the next memory change or the next
+  output, or drag the timeline. Replay never re-runs your program; it only reads what
+  was recorded.
+
+Read the [design and data flow](docs/design.md), the exact
+[JSON trace schema](trace.schema.json), and the [phased roadmap](docs/roadmap.md).
+
+## Install on Windows
+
+Tested on Windows 11 with MSYS2. You need a C++ compiler, a Python-enabled GDB,
+Python 3 and Node.js.
+
+**1. Install MSYS2** from [msys2.org](https://www.msys2.org/), then open the
+**UCRT64** terminal and install the toolchain:
+
+```sh
+pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gdb
+```
+
+**2. Put the toolchain on your PATH.** Add `C:\msys64\ucrt64\bin` to your user `Path`
+(Settings → *Edit environment variables for your account*), then open a new terminal
+and check that both tools answer, and that GDB has Python built in:
+
+```sh
+g++ --version
+gdb -nx -batch -ex "python import sys; print(sys.version)"
+```
+
+If the last command prints nothing or errors, your GDB lacks Python; install the
+MSYS2 one above rather than a plain MinGW build.
+
+**3. Install Python 3.10+** from [python.org](https://www.python.org/downloads/)
+(tick *Add python.exe to PATH*) and **Node.js 22.12+ or 24 LTS** from
+[nodejs.org](https://nodejs.org/).
+
+**4. Install the web dependencies** from the repository root:
+
+```sh
+npm --prefix web ci
+```
+
+A note specific to Windows: several programs ship their own copy of the C++ runtime
+(Git for Windows is a common one). StackBloom passes the compiler's own directory
+first when it runs your program, so it loads the runtime it was built against.
+
+## Install on Ubuntu 22.04
 
 ```sh
 sudo apt update
@@ -26,128 +78,133 @@ sudo apt install -y build-essential gdb python3 python3-venv
 gdb -nx -batch -ex 'python import sys; print(sys.version)'
 ```
 
-Use Node.js **22.12+ or 24 LTS** with npm, installed from your preferred supported
-Node distribution. Ubuntu 22.04's default Node package is too old for this Vite
-setup. See [Vite's prerequisites](https://vite.dev/guide/).
+Use Node.js **22.12+ or 24 LTS**; Ubuntu 22.04's default Node package is too old for
+this Vite setup. See [Vite's prerequisites](https://vite.dev/guide/). Then
+`npm --prefix web ci`.
 
-From this repository's root:
+## Run it
 
-```sh
-python3 tracer/trace.py examples/sample.cpp --stdin examples/stdin.txt \
-  --output examples/sample.trace.json
-cd web
-npm ci
-npm run dev
-```
+StackBloom needs two terminals, both from the repository root.
 
-Open the localhost URL printed by Vite. The bundled sample loads automatically.
-Use **Forward**, **Back**, the timeline slider, or arrow keys. **Open trace** loads
-another JSON file entirely in the browser. Uploading a trace does not execute code.
-
-To submit code from the browser, start the backend in a **second terminal** from
-the repository root:
+**Terminal 1 — the tracer API:**
 
 ```sh
-python3 tracer/server.py
+python tracer/server.py
 ```
 
-Keep `npm run dev` running in the first terminal. Paste your single-file C++17
-program into **C++ source**, optionally supply **stdin**, then click **Run & visualize**.
-**Load recursion example** fills a factorial example; run it and click **Deepest call**
-to inspect the recursive stack. Each rounded bubble is a separate invocation with
-its own locals. The tree shows the active caller-to-callee branch, not a history
-of completed calls. Backward replay restores earlier branches.
-
-The API binds only to `127.0.0.1:8765`; Vite proxies `/api` from port 5173.
-It accepts only the local viewer's origin and request header, executes one job at a
-time, and imposes the existing tracer limits. This protects against unrelated web
-pages submitting requests, **not malicious C++**. Do not expose either server or
-use a public tunnel. Static production builds can view traces but need a separately
-configured local API to submit code. No browser-only compiler is included.
-
-Trace your own single-file program from the repository root:
+**Terminal 2 — the viewer:**
 
 ```sh
-python3 tracer/trace.py /path/to/main.cpp --stdin /path/to/input.txt \
-  --output my-trace.json --max-steps 1000 --timeout 15
+npm --prefix web run dev
 ```
 
-Omit `--stdin` for immediate EOF. Optional: `--compiler clang++` (install `clang`)
-or `--gdb /path/to/gdb`. The CLI exits nonzero for compile failures, crashes,
-limits, timeouts and nonzero program exits, and still writes the diagnostic trace.
-It requires a standalone source file; sibling headers and arbitrary build flags
-are intentionally outside the MVP. Compilation has a separate 30-second deadline.
-The execution deadline also includes GDB startup and snapshot work.
+Open **http://127.0.0.1:5173** (use `127.0.0.1`, not `localhost`). Paste a single-file
+C++17 program into **C++ source**, add **stdin** if your program reads input, and click
+**Run & visualize**. The buttons at the top load ready-made examples: factorial,
+Fibonacci, a linked list and a binary search tree.
 
-The sample computes squares with a nested function call. Its final stdout is:
+Step with **Forward** / **Back**, the arrow keys or the timeline. **Deepest call** jumps
+to the deepest point of the stack, **Next memory change** to the next stop where a heap
+object changes. Selecting a node in the recursion tree revisits that call.
 
-```text
-total=1
-total=5
-total=14
+The API listens only on `127.0.0.1:8765`, accepts only the local viewer's origin and
+request header, and runs one job at a time. That stops unrelated web pages from
+submitting code; it does **not** contain malicious C++. Never expose either server or
+put it behind a public tunnel.
+
+## Command line
+
+Trace a program without the viewer:
+
+```sh
+python tracer/trace.py path/to/main.cpp --stdin path/to/input.txt --output my-trace.json
 ```
 
-The checked-in [sample JSON](examples/sample.trace.json) is generated by a real
-GCC/GDB run on the development Windows/MSYS2 host. Addresses, line stops, newline
-encoding and prologue locations will differ on Ubuntu. It is not a hand-written
-fixture or a claim of Ubuntu runtime validation.
+Omit `--stdin` for immediate EOF. `--max-steps` (default 1000, max 5000) and
+`--timeout` (default 15s) bound the run; `--compiler clang++` and `--gdb /path/to/gdb`
+choose the tools. Add `--compact` to store checkpoints and deltas instead of repeating
+every snapshot, which was 62% smaller for the bundled binary search tree example. Load
+either form with **Open trace** in the viewer; opening a trace never executes code.
+
+The CLI exits nonzero for compile failures, crashes, limits, timeouts and nonzero
+program exits, and still writes a trace explaining what happened. It takes one
+standalone source file: sibling headers and custom build flags are out of scope.
+Compilation has its own 30-second deadline, and the execution deadline includes GDB
+startup and snapshot work.
+
+The checked-in [sample trace](examples/sample.trace.json) comes from a real GCC/GDB run
+on the Windows/MSYS2 development host. Addresses, line stops and newline encoding will
+differ on Ubuntu.
 
 ## Code map
 
-- `tracer/trace.py`: compiler invocation, deadlines, resource limits, journal recovery.
-- `tracer/gdb_trace.py`: GDB line-table breakpoints, events, frames and streams.
+- `tracer/trace.py`: compiler and linker invocation, deadlines, resource limits, journal recovery.
+- `tracer/gdb_trace.py`: line-table breakpoints, call identity, return values, frames and streams.
 - `tracer/values.py`: bounded lexical-local inspection without inferior calls.
 - `tracer/memory.py`: allocation ledger replay and the bounded pointer walker.
 - `tracer/alloc_ledger.cpp`: in-program allocation recorder linked into traced builds.
+- `tracer/compact.py`: checkpoint/delta storage and exact reconstruction.
 - `tracer/server.py`: local submission API and request validation.
-- `web/src/main.tsx`: source/stack/output viewer and replay controls.
-- `web/src/StackTree.tsx`: connected call bubbles and expandable local values.
-- `web/src/MemoryGraph.tsx`: pointer and heap-object graph for the current stop.
+- `web/src/main.tsx`: viewer shell, replay controls and change navigation.
+- `web/src/StackTree.tsx`: connected call bubbles, locals and pointer states.
 - `web/src/CallTree.tsx`: branching recursion tree built from recorded invocations.
-- `web/src/SubmissionPane.tsx`: C++ editor, stdin and submission status.
+- `web/src/MemoryGraph.tsx`: pointer and heap-object graph for the current stop.
+- `web/src/layout.ts`: structure heuristics (list, tree, grid, graph) and positions.
+- `web/src/compact.ts`: reader for compact traces.
 - `web/src/trace.ts`: runtime JSON Schema validation and TypeScript types.
-- `tests/test_trace.py`: real compiler/debugger integration tests.
 
 ## Verification
 
 ```sh
-python3 -m venv .venv
+python -m venv .venv
 . .venv/bin/activate
 pip install -r requirements-dev.txt
 python -m unittest discover -s tests -v
-cd web
-npm ci
-npm run build
+npm --prefix web run build
 ```
 
-The nine tracer tests exercise nested locals, loop stops, optional stdin, output truncation,
-shadowing, library callbacks, thread detection, compile errors, signals, step limits and wall timeout. A Linux
-CI workflow is included for Ubuntu 22.04; its presence does not mean it has run.
-The tracer itself uses Python's standard library; `jsonschema` is only for tests.
-Five additional API tests cover submission forwarding, origin rejection, invalid
-input and missing-toolchain errors.
+28 tests run real compilers and debuggers, not fixtures:
+
+- `tests/test_trace.py`: nested locals, loop stops, stdin, output truncation, shadowing,
+  library callbacks, thread detection, compile errors, signals, step limits, wall
+  timeout, the recursion call tree and standard library values.
+- `tests/test_memory.py`: aliases, cycles, stack pointers, null versus dangling, reused
+  addresses, array extents, `malloc`/`void*`, and the fallback when a program replaces
+  `operator new`.
+- `tests/test_compact.py`: compact round trip, random seek against the full-snapshot
+  baseline, explicit deletion records and size reduction.
+- `tests/test_server.py`: submission forwarding, origin rejection, invalid input and
+  missing-toolchain errors.
+
+CI runs the suite and the web build on Ubuntu 22.04.
 
 ## Interpretation and boundaries
 
-- A stop is **before** its highlighted instruction/line executes. Line tables can
-  produce repeated stops on a line, including loop conditions and function prologues.
-- DWARF can expose locals before initialization. `readable` means GDB could read
-  storage, not that the C++ value is valid. Values explicitly carry `initialization: unknown`.
-- Captured output contains only bytes flushed by the program; the tracer does not
-  change buffering. Invalid UTF-8 is replaced; each stream is capped at 64 KiB.
-- Struct/array display is capped. Standard library types (`std::string`, `vector`,
-  `map`, `set`, smart pointers, ...) use the libstdc++ GDB printers shipped with the
-  compiler's toolchain, loaded explicitly; auto-loading from the program stays off.
-  Unconstructed containers show garbage or fall back to raw layouts. The tracer
-  does not dereference pointers, call methods, or evaluate arbitrary expressions.
-- Only the submitted source's line table and frames are shown. Tracing begins at
-  `main`; global constructors and headers are outside the recorded timeline.
-- Thread creation is unsupported. Windows-only development compatibility tolerates
-  pre-existing OS helper threads, so Linux remains the intended platform.
-- Linux jobs inherit CPU, file-size and 2 GiB virtual-memory limits. These limits
-  and process-group cleanup **do not isolate untrusted code**. See the roadmap for
-  the required sandbox architecture and sanitizer-specific resource profile.
+- A stop is **before** its highlighted line executes. Line tables can produce repeated
+  stops on a line, including loop conditions and function prologues.
+- DWARF can expose locals before initialization. `readable` means GDB could read the
+  storage, not that the value is valid; locals carry `initialization: unknown`. A call's
+  first stop happens before its arguments are stored, so the tree shows `f(?)` there.
+- Heap extents come from an allocation recorder linked into your program. Static
+  storage, allocations made before `main` and allocations inside prebuilt libraries stay
+  **unproven** and are never read. A stale pointer into a reused block still reads as
+  live; `allocation_id` shows the reuse, but detecting it needs provenance tracking.
+- Unions stay opaque (DWARF rarely identifies the active member), the static type is
+  used rather than guessing a dynamic one, and an interior pointer gets its own node.
+- Per stop the graph is bounded: 64 nodes, 32 fields, 32 array elements, depth 2.
+  Field names such as `left`/`right` are hints only: a shared child or a cycle is drawn
+  as a graph, never as a tree.
+- Captured output contains only bytes the program flushed; the tracer never changes
+  buffering. Invalid UTF-8 is replaced and each stream is capped at 64 KiB.
+- Standard library values use the libstdc++ printers from your compiler's toolchain,
+  loaded explicitly; auto-loading from the traced program stays off. Clang with libc++
+  falls back to raw layouts.
+- Only the submitted source's frames are shown. Tracing starts at `main`, so global
+  constructors are outside the timeline.
+- Thread creation stops the trace as unsupported.
+- Linux jobs inherit CPU, file-size and 2 GiB virtual-memory limits. These limits and
+  process-group cleanup **do not isolate untrusted code**. See the roadmap for the
+  sandbox architecture this needs before accepting code from anyone else.
 
-If GDB reports `Operation not permitted` under a container, the runtime may block
-ptrace. Use a reviewed debugger worker policy; do not disable host protections
-globally. If `gdb` has no `python` command, install a Python-enabled distribution.
+If GDB reports `Operation not permitted` inside a container, the runtime is blocking
+ptrace. Use a reviewed debugger worker policy rather than disabling host protections.

@@ -10,7 +10,7 @@ it does not supply a complete C++ abstract-machine history.
 | 1 — stack and locals | Compile, line stops, lexical scopes, stdin, stdout, explicit failures, React replay | Nested calls, shadowing, loops, nonzero exit, segfault, timeout |
 | 2 — memory graph **(implemented)** | Typed bounded walker, allocation ledger, identity, aliases, cycles, references | Two aliases to one node, cyclic list, stack pointers, dangling pointer, freed/reused address |
 | 3 — logical containers | Bounded adapters for string, vector, map, unordered_map, set, list, deque and smart pointers | Empty/large/corrupt containers, both library ABIs, custom allocators, shared_ptr aliasing |
-| 4 — layouts and time travel | React Flow + ELK, structure heuristics, checkpoints/deltas, stable navigation | Cyclic graphs, trees, lists, grids; random seek equals full-snapshot baseline |
+| 4 — layouts and time travel **(implemented)** | Structure heuristics, checkpoint/delta storage, stable navigation | Cyclic graphs, trees, lists, grids; random seek equals full-snapshot baseline |
 | 5 — performance and isolation | Job queue, resource-isolated workers, measured tracing overhead, rr/instrumentation experiments | Adversarial CPU/memory/output/fork workloads; worker cleanup; compiler isolation |
 
 The requested phase ordering is useful for local development. **Move isolation ahead

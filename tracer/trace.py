@@ -10,6 +10,8 @@ import signal
 import subprocess
 import tempfile
 
+from compact import compact
+
 ROOT = Path(__file__).resolve().parent
 MAX_OUTPUT = 65536
 
@@ -168,6 +170,8 @@ def main():
     parser.add_argument("--timeout", type=float, default=15)
     parser.add_argument("--compiler", default="g++")
     parser.add_argument("--gdb", default="gdb")
+    parser.add_argument("--compact", action="store_true",
+                        help="store checkpoints and deltas instead of repeating every snapshot")
     args = parser.parse_args()
     if not 1 <= args.max_steps <= 5000 or not math.isfinite(args.timeout) or not 0 < args.timeout <= 120:
         parser.error("max-steps must be 1..5000; timeout must be finite and in (0, 120]")
@@ -177,9 +181,11 @@ def main():
     except (OSError, ValueError) as exc:
         parser.exit(2, f"trace: {exc}\n")
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(result, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    stored = compact(result) if args.compact else result
+    args.output.write_text(json.dumps(stored, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
     event = result["snapshots"][-1]["event"]
-    print(f"{args.output}: {len(result['snapshots'])} snapshots; {event}")
+    shape = "checkpoints+deltas" if args.compact else "full snapshots"
+    print(f"{args.output}: {len(result['snapshots'])} snapshots ({shape}); {event}")
     return 0 if event == "exit" and result["snapshots"][-1]["diagnostic"]["exit_code"] == 0 else 1
 
 

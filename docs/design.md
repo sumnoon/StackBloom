@@ -37,6 +37,14 @@ individually promised. A local visible in DWARF may not yet be initialized: a re
 value is **not evidence of initialization**. Each local reports this uncertainty.
 Older stack-frame lines are debugger resume locations, generally the call site.
 
+Storage has two forms. The default repeats every snapshot in full. `--compact` writes
+[`trace.compact.schema.json`](../trace.compact.schema.json): a checkpoint every 25 stops
+and bounded deltas in between, with appended output chunks rather than copied streams
+and explicit heap deletion records, so "gone" is never confused with "unchanged". Any
+stop is reconstructed from the nearest earlier checkpoint. Reconstruction is exact and
+is tested against the full-snapshot baseline, including random seeks. Snapshots stay
+immutable; the viewer expands a compact file on load and validates it like any trace.
+
 Each snapshot is written to a flushed NDJSON journal. The supervisor can recover
 completed snapshots after a timeout. The final JSON embeds source text so a trace
 remains portable. stdout/stderr contain bytes actually flushed by the program, decoded
