@@ -94,9 +94,15 @@ int main() {
 }
 `;
 
-export function SubmissionPane({initialSource, onTrace}: {initialSource: string; onTrace: (trace: Trace) => void}) {
-  const [source, setSource] = useState(initialSource);
-  const [stdin, setStdin] = useState('3\n');
+/** Draft state lives in the shell, so switching screens never discards edits. */
+export type Draft = {source: string; stdin: string};
+
+export function SubmissionPane({draft, onDraft, onTrace}:
+    {draft: Draft; onDraft: (draft: Draft) => void; onTrace: (trace: Trace) => void}) {
+  const {source, stdin} = draft;
+  const setSource = (value: string) => onDraft({source: value, stdin});
+  const setStdin = (value: string) => onDraft({source, stdin: value});
+  const load = (example: string, input: string) => {onDraft({source: example, stdin: input}); setError('');};
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -119,10 +125,10 @@ export function SubmissionPane({initialSource, onTrace}: {initialSource: string;
 
   return <section className="submission" aria-label="Submit C++ code">
     <div className="panel-title"><h2>Your program</h2><div className="example-buttons">
-      <button disabled={busy} onClick={() => {setSource(recursion); setStdin('4\n'); setError('');}}>Factorial (linear recursion)</button>
-      <button disabled={busy} onClick={() => {setSource(fibonacci); setStdin('4\n'); setError('');}}>Fibonacci (branching recursion)</button>
-      <button disabled={busy} onClick={() => {setSource(linkedList); setStdin(''); setError('');}}>Linked list (pointers)</button>
-      <button disabled={busy} onClick={() => {setSource(bst); setStdin(''); setError('');}}>Binary search tree</button>
+      <button disabled={busy} onClick={() => load(recursion, '4\n')}>Factorial (linear recursion)</button>
+      <button disabled={busy} onClick={() => load(fibonacci, '4\n')}>Fibonacci (branching recursion)</button>
+      <button disabled={busy} onClick={() => load(linkedList, '')}>Linked list (pointers)</button>
+      <button disabled={busy} onClick={() => load(bst, '')}>Binary search tree</button>
     </div></div>
     <div className="submission-fields">
       <label className="editor-label">C++ source<textarea aria-label="C++ source" spellCheck={false} value={source} onChange={e => setSource(e.target.value)} disabled={busy} /></label>

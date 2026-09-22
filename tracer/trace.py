@@ -118,6 +118,9 @@ def generate(source, stdin="", max_steps=1000, timeout=15, compiler="g++", debug
         if code or timed_out:
             with build_log.open("rb") as log:
                 message = log.read(MAX_OUTPUT).decode("utf-8", "replace")
+            # Diagnostics name a temporary build directory; the author wrote main.cpp.
+            for path in (str(submitted), submitted.as_posix()):
+                message = message.replace(path, "main.cpp")
             terminal(trace, "compile_error", "Compiler timed out" if timed_out else message)
             return trace
         cfg = {name: (work / name).as_posix() for name in ("stdin", "stdout", "stderr", "journal")}
