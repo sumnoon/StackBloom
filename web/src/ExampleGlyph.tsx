@@ -1,0 +1,13 @@
+/** Small diagrams describe the examples without requiring external assets. */
+export function ExampleGlyph({kind}: {kind: 'chain' | 'fork' | 'list' | 'tree'}) {
+  const points = kind === 'chain' ? [[18, 10], [36, 26], [54, 42]]
+    : kind === 'list' ? [[12, 26], [36, 26], [60, 26]]
+    : [[36, 8], [18, 27], [54, 27], [8, 46], [28, 46], [62, 46]];
+  const edges = kind === 'chain' || kind === 'list' ? [[0, 1], [1, 2]] : [[0, 1], [0, 2], [1, 3], [1, 4], [2, 5]];
+  return <svg viewBox="0 0 72 56" aria-hidden="true" className={`example-glyph ${kind}`}>
+    {edges.map(([a, b], i) => <line key={i} x1={points[a][0]} y1={points[a][1]} x2={points[b][0]} y2={points[b][1]} />)}
+    {points.map(([x, y], i) => kind === 'list'
+      ? <rect key={i} x={x - 7} y={y - 7} width="14" height="14" rx="4" />
+      : <circle key={i} cx={x} cy={y} r={i === 0 ? 6 : 5} />)}
+  </svg>;
+}

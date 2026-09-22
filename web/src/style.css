@@ -2,7 +2,7 @@
    whose panels scroll independently so the page itself never scrolls. */
 :root {
   color-scheme: light;
-  --bg: #eef1f6;
+  --bg: #eef2f8;
   --surface: #ffffff;
   --surface-2: #f7f9fc;
   --surface-3: #eef3fa;
@@ -10,10 +10,10 @@
   --muted: #5d7085;
   --line: #d8e0ea;
   --line-strong: #bccbdb;
-  --brand: #2563c9;
-  --brand-dark: #1a4ea3;
-  --brand-soft: #dde9fd;
-  --accent: #7c5cd6;
+  --brand: #405bd8;
+  --brand-dark: #3045af;
+  --brand-soft: #e8edff;
+  --accent: #8858bf;
   --ok: #2f8f63;
   --ok-soft: #e2f3ea;
   --warn: #b5791a;
@@ -73,7 +73,7 @@ code, pre, .line-number {font-family: var(--code);}
 .brand .file {font-family: var(--code); font-size: 12px;}
 .mark {
   width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
-  background: radial-gradient(circle at 30% 25%, var(--accent), var(--brand) 70%);
+  background: var(--brand); position: relative;
   box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--surface) 70%, transparent);
 }
 .topbar-actions {display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end;}
@@ -103,14 +103,14 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
 .event.limit, .event.timeout, .event.unsupported {background: var(--warn-soft); color: var(--warn); border-color: transparent;}
 
 /* ---------- editor screen ---------- */
-.editor-scroll {flex: 1; overflow: auto; padding: 24px 20px 40px;}
-.editor-view .submission, .editor-view .hint {max-width: 1180px; margin-inline: auto;}
+.editor-scroll {flex: 1; overflow: auto; padding: 32px 28px 32px;}
+.editor-view .submission, .editor-view .hint, .editor-intro {max-width: 1180px; margin-inline: auto;}
 .hint {color: var(--muted); font-size: 12.5px; margin: 14px auto 0; text-align: center;}
-.submission {background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;}
+.submission {background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: none; overflow: hidden;}
 .submission .panel-title {align-items: center; gap: 12px; flex-wrap: wrap;}
 .example-buttons {display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;}
 .example-buttons button {font-size: 12.5px; padding: 6px 11px; border-radius: 999px;}
-.submission-fields {display: grid; grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr); gap: 20px; padding: 20px;}
+.submission-fields {display: grid; grid-template-columns: minmax(0, 2fr) minmax(240px, .85fr); gap: 28px; padding: 22px;}
 .submission label {display: flex; flex-direction: column; gap: 7px; font-size: 12.5px; font-weight: 600; color: var(--muted);}
 .submission textarea {
   resize: vertical; width: 100%; border: 1px solid var(--line-strong); border-radius: 10px;
@@ -118,7 +118,7 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
   font: 13px/1.65 var(--code); tab-size: 4;
 }
 .submission textarea:focus {border-color: var(--brand); outline: none; box-shadow: 0 0 0 3px var(--brand-soft);}
-.editor-label textarea {min-height: 340px; white-space: pre; overflow: auto;}
+.editor-label textarea {min-height: 340px; height: min(44vh, 480px); white-space: pre; overflow: auto;}
 .submission-options textarea {min-height: 96px;}
 .submission-options p, .submission-options [role=status] {font-size: 12px; line-height: 1.6; color: var(--muted);}
 .submission-options [role=status] {display: block; margin-top: 10px;}
@@ -132,7 +132,9 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
 }
 .control-buttons {display: flex; gap: 8px; flex-wrap: wrap;}
 .timeline {display: flex; align-items: center; gap: 12px; flex: 1; min-width: 220px;}
-.timeline input {flex: 1; min-width: 120px; accent-color: var(--brand);}
+.timeline input {flex: 1; min-width: 120px; accent-color: var(--brand); height: 5px; border-radius: 8px; appearance: none; cursor: pointer;}
+.timeline input::-webkit-slider-thumb {appearance: none; width: 15px; height: 15px; background: var(--brand); border: 3px solid var(--surface); border-radius: 50%; box-shadow: 0 0 0 1px var(--brand);}
+.timeline input::-moz-range-thumb {width: 11px; height: 11px; background: var(--brand); border: 2px solid var(--surface); border-radius: 50%;}
 .stop-count {font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap;}
 
 /* ---------- workspace ---------- */
@@ -150,9 +152,9 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
   padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px;
   border-bottom: 1px solid var(--line); flex-shrink: 0;
 }
-.panel-title h2 {font-size: 13.5px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted);}
+.panel-title h2 {font-size: 13.5px; font-weight: 600; color: var(--text);}
 .panel-title > span {font-size: 12px; color: var(--muted);}
-.source {flex: 1; overflow: auto; padding: 12px 0; background: var(--surface-2);}
+.source {position: relative; flex: 1; overflow: auto; padding: 12px 0; background: var(--surface-2);}
 .code-line {display: flex; min-width: max-content; padding: 2px 20px 2px 0; border-left: 3px solid transparent; font-size: 13.5px; line-height: 1.7;}
 .code-line.active {background: var(--brand-soft); border-left-color: var(--brand);}
 .line-number {color: var(--muted); opacity: .8; min-width: 48px; text-align: right; margin-right: 18px; user-select: none; font-size: 12px;}
@@ -259,7 +261,7 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
 /* ---------- output + diagnostics ---------- */
 .output {flex: 1; min-height: 0; display: grid; grid-template-rows: 1fr 1fr; gap: 12px; padding: 14px 16px; overflow: auto;}
 .output > div {background: #16202e; color: #e8eef7; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; min-height: 120px;}
-.output h2 {font-size: 11px; letter-spacing: .6px; text-transform: uppercase; padding: 10px 15px; background: #223148; color: #c9d8ec;}
+.output h2 {font-size: 12px; padding: 10px 15px; background: #223148; color: #c9d8ec;}
 .output pre {padding: 14px 15px; margin: 0; flex: 1; overflow: auto; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere;}
 .diagnostic {background: var(--warn-soft); border-left: 3px solid var(--warn); padding: 11px 16px; margin: 12px 20px; border-radius: 8px; font-size: 13px;}
 .diagnostic.success {background: var(--ok-soft); border-color: var(--ok);}
@@ -269,7 +271,6 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
 /* ---------- narrow screens ---------- */
 @media (max-width: 980px) {
   .workspace {grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(160px, .8fr) minmax(0, 1.2fr);}
-  .submission-fields {grid-template-columns: 1fr;}
 }
 @media (max-width: 720px) {
   .app {height: auto; min-height: 100dvh;}
@@ -279,3 +280,79 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
   .brand p {display: none;}
 }
 .zoom-control {display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;}
+
+/* Exploration starts with recognizable program shapes, rather than a blank editor. */
+.mark::before, .mark::after {content: ''; position: absolute; width: 8px; height: 8px; border: 2px solid white; border-radius: 3px; transform: rotate(-12deg);}
+.mark::before {left: 6px; top: 6px;}
+.mark::after {right: 5px; bottom: 5px; background: var(--brand);}
+.editor-intro {display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 24px;}
+.editor-intro h2 {font-size: clamp(24px, 3vw, 36px); line-height: 1.2; letter-spacing: -1.2px; font-weight: 650;}
+.editor-intro p {margin: 9px 0 0; color: var(--muted); font-size: 14px;}
+.demo-link {border: none; background: transparent; color: var(--brand-dark); font-weight: 600;}
+.demo-link span {margin-left: 8px;}
+.example-gallery {display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-bottom: 1px solid var(--line); background: var(--surface-2); padding: 10px;}
+.example-choice {border: 1px solid transparent; border-radius: 9px; padding: 12px 10px; display: flex; align-items: center; gap: 12px; white-space: normal; background: transparent; text-align: left;}
+.example-choice.chosen {background: var(--brand-soft); border-color: var(--brand);}
+.example-choice strong {display: block; font-size: 13px; color: var(--text); font-weight: 650;}
+.example-choice small {display: block; margin-top: 4px; font-size: 11px; line-height: 1.5; color: var(--muted);}
+.example-glyph {width: 60px; height: 52px; flex-shrink: 0; overflow: visible; color: var(--brand);}
+.example-glyph line {stroke: currentColor; stroke-width: 1.5; opacity: .5;}
+.example-glyph circle, .example-glyph rect {stroke: currentColor; stroke-width: 1.7; fill: var(--surface);}
+.example-glyph.fork {color: var(--accent);}
+.example-glyph.list {color: var(--ok);}
+.example-glyph.tree {color: var(--warn);}
+.example-choice:hover .example-glyph circle, .example-choice.chosen .example-glyph circle {fill: var(--brand-soft);}
+.language-badge {font-family: var(--code); font-size: 11px;}
+.language-badge span {color: var(--line-strong); padding: 0 10px;}
+.editor-column {min-width: 0;}
+.editor-footer {display: flex; justify-content: space-between; margin-top: 9px; color: var(--muted); font-size: 11px;}
+.optional {font-weight: 400; font-size: 11px;}
+.run-explainer {border-top: 1px solid var(--line); margin-top: 24px; padding-top: 20px;}
+.run-explainer h3 {font-size: 16px; color: var(--text);}
+.run-button {display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; font-weight: 600;}
+.run-button:disabled {opacity: .75;}
+.run-help {text-align: center;}
+.run-progress {padding: 14px; margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px;}
+.run-clock {display: flex; align-items: center; gap: 8px; font-size: 12px;}
+.run-clock strong {margin-left: auto; font-variant-numeric: tabular-nums; color: var(--text);}
+.working-dot, .context-dot {display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--brand); flex-shrink: 0;}
+.working-dot, .context-dot.is-playing {animation: working 1.5s ease-in-out infinite;}
+.run-tip {font-size: 12px; line-height: 1.7; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px;}
+.play-button {min-width: 90px; font-variant-numeric: tabular-nums;}
+.playback-speed {display: flex; align-items: center;}
+.playback-speed select {font: inherit; font-size: 12px; border: 1px solid var(--line-strong); padding: 8px 6px; border-radius: 8px; background: var(--surface); color: var(--text);}
+.execution-context {display: flex; align-items: center; gap: 12px; padding: 9px 22px; font-size: 12px; color: var(--muted); flex-shrink: 0; flex-wrap: wrap;}
+.execution-context strong {font-family: var(--code); color: var(--text); max-width: 40%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.context-stat {border-left: 1px solid var(--line-strong); padding-left: 12px;}
+.shortcut-hint {margin-left: auto; font-size: 11px;}
+.change-tag {padding: 2px 9px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); font-size: 11px;}
+.local-box.value-changed {background: var(--ok-soft); border-color: var(--ok);}
+.value-change-label {display: block; font: 10px 'Segoe UI', sans-serif; margin-top: 3px; color: var(--ok);}
+.tree-canvas, .graph-canvas {background-image: radial-gradient(var(--line-strong) .6px, transparent .6px); background-size: 20px 20px;}
+.sr-only {position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;}
+.syntax-keyword {color: var(--accent); font-weight: 600;}
+.syntax-string {color: var(--ok);}
+.syntax-literal {color: var(--brand-dark);}
+.syntax-comment {color: var(--muted); font-style: italic;}
+.syntax-directive {color: var(--muted);}
+@keyframes working {50% {opacity: .4; box-shadow: 0 0 0 4px var(--brand-soft);}}
+@media (prefers-color-scheme: dark) {.demo-link, .tab.selected, .syntax-literal {color: var(--brand);} .example-glyph circle, .example-glyph rect {fill: var(--surface-3);}}
+@media (max-width: 1080px) {.example-gallery {grid-template-columns: repeat(2, minmax(0, 1fr));}}
+@media (max-width: 720px) {
+  .editor-scroll {padding: 22px 14px;}
+  .editor-intro {align-items: flex-start; flex-direction: column; gap: 12px;}
+  .editor-intro h2 {letter-spacing: -.6px;}
+  .example-choice {gap: 6px; padding: 10px 6px;}
+  .example-glyph {width: 42px;}
+  .submission-fields {grid-template-columns: 1fr; padding: 16px; gap: 20px;}
+  .shortcut-hint {display: none;}
+  .trace-view .workspace {flex: none; grid-template-rows: 280px 580px;}
+  .trace-view .workspace.code-hidden {grid-template-rows: 650px;}
+  .execution-context {padding-inline: 16px; gap: 8px;}
+  .controls {padding: 10px 12px;}
+  .control-buttons {gap: 6px;}
+  .control-buttons button {font-size: 12px; padding: 7px 10px;}
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {animation: none !important; transition: none !important; scroll-behavior: auto !important;}
+}

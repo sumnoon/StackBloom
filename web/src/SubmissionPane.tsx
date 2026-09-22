@@ -1,5 +1,6 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {parseTrace, type Trace} from './trace';
+import {ExampleGlyph} from './ExampleGlyph';
 
 const recursion = `#include <iostream>
 
@@ -105,9 +106,22 @@ export function SubmissionPane({draft, onDraft, onTrace}:
   const load = (example: string, input: string) => {onDraft({source: example, stdin: input}); setError('');};
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!busy) return;
+    const started = Date.now();
+    const timer = window.setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 1000);
+    return () => window.clearInterval(timer);
+  }, [busy]);
+  const examples = [
+    {title: 'Factorial', description: 'Follow calls down, then back up.', kind: 'chain' as const, code: recursion, input: '4\n'},
+    {title: 'Fibonacci', description: 'Watch one call become a tree.', kind: 'fork' as const, code: fibonacci, input: '4\n'},
+    {title: 'Linked list', description: 'Trace pointers from node to node.', kind: 'list' as const, code: linkedList, input: ''},
+    {title: 'Binary search tree', description: 'See a tree take shape in memory.', kind: 'tree' as const, code: bst, input: ''},
+  ];
 
   async function run() {
-    setBusy(true); setError('');
+    setBusy(true); setElapsed(0); setError('');
     try {
       const response = await fetch('/api/trace', {
         method: 'POST', headers: {'Content-Type': 'application/json', 'X-CPPV-Request': 'trace'},
@@ -119,23 +133,30 @@ export function SubmissionPane({draft, onDraft, onTrace}:
       try {data = JSON.parse(text);} catch {throw new Error('The trace API is unavailable. Start python tracer/server.py and use npm run dev.');}
       if (!response.ok) throw new Error(data.error || 'The local tracer could not run this program.');
       onTrace(parseTrace(data));
-    } catch (e) {setError(e instanceof Error ? e.message : 'Cannot connect to the local tracer.');}
+    } catch (e) {
+      // A failed fetch means the local server is gone, which "Failed to fetch" hides.
+      setError(e instanceof TypeError
+        ? 'Cannot reach the local tracer. Is it still running? Start it again with python stackbloom.py.'
+        : e instanceof Error ? e.message : 'Cannot connect to the local tracer.');
+    }
     finally {setBusy(false);}
   }
 
   return <section className="submission" aria-label="Submit C++ code">
-    <div className="panel-title"><h2>Your program</h2><div className="example-buttons">
-      <button disabled={busy} onClick={() => load(recursion, '4\n')}>Factorial (linear recursion)</button>
-      <button disabled={busy} onClick={() => load(fibonacci, '4\n')}>Fibonacci (branching recursion)</button>
-      <button disabled={busy} onClick={() => load(linkedList, '')}>Linked list (pointers)</button>
-      <button disabled={busy} onClick={() => load(bst, '')}>Binary search tree</button>
-    </div></div>
+    <div className="example-gallery" aria-label="Example programs">{examples.map(example => <button key={example.title}
+      className={`example-choice ${source === example.code ? 'chosen' : ''}`} aria-pressed={source === example.code}
+      disabled={busy} onClick={() => load(example.code, example.input)}>
+      <ExampleGlyph kind={example.kind} /><span><strong>{example.title}</strong><small>{example.description}</small></span>
+    </button>)}</div>
+    <div className="panel-title"><h2>Your program</h2><span className="language-badge">C++17 <span aria-hidden="true">/</span> main.cpp</span></div>
     <div className="submission-fields">
-      <label className="editor-label">C++ source<textarea aria-label="C++ source" spellCheck={false} value={source} onChange={e => setSource(e.target.value)} disabled={busy} /></label>
-      <div className="submission-options"><label>stdin<textarea aria-label="Standard input" spellCheck={false} value={stdin} onChange={e => setStdin(e.target.value)} disabled={busy} placeholder="Optional input for std::cin" /></label>
-        <p>Single-file C++17 · Up to 1,000 stops</p><p>Runs on your machine. Submit only code you trust.</p>
-        <button className="primary" disabled={busy || !source.trim()} onClick={() => void run()}>{busy ? 'Compiling and tracing…' : 'Run & visualize'}</button>
-        <span role="status">{busy ? 'Recording execution. This may take up to 45 seconds.' : 'Edit code, run it, then step through the trace below.'}</span>
+      <div className="editor-column"><label className="editor-label">C++ source<textarea aria-label="C++ source" spellCheck={false} value={source} onChange={e => setSource(e.target.value)} disabled={busy} /></label>
+        <div className="editor-footer"><span>{source.split('\n').length} lines</span><span>Single file · 1,000 stop limit</span></div></div>
+      <div className="submission-options"><label>Program input <span className="optional">Optional</span><textarea aria-label="Standard input" spellCheck={false} value={stdin} onChange={e => setStdin(e.target.value)} disabled={busy} placeholder="Values your program reads with std::cin" /></label>
+        <div className="run-explainer"><h3>From code to a picture.</h3><p>Run your program, then explore its calls, memory and output at your own pace.</p></div>
+        <button className="primary run-button" disabled={busy || !source.trim()} onClick={() => void run()}><span aria-hidden="true">{busy ? '◌' : '▶'}</span> {busy ? 'Compiling & tracing…' : 'Run & visualize'}</button>
+        {busy ? <div className="run-progress" role="status"><div className="run-clock"><span className="working-dot" />Working locally <strong>{elapsed}s</strong></div><p>Capturing your program’s execution. Usually finishes within 45 seconds.</p><div className="run-tip">While you wait: {elapsed < 8 ? 'The highlight marks the next line to execute, before its values change.' : elapsed < 16 ? 'Use Play to watch calls unfold, then pause to inspect any value.' : 'Repeated calls appear as separate branches in the recursion tree.'}</div></div>
+          : <p className="run-help">No setup between runs. Change a value and try again.</p>}
       </div>
     </div>
     {error && <div className="diagnostic" role="alert">{error}</div>}
