@@ -7,6 +7,7 @@ import {StackTree} from './StackTree';
 import {CallTree} from './CallTree';
 import {MemoryGraph} from './MemoryGraph';
 import {SubmissionPane, type Draft} from './SubmissionPane';
+import {highlight} from './highlight';
 
 type TabId = 'stack' | 'calls' | 'memory' | 'output';
 const TABS: {id: TabId; label: string}[] = [
@@ -24,11 +25,30 @@ function App() {
   const [draft, setDraft] = useState<Draft>({source: sample.source.text, stdin: '3\n'});
   const [tab, setTab] = useState<TabId>('stack');
   const [showCode, setShowCode] = useState(true);
+  const [playing, setPlaying] = useState(false);
+  const [interval, setIntervalMs] = useState(750);
   const active = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const step = trace.snapshots[index];
   const last = trace.snapshots.length - 1;
-  const move = (delta: number) => setIndex(i => Math.max(0, Math.min(last, i + delta)));
+  const highlighted = useMemo(() => highlight(trace.source.text), [trace.source.text]);
+  const seek = (position: number) => {setPlaying(false); setIndex(position);};
+  const move = (delta: number) => {setPlaying(false); setIndex(i => Math.max(0, Math.min(last, i + delta)));};
+  const togglePlayback = () => {
+    if (index === last) setIndex(0);
+    setPlaying(value => !value);
+  };
+  useEffect(() => {
+    if (!playing || view !== 'trace') return;
+    if (index >= last) {setPlaying(false); return;}
+    const timer = window.setTimeout(() => setIndex(i => Math.min(last, i + 1)), interval);
+    return () => window.clearTimeout(timer);
+  }, [playing, index, interval, last, view]);
+  useEffect(() => {
+    const pauseWhenHidden = () => {if (document.hidden) setPlaying(false);};
+    document.addEventListener('visibilitychange', pauseWhenHidden);
+    return () => document.removeEventListener('visibilitychange', pauseWhenHidden);
+  }, []);
 
   /** Stops where memory or output actually differs, for the skip buttons. */
   const changes = useMemo(() => {
@@ -53,15 +73,16 @@ function App() {
 
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).closest('input, button, textarea, select')) return;
+      if ((e.target as HTMLElement).closest('input, button, textarea, select, summary, [role="button"], [contenteditable="true"]')) return;
       if (view !== 'trace') return;
+      if (e.code === 'Space' && !e.repeat) {e.preventDefault(); togglePlayback(); return;}
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
         e.preventDefault(); move(e.key === 'ArrowRight' ? 1 : -1);
       }
     };
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
-  }, [last, view]);
+  }, [last, view, index]);
   useEffect(() => {
     const line = active.current;
     const pane = line?.parentElement;
@@ -82,6 +103,7 @@ function App() {
   }
 
   function show(next: Trace) {
+    setPlaying(false);
     setTrace(next);
     setIndex(next.snapshots[0].event === 'step' ? 0 : next.snapshots.length - 1);
     // A program that never ran has nothing to step through: stay on the editor
@@ -115,6 +137,8 @@ function App() {
       </div>
     </header>
     <div className="editor-scroll">
+      <section className="editor-intro"><div><h2>See what your code is thinking.</h2><p>Follow a call. Watch a value change. Make the next step click.</p></div>
+        <button className="demo-link" onClick={() => {setView('trace'); setPlaying(false);}}>Explore the {trace === sample ? 'sample' : 'recorded'} trace <span aria-hidden="true">↗</span></button></section>
       {error && <div role="alert" className="diagnostic"><strong>Compiler output</strong><pre>{error}</pre></div>}
       <SubmissionPane draft={draft} onDraft={setDraft} onTrace={show} />
       <p className="hint">Your program is compiled and traced on this machine. Submit only code you trust.</p>
@@ -127,29 +151,39 @@ function App() {
         <div><h1>StackBloom</h1><p className="file">{trace.source.path} · C++17</p></div></div>
       <div className="topbar-actions">
         <span className={`event ${step.event}`}>{step.event.replace('_', ' ')}</span>
-        <button onClick={() => setView('editor')}>← Edit code</button>
+        <button onClick={() => {setPlaying(false); setView('editor');}}>← Edit code</button>
         {openTrace}
       </div>
     </header>
 
     <div className="controls">
       <div className="control-buttons">
-        <button onClick={() => setIndex(0)} disabled={index === 0} aria-label="First stop" title="First stop">⏮</button>
+        <button onClick={() => seek(0)} disabled={index === 0} aria-label="First stop" title="First stop">⏮</button>
         <button onClick={() => move(-1)} disabled={index === 0} aria-label="Previous stop" title="Back (←)">←</button>
-        <button className="primary" onClick={() => move(1)} disabled={index === last} title="Forward (→)">Forward →</button>
-        <button onClick={() => setIndex(deepest)} disabled={!trace.snapshots.some(s => s.frames.length > 1)}
+        <button className="primary play-button" onClick={togglePlayback} disabled={last === 0} title="Play / pause (Space)">{playing ? 'Ⅱ Pause' : index === last ? '↻ Replay' : '▶ Play'}</button>
+        <button onClick={() => move(1)} disabled={index === last} title="Forward (→)">Forward →</button>
+        <label className="playback-speed"><span className="sr-only">Playback speed</span><select aria-label="Playback speed" value={interval} onChange={e => setIntervalMs(Number(e.target.value))}><option value={1500}>0.5×</option><option value={750}>1×</option><option value={375}>2×</option></select></label>
+        <button onClick={() => seek(deepest)} disabled={!trace.snapshots.some(s => s.frames.length > 1)}
           title="Jump to the deepest point of the call stack">Deepest call</button>
-        <button onClick={() => setIndex(nextChange('heap')!)} disabled={nextChange('heap') === undefined}
+        <button onClick={() => seek(nextChange('heap')!)} disabled={nextChange('heap') === undefined}
           title="Next stop where a heap object changes">Next memory change</button>
-        <button onClick={() => setIndex(nextChange('output')!)} disabled={nextChange('output') === undefined}
+        <button onClick={() => seek(nextChange('output')!)} disabled={nextChange('output') === undefined}
           title="Next stop that flushes new output">Next output</button>
       </div>
       <div className="timeline">
         <input id="timeline" type="range" min="0" max={last} value={index} aria-label="Execution timeline"
-          onChange={e => setIndex(Number(e.target.value))} />
-        <span className="stop-count" aria-live="polite">Stop {index + 1} / {last + 1}</span>
+          style={{background: `linear-gradient(to right, var(--brand) ${last ? index / last * 100 : 0}%, var(--line-strong) ${last ? index / last * 100 : 0}%)`}}
+          onChange={e => seek(Number(e.target.value))} />
+        <span className="stop-count">Stop <strong>{index + 1}</strong> / {last + 1}</span>
       </div>
     </div>
+
+    {/* Announces where you are when stepping; silent during playback, which would chatter. */}
+    <div className="execution-context" aria-live={playing ? 'off' : 'polite'}>
+      <span className={`context-dot ${playing ? 'is-playing' : ''}`} /><strong>{step.frames[0]?.function ?? (step.event === 'exit' ? 'Execution finished' : 'Execution stopped')}</strong>
+      <span>{step.location ? `Line ${step.location.line}` : step.event.replace('_', ' ')}</span><span className="context-stat">{step.frames.length} active {step.frames.length === 1 ? 'call' : 'calls'}</span>
+      {changes.heap.includes(index) && <span className="change-tag">Memory changed</span>}{changes.output.includes(index) && <span className="change-tag">New output</span>}
+      <span className="shortcut-hint">Space to play · ← → to step</span></div>
 
     {error && <div role="alert" className="diagnostic">{error}</div>}
 
@@ -161,7 +195,7 @@ function App() {
           {trace.source.text.split('\n').map((line, i) => <div key={i} ref={step.location?.line === i + 1 ? active : null}
             className={`code-line ${step.location?.line === i + 1 ? 'active' : ''}`}
             aria-current={step.location?.line === i + 1 ? 'step' : undefined}>
-            <span className="line-number">{i + 1}</span><code>{line || ' '}</code></div>)}
+            <span className="line-number">{i + 1}</span><code>{highlighted[i]?.length ? highlighted[i] : line || ' '}</code></div>)}
         </div>
         <p className="note">The highlight marks the next line to execute. A line may produce several stops.</p>
       </section>}
@@ -178,8 +212,8 @@ function App() {
           {!showCode && <button className="ghost show-code" onClick={() => setShowCode(true)}>Show code</button>}
         </div>
         <div className="tab-panel" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
-          {tab === 'stack' && <StackTree frames={step.frames} />}
-          {tab === 'calls' && <CallTree trace={trace} index={index} onSeek={setIndex} />}
+          {tab === 'stack' && <StackTree frames={step.frames} previousFrames={trace.snapshots[index - 1]?.frames} />}
+          {tab === 'calls' && <CallTree trace={trace} index={index} onSeek={seek} />}
           {tab === 'memory' && <MemoryGraph trace={trace} index={index} />}
           {tab === 'output' && <section className="output">
             <div><h2>stdout</h2><pre>{step.stdout || 'No output flushed yet.'}</pre></div>

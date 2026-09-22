@@ -35,6 +35,15 @@ with your permissions.
 - **Time travel.** Step forward and back, jump to the next memory change or the next
   output, or drag the timeline. Replay never re-runs your program; it only reads what
   was recorded.
+- **Watch it unfold.** Play or pause the trace at 0.5×, 1× or 2× speed. Playback
+  stops at the end, when you seek manually, or when the page becomes hidden.
+  Press Space to play/pause outside form controls; arrow keys step through stops.
+  Changed local values are highlighted when the trace includes stable call IDs.
+
+The editor includes illustrated example choices and shows actual elapsed time while
+compiling/tracing. The replay workspace colors C++ syntax and flags stops that change
+memory or output. Light/dark appearance follows your system, and decorative motion
+respects the reduced-motion setting.
 
 Both graphs scale to fit their panel, so a wide recursion tree or a long list is
 visible without scrolling. Pick a zoom level from the dropdown to read the details,
