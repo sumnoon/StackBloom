@@ -1,4 +1,4 @@
-# StackBloom
+# 🌱 StackBloom
 
 *Watch your C++ grow, one call at a time.*
 
