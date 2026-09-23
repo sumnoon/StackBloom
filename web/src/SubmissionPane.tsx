@@ -202,7 +202,7 @@ export function SubmissionPane({draft, onDraft, onTrace, compilerOutput = ''}: {
     <div className="submission-fields">
       <div className="editor-column"><span className="field-label">C++ source</span>
         <CodeEditor ref={editor} value={source} onChange={value => update({source: value})} disabled={busy} issues={issues} />
-        <div className="editor-footer"><span>{source.split('\n').length} lines</span>
+        <div className="editor-footer"><span>{source.split('\n').length} lines · Tab indents, Esc then Tab leaves the editor</span>
           <span>Single file · {maxSteps.toLocaleString()} stop limit</span></div>
         {compilerOutput && <div className="compiler-issues" role="alert">
           <h3>{errors ? `${errors} compile ${errors === 1 ? 'error' : 'errors'}` : 'The program did not compile'}</h3>
