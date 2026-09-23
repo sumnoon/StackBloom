@@ -1,0 +1,52 @@
+name: Docker image
+# Builds the image, runs it with a locked-down profile, and traces a real program
+# through it. Tags publish ghcr.io/<owner>/stackbloom.
+on:
+  workflow_dispatch:
+  push:
+    # Branch pushes run when the image could change; tag pushes always run (GitHub
+    # ignores path filters for tags) and publish.
+    branches: ['**']
+    tags: ['v*']
+    paths: ['Dockerfile', '.dockerignore', 'stackbloom.py', 'tracer/**', 'web/**', 'packaging/docker/**', '.github/workflows/docker.yml']
+  pull_request:
+    paths: ['Dockerfile', '.dockerignore', 'stackbloom.py', 'tracer/**', 'web/**', 'packaging/docker/**', '.github/workflows/docker.yml']
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: docker build -t stackbloom:ci .
+      - name: Run locked down
+        # No capabilities, read-only root, a small exec-able /tmp for compiled programs,
+        # and memory and process limits. GDB traces its own child, which needs none.
+        run: |
+          docker run -d --name stackbloom -p 127.0.0.1:8765:8765 \
+            --read-only --tmpfs /tmp:rw,exec,nosuid,size=256m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --memory 1g --pids-limit 128 stackbloom:ci
+          for i in $(seq 1 30); do
+            curl -fsS -o /dev/null http://127.0.0.1:8765/ && exit 0
+            sleep 1
+          done
+          docker logs stackbloom; exit 1
+      - name: Smoke test
+        run: python3 packaging/docker/smoke_test.py http://127.0.0.1:8765
+      - name: Container logs
+        if: always()
+        run: docker logs stackbloom || true
+      - name: Publish
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          for tag in "${GITHUB_REF_NAME}" latest; do
+            docker tag stackbloom:ci "ghcr.io/${owner}/stackbloom:${tag}"
+            docker push "ghcr.io/${owner}/stackbloom:${tag}"
+          done

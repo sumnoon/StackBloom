@@ -122,6 +122,43 @@ A note specific to Windows: several programs ship their own copy of the C++ runt
 (Git for Windows is a common one). StackBloom passes the compiler's own directory
 first when it runs your program, so it loads the runtime it was built against.
 
+## Run with Docker (Linux, macOS or Windows)
+
+The image carries the compiler, a Python-enabled GDB, Python and the built viewer,
+so Docker is the only thing to install.
+
+```sh
+docker build -t stackbloom .
+```
+
+```sh
+docker run --rm -p 127.0.0.1:8765:8765 stackbloom
+```
+
+Then open **http://127.0.0.1:8765**. Tagged releases also publish a ready-made image,
+so after the first `v*` tag you can skip the build:
+
+```sh
+docker run --rm -p 127.0.0.1:8765:8765 ghcr.io/sumnoon/stackbloom
+```
+
+**Always write `127.0.0.1:` in `-p`.** A bare `-p 8765:8765` publishes the port on
+every network interface, and anything that can reach it can compile and run code in
+the container. The server also refuses requests whose `Host` isn't `127.0.0.1` or
+`localhost`, which stops a browser on another machine, but not a determined client.
+
+For a tighter box, this is the profile CI runs on every change — read-only root, no
+capabilities, no privilege escalation, and memory and process limits. GDB needs no
+extra capability, because it only traces its own child process:
+
+```sh
+docker run --rm -p 127.0.0.1:8765:8765 --read-only --tmpfs /tmp:rw,exec,nosuid,size=256m --cap-drop ALL --security-opt no-new-privileges --memory 1g --pids-limit 128 stackbloom
+```
+
+`/tmp` must allow `exec`: that is where your program is compiled and run. A container
+narrows what a hostile program can reach, but it shares the host's kernel, so treat
+it as a convenience, not a sandbox for untrusted code.
+
 ## Install on Ubuntu 22.04
 
 ```sh
@@ -146,7 +183,8 @@ It builds the viewer if needed, serves it, and opens your browser at
 Node.js is used only for that build step, never to run the app.
 
 `--port 9000` moves it, `--no-browser` skips opening a window, and `--skip-build` uses
-the existing build as-is. Rebuilds happen automatically when the viewer's sources
+the existing build as-is. `--host` changes the bind address; leave it at `127.0.0.1`
+outside a container. Rebuilds happen automatically when the viewer's sources
 change, so pulling new code needs no extra step.
 
 Paste a single-file C++17 program into **C++ source**, add **Program input** if it reads
@@ -258,6 +296,8 @@ the same on a fresh GitHub runner. Pushing a `v*` tag attaches the zip to that r
 - `tracer/compact.py`: checkpoint/delta storage and exact reconstruction.
 - `stackbloom.py`: one-command launcher: builds the viewer when stale, serves it, opens the browser.
 - `packaging/windows/build_bundle.py`: builds and smoke-tests the portable Windows zip.
+- `Dockerfile`: two-stage image; Node builds the viewer, Ubuntu runs it as a non-root user.
+- `packaging/docker/smoke_test.py`: checks a running instance end to end (viewer, a real trace, the Host guard).
 - `tracer/server.py`: loopback server for the viewer and the submission API.
 - `web/src/main.tsx`: two-screen shell, replay controls, tabs and change navigation.
 - `web/src/StackTree.tsx`: connected call bubbles, locals and pointer states.

@@ -135,11 +135,15 @@ class Handler(BaseHTTPRequestHandler):
             super().log_message(fmt, *args)
 
 
-def serve(port=DEFAULT_PORT, root=VIEWER):
+def serve(port=DEFAULT_PORT, root=VIEWER, host="127.0.0.1"):
     """Run until interrupted. Deliberately single-threaded: one trace at a time,
-    which also keeps the launcher's Linux preexec_fn safe."""
+    which also keeps the launcher's Linux preexec_fn safe.
+
+    `host` is the bind address. Anything other than loopback belongs only inside
+    a container whose port is published on the host's loopback; the Host and
+    Origin checks still accept only 127.0.0.1/localhost on this port."""
     handler = type("BoundHandler", (Handler,), {"root": Path(root), "port": port})
-    server = HTTPServer(("127.0.0.1", port), handler)
+    server = HTTPServer((host, port), handler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

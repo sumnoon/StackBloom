@@ -5,6 +5,7 @@ GDB to trace, and Node.js only to build the viewer (never to run it).
 Run only code you trust: submitted programs execute on this machine.
 """
 import argparse
+import ipaddress
 import os
 import shutil
 import socket
@@ -106,9 +107,15 @@ def main():
     parser.add_argument("--port", type=int, default=8765, help="port to listen on (default: 8765)")
     parser.add_argument("--no-browser", action="store_true", help="do not open a browser window")
     parser.add_argument("--skip-build", action="store_true", help="use the existing build as-is")
+    parser.add_argument("--host", default="127.0.0.1",
+                        help="bind address (default: 127.0.0.1); use 0.0.0.0 only inside a container")
     args = parser.parse_args()
     if not 1024 <= args.port <= 65535:
         parser.error("port must be between 1024 and 65535")
+    try:
+        loopback = ipaddress.ip_address(args.host).is_loopback
+    except ValueError:
+        parser.error("--host must be an IP address, such as 127.0.0.1")
 
     if not args.skip_build and stale():
         build()
@@ -123,9 +130,12 @@ def main():
     print(f"\nStackBloom is running at {url}")
     print("Programs you submit are compiled and traced on this machine. Run only code you trust.")
     print("Press Ctrl+C to stop.\n", flush=True)
+    if not loopback:
+        print(f"Listening on {args.host}. Anything that can reach this address can run code here:\n"
+              "publish the port on the host's loopback only (docker run -p 127.0.0.1:8765:8765).\n", flush=True)
     if not args.no_browser:
         announce(url)
-    serve(args.port)
+    serve(args.port, host=args.host)
     print("Stopped.")
 
 
