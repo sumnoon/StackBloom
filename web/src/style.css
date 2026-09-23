@@ -356,3 +356,23 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {animation: none !important; transition: none !important; scroll-behavior: auto !important;}
 }
+
+/* Depth over time: the shape of the run, clickable as a coarse scrubber. */
+.timeline-track {position: relative; flex: 1; min-width: 140px; padding-top: 18px;}
+.depth-sparkline {position: absolute; inset: 0 0 auto 0; width: 100%; height: 18px; cursor: pointer; opacity: .9;}
+.depth-area {fill: color-mix(in srgb, var(--brand) 22%, transparent); stroke: var(--brand); stroke-width: .4; vector-effect: non-scaling-stroke;}
+.depth-cursor {stroke: var(--accent); stroke-width: 1; vector-effect: non-scaling-stroke;}
+.timeline-track input {width: 100%;}
+/* Warmer gutter numbers mark lines the program stopped at more often. */
+/* A faint warmth, readable at a glance without competing with the active line. */
+.line-number {background: color-mix(in srgb, var(--warn) calc(var(--heat, 0) * 22%), transparent); border-radius: 4px;}
+.code-line.active .line-number {background: transparent;}
+.run-stats {display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; padding: 0; list-style: none;}
+.run-stats div {display: flex; flex-direction: column; gap: 1px;}
+.run-stats dt {font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin: 0;}
+.run-stats dd {margin: 0; font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums;}
+.diagnostic.strip {display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;}
+.diagnostic-text {min-width: 0;}
+.heap-edge.arriving {stroke-dasharray: 260; animation: draw-edge .45s ease-out;}
+@keyframes draw-edge {from {stroke-dashoffset: 260;} to {stroke-dashoffset: 0;}}
+.value-change-label s {opacity: .75;}

@@ -15,10 +15,12 @@ export function StackTree({frames, previousFrames = []}: {frames: Frame[]; previ
         const current = depth === path.length - 1;
         const recursive = path.slice(0, depth).some(parent => parent.function === frame.function);
         const previous = frame.call_id ? previousFrames.find(item => item.call_id === frame.call_id) : undefined;
-        const changed = new Set(frame.locals.filter(local => {
+        // Remember what a value was, not merely that it moved.
+        const changed = new Map(frame.locals.flatMap(local => {
           const old = previous?.locals.find(item => item.id === local.id);
-          return old && (old.value !== local.value || old.status !== local.status);
-        }).map(local => local.id));
+          return old && (old.value !== local.value || old.status !== local.status)
+            ? [[local.id, old.status === 'readable' ? old.value ?? '' : old.status.replace('_', ' ')] as const] : [];
+        }));
         return <li className="call-node" key={`${depth}:${frame.id}`} style={{marginLeft: Math.min(depth, 6) * 12}}>
           {depth > 0 && <div className="call-connector" aria-hidden="true"><span>↓ {recursive ? 'recursive call' : 'calls'}</span></div>}
           <article className={`call-bubble ${current ? 'current-call' : ''}`} aria-label={`${frame.function}, depth ${depth}${current ? ', active' : ''}`}>
@@ -27,7 +29,8 @@ export function StackTree({frames, previousFrames = []}: {frames: Frame[]; previ
             <details open={current} className="call-values"><summary>{frame.locals.length} locals{!current && frame.locals[0]?.status === 'readable' ? ` · ${frame.locals[0].name} = ${frame.locals[0].value?.slice(0, 36)}` : ''}</summary>
             <div className="bubble-locals">{frame.locals.map(local => <div className={`local-box ${changed.has(local.id) ? 'value-changed' : ''}`} key={local.id}>
               <div><strong>{local.name}</strong><small>{local.type}</small></div>
-              <code title={local.address ?? undefined}>{local.status === 'readable' ? local.value : local.status.replace('_', ' ')}{changed.has(local.id) && <span className="value-change-label">changed</span>}</code>
+              <code title={local.address ?? undefined}>{local.status === 'readable' ? local.value : local.status.replace('_', ' ')}{changed.has(local.id) && <span className="value-change-label">
+                  was <s>{(changed.get(local.id) || '—').slice(0, 24)}</s></span>}</code>
               {local.pointers?.length ? <div className="pointer-chips">{local.pointers.map(edge =>
                 <span key={edge.path} className={`pointer-chip ${edge.state}`}>{edge.path ? `${edge.path} ` : ''}{pointerText[edge.state]}</span>)}</div> : null}
             </div>)}</div>

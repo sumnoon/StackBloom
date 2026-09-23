@@ -133,7 +133,9 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
           const row = slot.rows.get(edge.path);
           if (!to || row === undefined) return null;
           const cycle = view.cycles.has(`${from}->${edge.target}`);
-          return <path key={`edge-${i}`} className={`heap-edge ${cycle ? 'cycle' : ''}`}
+          // Edges into a node that appeared at this stop draw themselves in.
+          const arriving = edge.state === 'heap' && edge.target ? fresh(edge.target) : false;
+          return <path key={`edge-${i}`} className={`heap-edge ${cycle ? 'cycle' : ''} ${arriving ? 'arriving' : ''}`}
             d={edgePath({x: slot.x + slot.width, y: slot.y + row}, to, cycle)} markerEnd="url(#heap-arrow)">
             {cycle && <title>Cycle: this edge points back into the structure</title>}
           </path>;

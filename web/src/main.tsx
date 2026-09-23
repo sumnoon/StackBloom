@@ -8,6 +8,7 @@ import {CallTree} from './CallTree';
 import {MemoryGraph} from './MemoryGraph';
 import {SubmissionPane, type Draft} from './SubmissionPane';
 import {highlight} from './highlight';
+import {DepthSparkline, lineHeat, runStats} from './Sparkline';
 
 type TabId = 'stack' | 'calls' | 'memory' | 'output';
 const TABS: {id: TabId; label: string}[] = [
@@ -32,6 +33,8 @@ function App() {
   const step = trace.snapshots[index];
   const last = trace.snapshots.length - 1;
   const highlighted = useMemo(() => highlight(trace.source.text), [trace.source.text]);
+  const heat = useMemo(() => lineHeat(trace), [trace]);
+  const stats = useMemo(() => runStats(trace), [trace]);
   const seek = (position: number) => {setPlaying(false); setIndex(position);};
   const move = (delta: number) => {setPlaying(false); setIndex(i => Math.max(0, Math.min(last, i + delta)));};
   const togglePlayback = () => {
@@ -171,9 +174,12 @@ function App() {
           title="Next stop that flushes new output">Next output</button>
       </div>
       <div className="timeline">
-        <input id="timeline" type="range" min="0" max={last} value={index} aria-label="Execution timeline"
+        <div className="timeline-track">
+          <DepthSparkline trace={trace} index={index} onSeek={seek} />
+          <input id="timeline" type="range" min="0" max={last} value={index} aria-label="Execution timeline"
           style={{background: `linear-gradient(to right, var(--brand) ${last ? index / last * 100 : 0}%, var(--line-strong) ${last ? index / last * 100 : 0}%)`}}
           onChange={e => seek(Number(e.target.value))} />
+        </div>
         <span className="stop-count">Stop <strong>{index + 1}</strong> / {last + 1}</span>
       </div>
     </div>
@@ -195,7 +201,10 @@ function App() {
           {trace.source.text.split('\n').map((line, i) => <div key={i} ref={step.location?.line === i + 1 ? active : null}
             className={`code-line ${step.location?.line === i + 1 ? 'active' : ''}`}
             aria-current={step.location?.line === i + 1 ? 'step' : undefined}>
-            <span className="line-number">{i + 1}</span><code>{highlighted[i]?.length ? highlighted[i] : line || ' '}</code></div>)}
+            <span className="line-number" style={heat.counts.has(i + 1)
+              ? {'--heat': (heat.counts.get(i + 1)! / heat.hottest).toFixed(3)} as React.CSSProperties : undefined}
+              title={heat.counts.has(i + 1) ? `Stopped here ${heat.counts.get(i + 1)} ${heat.counts.get(i + 1) === 1 ? 'time' : 'times'}` : undefined}>
+              {i + 1}</span><code>{highlighted[i]?.length ? highlighted[i] : line || ' '}</code></div>)}
         </div>
         <p className="note">The highlight marks the next line to execute. A line may produce several stops.</p>
       </section>}
@@ -225,7 +234,17 @@ function App() {
     </div>
 
     {step.diagnostic && <div className={`diagnostic strip ${step.event === 'exit' && step.diagnostic.exit_code === 0 ? 'success' : ''}`}
-      role="status"><strong>{step.event.replace('_', ' ')}</strong><pre>{step.diagnostic.message}</pre></div>}
+      role="status">
+      <div className="diagnostic-text"><strong>{step.event.replace('_', ' ')}</strong><pre>{step.diagnostic.message}</pre></div>
+      {/* The whole recording in numbers, once the program has reached its end. */}
+      <dl className="run-stats" aria-label="Run summary">
+        <div><dt>Stops</dt><dd>{stats.stops.toLocaleString()}</dd></div>
+        {stats.calls > 0 && <div><dt>Calls</dt><dd>{stats.calls}</dd></div>}
+        <div><dt>Deepest stack</dt><dd>{stats.depth}</dd></div>
+        {stats.allocations > 0 && <div><dt>Heap objects</dt><dd>{stats.allocations}{stats.live ? ` · ${stats.live} at the end` : ''}</dd></div>}
+        {stats.output > 0 && <div><dt>Output</dt><dd>{stats.output.toLocaleString()} bytes</dd></div>}
+      </dl>
+    </div>}
   </div>;
 }
 
