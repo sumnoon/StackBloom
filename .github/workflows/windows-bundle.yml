@@ -1,0 +1,54 @@
+name: Windows portable bundle
+# Builds StackBloom-windows-x64.zip on a fresh runner and traces a program with
+# only the bundle and Windows on PATH. Tags attach the zip to a GitHub release.
+on:
+  workflow_dispatch:
+  push:
+    # Branch pushes run when the bundle could change; tag pushes always run (GitHub
+    # ignores path filters for tags) and attach the zip to the release.
+    branches: ['**']
+    tags: ['v*']
+    paths: ['packaging/windows/**', 'stackbloom.py', 'tracer/**', '.github/workflows/windows-bundle.yml']
+  pull_request:
+    paths: ['packaging/windows/**', 'stackbloom.py', 'tracer/**', '.github/workflows/windows-bundle.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - id: msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          # pactree (pacman-contrib) resolves the toolchain's dependency closure.
+          install: pacman-contrib mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gdb
+      - name: Build the bundle and smoke-test it in isolation
+        shell: pwsh
+        run: python packaging/windows/build_bundle.py --msys2 "${{ steps.msys2.outputs.msys2-location }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StackBloom-windows-x64
+          path: |
+            dist/StackBloom-windows-x64.zip
+            dist/StackBloom-windows-x64.zip.sha256
+          if-no-files-found: error
+      - name: Attach to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "${{ github.ref_name }}" *> $null
+          if ($LASTEXITCODE -ne 0) { gh release create "${{ github.ref_name }}" --generate-notes }
+          gh release upload "${{ github.ref_name }}" dist/StackBloom-windows-x64.zip dist/StackBloom-windows-x64.zip.sha256 --clobber

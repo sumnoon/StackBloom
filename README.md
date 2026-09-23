@@ -59,8 +59,38 @@ Read the [design and data flow](docs/design.md), the exact
 
 ## Install on Windows
 
-Tested on Windows 11 with MSYS2. You need a C++ compiler, a Python-enabled GDB,
-Python 3 and Node.js.
+### Portable: download, unzip, run
+
+The Windows download carries everything StackBloom needs — the C++ compiler, the
+debugger, Python and the viewer — so it runs on a PC with none of them installed.
+
+1. Download `StackBloom-windows-x64.zip` from the
+   [latest release](https://github.com/sumnoon/StackBloom/releases/latest) (about
+   117 MB; 460 MB unpacked). Every build is also available from the
+   [Windows portable bundle](https://github.com/sumnoon/StackBloom/actions/workflows/windows-bundle.yml)
+   workflow's artifacts.
+2. Extract it, open the `StackBloom` folder, and double-click **StackBloom.cmd**. Your
+   browser opens on the editor.
+
+Nothing is installed and nothing outside the folder changes; delete the folder to
+remove it. The launcher puts only its own folder and Windows on `PATH`, so a
+different compiler elsewhere on the machine can't interfere.
+
+Two things to know:
+
+- **Keep the folder at 130 characters or fewer**, such as `C:\StackBloom` or your
+  Downloads folder. GCC opens its own headers through un-normalized paths and
+  Windows stops at 260 characters, so from a deeper folder it can't find
+  `<iostream>`. StackBloom checks this at start-up and says so.
+- The launcher is not code-signed, so SmartScreen may warn on first run: choose
+  **More info → Run anyway**.
+
+To build the bundle yourself, see [Building the Windows bundle](#building-the-windows-bundle).
+
+### From source, with MSYS2
+
+This is the setup for working on StackBloom itself. You need a C++ compiler, a
+Python-enabled GDB, Python 3 and Node.js. Tested on Windows 11.
 
 **1. Install MSYS2** from [msys2.org](https://www.msys2.org/), then open the
 **UCRT64** terminal and install the toolchain:
@@ -193,6 +223,31 @@ The checked-in [sample trace](examples/sample.trace.json) comes from a real GCC/
 on the Windows/MSYS2 development host. Addresses, line stops and newline encoding will
 differ on Ubuntu.
 
+## Building the Windows bundle
+
+On Windows with MSYS2 (`pacman-contrib` provides `pactree`):
+
+```sh
+pacman -S --needed pacman-contrib mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gdb
+```
+
+```sh
+python packaging/windows/build_bundle.py
+```
+
+It builds the viewer, copies the app, and copies the exact files of every MSYS2 package
+that `g++` and `gdb` depend on, keeping MSYS2's layout so GDB finds its Python and the
+libstdc++ printers as usual. Documentation, test suites, Tcl/Tk, the C and LTO
+compilers, and headers and static libraries of run-time-only packages are left out.
+It then traces `examples/fib.cpp` with nothing but the bundle and Windows on `PATH`,
+and fails the build if that doesn't work. The output is
+`dist/StackBloom-windows-x64.zip` with a SHA-256 file beside it, plus
+`THIRD_PARTY.md` listing each bundled package, its version and where its source is
+published.
+
+The [Windows portable bundle](.github/workflows/windows-bundle.yml) workflow does
+the same on a fresh GitHub runner. Pushing a `v*` tag attaches the zip to that release.
+
 ## Code map
 
 - `tracer/trace.py`: compiler and linker invocation, deadlines, resource limits, journal recovery.
@@ -202,6 +257,7 @@ differ on Ubuntu.
 - `tracer/alloc_ledger.cpp`: in-program allocation recorder linked into traced builds.
 - `tracer/compact.py`: checkpoint/delta storage and exact reconstruction.
 - `stackbloom.py`: one-command launcher: builds the viewer when stale, serves it, opens the browser.
+- `packaging/windows/build_bundle.py`: builds and smoke-tests the portable Windows zip.
 - `tracer/server.py`: loopback server for the viewer and the submission API.
 - `web/src/main.tsx`: two-screen shell, replay controls, tabs and change navigation.
 - `web/src/StackTree.tsx`: connected call bubbles, locals and pointer states.
@@ -225,7 +281,7 @@ python -m unittest discover -s tests -v
 npm --prefix web run build
 ```
 
-35 tests run real compilers and debuggers, not fixtures:
+39 tests run real compilers and debuggers, not fixtures:
 
 - `tests/test_trace.py`: nested locals, loop stops, stdin, output truncation, shadowing,
   library callbacks, thread detection, compile errors, signals, step limits, wall
@@ -238,6 +294,7 @@ npm --prefix web run build
 - `tests/test_server.py`: viewer file serving, refusing paths outside the build, the
   missing-build message, submission forwarding, custom and out-of-range limits,
   origin rejection, invalid input and missing-toolchain errors.
+- `tests/test_launcher.py`: the portable bundle's check for folders too deep for GCC.
 
 CI runs the suite and the web build on Ubuntu 22.04.
 
