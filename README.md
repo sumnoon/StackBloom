@@ -39,6 +39,11 @@ with your permissions.
   stops at the end, when you seek manually, or when the page becomes hidden.
   Press Space to play/pause outside form controls; arrow keys step through stops.
   Changed local values are highlighted when the trace includes stable call IDs.
+- **The shape of the run.** A depth sparkline sits behind the scrubber, so recursion
+  looks like a mountain range and a loop like a flat line; click it to jump. Line
+  numbers warm up with how often the program stopped there, changed locals show what
+  they were a moment ago, and edges into a new heap object draw themselves in. When a
+  program finishes, a summary counts its stops, calls, deepest stack and heap objects.
 
 The editor includes illustrated example choices and shows actual elapsed time while
 compiling/tracing. The replay workspace colors C++ syntax and flags stops that change
@@ -183,6 +188,7 @@ differ on Ubuntu.
 - `web/src/CallTree.tsx`: branching recursion tree built from recorded invocations.
 - `web/src/MemoryGraph.tsx`: pointer and heap-object graph for the current stop.
 - `web/src/layout.ts`: structure heuristics (list, tree, grid, graph) and positions.
+- `web/src/Sparkline.tsx`: depth sparkline, run totals and per-line stop counts.
 - `web/src/zoom.tsx`: fit-to-panel zoom shared by both graph panels.
 - `web/src/compact.ts`: reader for compact traces.
 - `web/src/trace.ts`: runtime JSON Schema validation and TypeScript types.
