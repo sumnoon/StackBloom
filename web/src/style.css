@@ -511,3 +511,10 @@ button.ghost.on {color: var(--brand-dark); background: var(--brand-soft);}
   .call-arriving {animation:none;}
   .return-traveller {display:none;}
 }
+
+.inspection-chip {font-size:11px; padding:3px 8px; border-color:var(--accent); color:var(--accent);}
+.code-line.inspected-line {box-shadow:inset 3px 0 var(--accent); background:color-mix(in srgb, var(--accent) 13%, var(--surface));}
+.call-bubble.inspected-call {outline:2px solid var(--accent); outline-offset:2px;}
+.history-node.inspected-call .node-body {stroke:var(--accent); stroke-width:3;}
+.inspect-call-button {font:inherit; color:inherit; padding:0 3px; background:transparent; border-color:transparent; text-align:left;}
+.inspect-call-button:hover, .inspect-call-button[aria-pressed=true] {color:var(--accent);}
