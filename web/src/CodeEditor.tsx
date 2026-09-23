@@ -1,114 +1,105 @@
-import {forwardRef, useImperativeHandle, useRef} from 'react';
+import {forwardRef, useEffect, useImperativeHandle, useRef, useState} from 'react';
+import {Compartment, EditorState} from '@codemirror/state';
+import {Decoration, EditorView, ViewPlugin, drawSelection, highlightActiveLine, highlightActiveLineGutter, keymap, lineNumbers} from '@codemirror/view';
+import {cpp} from '@codemirror/lang-cpp';
+import {bracketMatching, HighlightStyle, indentUnit, syntaxHighlighting} from '@codemirror/language';
+import {defaultKeymap, history, historyKeymap, indentWithTab} from '@codemirror/commands';
+import {tags} from '@lezer/highlight';
 
-export type Issue = {line: number; column: number; severity: 'error' | 'warning' | 'note'; message: string};
+import type {Issue, EditorHandle} from './editorIssues';
 
-/** Pull `main.cpp:LINE:COL: error: ...` lines out of GCC or Clang output. */
-export function parseIssues(output: string): Issue[] {
-  const issues: Issue[] = [];
-  for (const match of output.matchAll(/main\.cpp:(\d+):(\d+):\s*(fatal error|error|warning|note):\s*(.+)/g)) {
-    const severity = match[3] === 'fatal error' ? 'error' : match[3] as Issue['severity'];
-    issues.push({line: Number(match[1]), column: Number(match[2]), severity, message: match[4].trim()});
+const colors = HighlightStyle.define([
+  {tag: tags.keyword, color: 'var(--accent)'},
+  {tag: [tags.string, tags.character], color: 'var(--ok)'},
+  {tag: [tags.number, tags.bool, tags.null], color: 'var(--warn)'},
+  {tag: tags.comment, color: 'var(--muted)', fontStyle: 'italic'},
+  {tag: [tags.typeName, tags.meta], color: 'var(--brand)'},
+]);
+
+// Only decorate visible lines. Guides occupy leading whitespace, never the code.
+const guides = ViewPlugin.fromClass(class {
+  decorations;
+  constructor(view: EditorView) {this.decorations = this.build(view);}
+  update(update: import('@codemirror/view').ViewUpdate) {
+    if (update.docChanged || update.viewportChanged) this.decorations = this.build(update.view);
   }
-  return issues;
-}
+  build(view: EditorView) {
+    const ranges = [];
+    for (const {from, to} of view.visibleRanges) {
+      for (let pos = from; pos <= to;) {
+        const line = view.state.doc.lineAt(pos);
+        const indent = line.text.match(/^[ \t]*/)?.[0].replace(/\t/g, '    ').length ?? 0;
+        if (indent >= 4) ranges.push(Decoration.line({attributes: {
+          class: 'cm-indent-guides', style: `background-size: ${indent}ch 100%`,
+        }}).range(line.from));
+        pos = line.to + 1;
+      }
+    }
+    return Decoration.set(ranges, true);
+  }
+}, {decorations: plugin => plugin.decorations});
 
-export type EditorHandle = {reveal: (line: number, column?: number) => void};
-
-// Matches the examples and the tab-size the editor displays.
-const INDENT = 4;
-
-/** A plain textarea with a line-number gutter that stays scrolled with it and
- *  marks the lines the compiler complained about. */
+/** A language-aware editor; React owns the draft, CodeMirror owns editing and undo. */
 export const CodeEditor = forwardRef<EditorHandle, {
   value: string; onChange: (value: string) => void; disabled?: boolean; issues?: Issue[];
 }>(function CodeEditor({value, onChange, disabled, issues = []}, handle) {
-  const area = useRef<HTMLTextAreaElement>(null);
-  const gutter = useRef<HTMLDivElement>(null);
-  const lines = value.split('\n');
-  const marks = new Map<number, Issue>();
-  // Errors outrank warnings, which outrank notes, on a shared line.
-  const rank = {error: 0, warning: 1, note: 2};
-  for (const issue of issues) {
-    const current = marks.get(issue.line);
-    if (!current || rank[issue.severity] < rank[current.severity]) marks.set(issue.line, issue);
-  }
+  const host = useRef<HTMLDivElement>(null);
+  const view = useRef<EditorView | null>(null);
+  const change = useRef(onChange);
+  change.current = onChange;
+  const editable = useRef(new Compartment());
+  const diagnostics = useRef(new Compartment());
+  const [fontSize, setFontSize] = useState(14);
 
-  // Escape hands the next Tab back to the browser, so the editor is never a keyboard trap.
-  const escaped = useRef(false);
+  useEffect(() => {
+    const editor = new EditorView({parent: host.current!, state: EditorState.create({doc: value, extensions: [
+      cpp(), history(), drawSelection(), lineNumbers(), highlightActiveLine(), highlightActiveLineGutter(),
+      bracketMatching(), indentUnit.of('    '), EditorState.tabSize.of(4), guides,
+      syntaxHighlighting(colors), keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
+      editable.current.of(EditorState.readOnly.of(!!disabled)), diagnostics.current.of([]),
+      EditorView.contentAttributes.of({'aria-label': 'C++ source', 'aria-describedby': 'editor-keyboard-help', spellcheck: 'false'}),
+      EditorView.updateListener.of(update => {if (update.docChanged) change.current(update.state.doc.toString());}),
+    ]})});
+    view.current = editor;
+    return () => {editor.destroy(); view.current = null;};
+    // Initialize once: draft and configuration changes are synchronized below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  /** Replace [start, end) through the browser's own editing, which keeps Ctrl+Z working. */
-  function replace(element: HTMLTextAreaElement, start: number, end: number, text: string,
-                   selectStart: number, selectEnd: number) {
-    element.setSelectionRange(start, end);
-    // execCommand is deprecated but remains the only way to edit a textarea without
-    // wiping its undo history; fall back to setRangeText where it is unavailable.
-    if (!document.execCommand('insertText', false, text)) {
-      element.setRangeText(text, start, end, 'end');
-      onChange(element.value);
+  useEffect(() => {
+    const editor = view.current!;
+    if (value !== editor.state.doc.toString()) editor.dispatch({changes: {from: 0, to: editor.state.doc.length, insert: value}});
+  }, [value]);
+  useEffect(() => {view.current?.dispatch({effects: editable.current.reconfigure(EditorState.readOnly.of(!!disabled))});}, [disabled]);
+  useEffect(() => {
+    const editor = view.current!;
+    const marks = new Map<number, Issue>();
+    const rank = {error: 0, warning: 1, note: 2};
+    for (const issue of issues) {
+      if (issue.line < 1 || issue.line > editor.state.doc.lines) continue;
+      const previous = marks.get(issue.line);
+      if (!previous || rank[issue.severity] < rank[previous.severity]) marks.set(issue.line, issue);
     }
-    element.setSelectionRange(selectStart, selectEnd);
-  }
+    editor.dispatch({effects: diagnostics.current.reconfigure(EditorView.decorations.of(Decoration.set(
+      [...marks].map(([line, issue]) => Decoration.line({attributes: {
+        class: `cm-issue-${issue.severity}`, title: issue.message,
+      }}).range(editor.state.doc.line(line).from)), true)))});
+  }, [issues, value]);
 
-  function keyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key === 'Escape') {escaped.current = true; return;}
-    if (event.key !== 'Tab' || event.ctrlKey || event.altKey || event.metaKey || escaped.current) {
-      escaped.current = false;
-      return;
-    }
-    event.preventDefault();
-    const element = event.currentTarget;
-    const text = element.value;
-    const {selectionStart: start, selectionEnd: end} = element;
-    const lineStart = text.lastIndexOf('\n', start - 1) + 1;
-    // A selection ending at the start of a line does not include that line.
-    const lastLine = end > start && text[end - 1] === '\n' ? end - 1 : end;
-    const lineEnd = text.indexOf('\n', lastLine) === -1 ? text.length : text.indexOf('\n', lastLine);
-    const block = text.slice(lineStart, lineEnd);
+  useImperativeHandle(handle, () => ({reveal(line, column = 1) {
+    const editor = view.current;
+    if (!editor) return;
+    const target = editor.state.doc.line(Math.max(1, Math.min(line, editor.state.doc.lines)));
+    const anchor = Math.min(target.to, target.from + Math.max(0, column - 1));
+    editor.dispatch({selection: {anchor}, effects: EditorView.scrollIntoView(anchor, {y: 'center'})});
+    editor.focus();
+  }}), []);
 
-    if (!event.shiftKey && !text.slice(start, end).includes('\n')) {
-      // Tab inside one line: spaces up to the next indent stop, like a code editor.
-      const spaces = ' '.repeat(INDENT - ((start - lineStart) % INDENT));
-      replace(element, start, end, spaces, start + spaces.length, start + spaces.length);
-      return;
-    }
-    const lines = block.split('\n');
-    const changed = event.shiftKey
-      ? lines.map(line => line.replace(new RegExp(`^(\\t| {1,${INDENT}})`), ''))
-      : lines.map(line => line.length ? ' '.repeat(INDENT) + line : line);
-    const updated = changed.join('\n');
-    if (updated === block) return;
-    if (start === end) {
-      // Outdenting at a caret keeps the caret on its character.
-      const moved = Math.max(lineStart, start - (block.length - updated.length));
-      replace(element, lineStart, lineEnd, updated, moved, moved);
-    } else {
-      replace(element, lineStart, lineEnd, updated, lineStart, lineStart + updated.length);
-    }
-  }
-
-  useImperativeHandle(handle, () => ({
-    reveal(line, column = 1) {
-      const element = area.current;
-      if (!element) return;
-      const start = lines.slice(0, line - 1).reduce((total, text) => total + text.length + 1, 0);
-      const end = start + (lines[line - 1]?.length ?? 0);
-      element.focus();
-      element.setSelectionRange(Math.min(start + column - 1, end), end);
-      // Centre the line: selection alone does not scroll a textarea reliably.
-      const height = parseFloat(getComputedStyle(element).lineHeight) || 21;
-      element.scrollTop = Math.max(0, (line - 1) * height - element.clientHeight / 2);
-    },
-  }), [lines]);
-
-  return <div className={`code-editor ${disabled ? 'disabled' : ''}`}>
-    <div className="editor-gutter" ref={gutter} aria-hidden="true">
-      {lines.map((_, i) => {
-        const issue = marks.get(i + 1);
-        return <div key={i} className={issue ? `gutter-${issue.severity}` : undefined} title={issue?.message}>{i + 1}</div>;
-      })}
-    </div>
-    <textarea ref={area} aria-label="C++ source" spellCheck={false} value={value} disabled={disabled}
-      wrap="off" onChange={e => onChange(e.target.value)} onKeyDown={keyDown} onBlur={() => {escaped.current = false;}}
-      onScroll={e => {if (gutter.current) gutter.current.scrollTop = e.currentTarget.scrollTop;}} />
+  return <div className="editor-workbench" style={{'--editor-font-size': `${fontSize}px`} as React.CSSProperties}>
+    <div className="editor-tools"><span id="editor-keyboard-help">Tab indents · Esc then Tab leaves editor</span>
+      <label>Text size <select aria-label="Editor text size" value={fontSize} onChange={e => setFontSize(Number(e.target.value))}>
+        {[12, 14, 16, 18, 20].map(size => <option key={size} value={size}>{size}px</option>)}
+      </select></label></div>
+    <div className={`code-editor cm-host ${disabled ? 'disabled' : ''}`} ref={host} />
   </div>;
 });

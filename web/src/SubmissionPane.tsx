@@ -1,5 +1,6 @@
-import {useEffect, useMemo, useRef, useState} from 'react';
-import {CodeEditor, parseIssues, type EditorHandle} from './CodeEditor';
+import {lazy, Suspense, useEffect, useMemo, useRef, useState} from 'react';
+import {parseIssues, type EditorHandle} from './editorIssues';
+const CodeEditor = lazy(() => import('./CodeEditor').then(module => ({default: module.CodeEditor})));
 import {parseTrace, type Trace} from './trace';
 import {ExampleGlyph} from './ExampleGlyph';
 
@@ -201,8 +202,8 @@ export function SubmissionPane({draft, onDraft, onTrace, compilerOutput = ''}: {
     </div>
     <div className="submission-fields">
       <div className="editor-column"><span className="field-label">C++ source</span>
-        <CodeEditor ref={editor} value={source} onChange={value => update({source: value})} disabled={busy} issues={issues} />
-        <div className="editor-footer"><span>{source.split('\n').length} lines · Tab indents, Esc then Tab leaves the editor</span>
+        <Suspense fallback={<div className="code-editor">Loading editor…</div>}><CodeEditor ref={editor} value={source} onChange={value => update({source: value})} disabled={busy} issues={issues} /></Suspense>
+        <div className="editor-footer"><span>{source.split('\n').length} lines</span>
           <span>Single file · {maxSteps.toLocaleString()} stop limit</span></div>
         {compilerOutput && <div className="compiler-issues" role="alert">
           <h3>{errors ? `${errors} compile ${errors === 1 ? 'error' : 'errors'}` : 'The program did not compile'}</h3>
