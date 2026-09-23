@@ -195,6 +195,9 @@ examples: factorial, Fibonacci, a linked list and a binary search tree.
   program does not compile, the lines GCC complained about are marked in it. Each error
   is listed underneath; click one to jump to that line with the cursor at the column.
   The full compiler output is one click away.
+- **Tab indents like a code editor.** Tab moves to the next 4-space stop, Tab and
+  Shift+Tab indent or outdent every selected line, and Ctrl+Z undoes them. Press Esc,
+  then Tab, to move focus out of the editor.
 - **Limits you can change.** **Stop limit** (1,000 to 5,000) and **Time limit** (15 to 60
   seconds) cover programs that need more room, like `fib(12)` at about 1,600 stops.
 - **Recent runs** keeps your last eight programs in this browser, named after their
