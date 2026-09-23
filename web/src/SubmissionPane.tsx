@@ -214,16 +214,25 @@ export function SubmissionPane({draft, onDraft, onTrace, compilerOutput = ''}: {
         </div>}
       </div>
       <div className="submission-options"><label>Program input <span className="optional">Optional</span><textarea aria-label="Standard input" spellCheck={false} value={stdin} onChange={e => update({stdin: e.target.value})} disabled={busy} placeholder="Values your program reads with std::cin" /></label>
-        <div className="limits">
+        <details className="execution-limits"><summary>Execution limits</summary><div className="limits">
           <label>Stop limit<select value={maxSteps} disabled={busy} onChange={e => update({maxSteps: Number(e.target.value)})}>
             {[1000, 2500, 5000].map(value => <option key={value} value={value}>{value.toLocaleString()} stops</option>)}</select></label>
           <label>Time limit<select value={timeout} disabled={busy} onChange={e => update({timeout: Number(e.target.value)})}>
             {[15, 30, 60].map(value => <option key={value} value={value}>{value} seconds</option>)}</select></label>
         </div>
+        </details>
         <div className="run-explainer"><h3>From code to a picture.</h3><p>Run your program, then explore its calls, memory and output at your own pace.</p></div>
-        <button className="primary run-button" disabled={busy || !source.trim()} onClick={() => void run()}><span aria-hidden="true">{busy ? '◌' : '▶'}</span> {busy ? 'Compiling & tracing…' : 'Run & visualize'}</button>
+
         {busy ? <div className="run-progress" role="status"><div className="run-clock"><span className="working-dot" />Working locally <strong>{elapsed}s</strong></div><p>Capturing your program’s execution. It stops after {timeout} seconds or {maxSteps.toLocaleString()} stops, whichever comes first.</p><div className="run-tip">While you wait: {elapsed < 8 ? 'The highlight marks the next line to execute, before its values change.' : elapsed < 16 ? 'Use Play to watch calls unfold, then pause to inspect any value.' : 'Repeated calls appear as separate branches in the recursion tree.'}</div></div>
           : <p className="run-help">No setup between runs. Change a value and try again.</p>}
+      </div>
+    </div>
+    <div className="run-dock" aria-label="Run controls">
+      <div className="run-dock-inner"><div className="run-dock-status" role="status">
+        <strong>{busy ? `Capturing execution · ${elapsed}s` : 'Ready to explore?'}</strong>
+        <span>{maxSteps.toLocaleString()} stops · {timeout}s execution limit</span>
+      </div>
+        <button className="primary run-button" disabled={busy || !source.trim()} onClick={() => void run()}><span aria-hidden="true">{busy ? '◌' : '▶'}</span> {busy ? 'Compiling & tracing…' : 'Run & visualize'}</button>
       </div>
     </div>
     {error && <div className="diagnostic" role="alert">{error}</div>}

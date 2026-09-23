@@ -483,3 +483,20 @@ button.ghost.on {color: var(--brand-dark); background: var(--brand-soft);}
 .cm-host .cm-issue-error {box-shadow:inset 3px 0 var(--bad);}
 .cm-host .cm-issue-warning {box-shadow:inset 3px 0 var(--warn);}
 .cm-host .cm-issue-note {box-shadow:inset 3px 0 var(--brand);}
+
+/* The primary action stays within reach, including when the editor stacks on mobile. */
+.editor-view .editor-scroll {padding-bottom:130px;}
+.run-dock {position:fixed; bottom:0; left:0; right:0; z-index:20; background:var(--surface); border-top:1px solid var(--line-strong); padding:14px 28px calc(14px + env(safe-area-inset-bottom)); box-shadow:0 -6px 22px #00000012;}
+.run-dock-inner {max-width:1180px; margin:auto; display:flex; align-items:center; justify-content:space-between; gap:16px;}
+.run-dock-status {display:flex; flex-direction:column; gap:2px; font-size:13px;}
+.run-dock-status span {color:var(--muted); font-size:12px;}
+.run-dock .run-button {min-width:210px; padding:10px 22px;}
+.execution-limits {margin-top:18px;}
+.execution-limits summary {cursor:pointer; color:var(--muted); font-size:13px;}
+@media (max-width:600px) {
+  .run-dock {padding:10px 14px calc(10px + env(safe-area-inset-bottom));}
+  .run-dock-inner {gap:10px;}
+  .run-dock-status strong {font-size:12px;}
+  .run-dock-status span {font-size:10px;}
+  .run-dock .run-button {min-width:0; font-size:13px; padding:9px 12px;}
+}
