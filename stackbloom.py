@@ -5,6 +5,7 @@ GDB to trace, and Node.js only to build the viewer (never to run it).
 Run only code you trust: submitted programs execute on this machine.
 """
 import argparse
+import os
 import shutil
 import socket
 import subprocess
@@ -59,6 +60,30 @@ def build():
     print("  done", flush=True)
 
 
+# GCC opens its headers through paths like
+# <folder>/toolchain/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../include/c++/...
+# without collapsing the "..", and Windows stops at 260 characters. Measured with
+# <bits/stdc++.h>: folders up to 130 characters compile, 140 does not. GCC works out
+# its location from Windows as the long path, so an 8.3 short name does not help.
+PORTABLE_FOLDER_LIMIT = 130
+
+
+def portable_path_check():
+    """In the portable bundle, refuse a folder too deep for GCC, with a way out."""
+    if os.environ.get("STACKBLOOM_PORTABLE") != "1":
+        return
+    compiler = shutil.which("g++")
+    if not compiler:
+        raise SystemExit("The bundled compiler is missing. Unzip StackBloom again.")
+    folder = os.path.realpath(os.path.join(os.path.dirname(compiler), "..", ".."))
+    if len(folder) > PORTABLE_FOLDER_LIMIT:
+        raise SystemExit(
+            f"This folder is too deep for the C++ compiler: its path is {len(folder)} characters,\n"
+            f"and GCC needs {PORTABLE_FOLDER_LIMIT} or fewer.\n\n"
+            "Move the StackBloom folder somewhere shorter, for example C:\\StackBloom,\n"
+            "and start StackBloom.cmd again.")
+
+
 def free_port(port):
     with socket.socket() as probe:
         return probe.connect_ex(("127.0.0.1", port)) != 0
@@ -89,6 +114,7 @@ def main():
         build()
     if not (DIST / "index.html").is_file():
         raise SystemExit("The viewer is not built. Run again without --skip-build.")
+    portable_path_check()
     if not free_port(args.port):
         raise SystemExit(f"Port {args.port} is already in use. Close that program or pass --port.")
 
