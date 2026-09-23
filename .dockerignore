@@ -1,0 +1,13 @@
+# Only the app, the tracer, the viewer sources and the examples go into the image.
+.git
+.github
+.claude
+.trace-work
+.venv
+**/__pycache__
+**/node_modules
+web/dist
+dist
+docs
+tests
+packaging
