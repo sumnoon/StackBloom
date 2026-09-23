@@ -66,7 +66,7 @@ debugger, Python and the viewer — so it runs on a PC with none of them install
 
 1. Download `StackBloom-windows-x64.zip` from the
    [latest release](https://github.com/sumnoon/StackBloom/releases/latest) (about
-   117 MB; 460 MB unpacked). Every build is also available from the
+   125 MB; 480 MB unpacked). Every build is also available from the
    [Windows portable bundle](https://github.com/sumnoon/StackBloom/actions/workflows/windows-bundle.yml)
    workflow's artifacts.
 2. Extract it, open the `StackBloom` folder, and double-click **StackBloom.cmd**. Your
