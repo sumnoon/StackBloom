@@ -103,6 +103,21 @@ class ServerTests(unittest.TestCase):
             generate.assert_not_called()
         self.assertEqual(status, 403)
 
+    def test_accepts_custom_limits(self):
+        with patch("server.generate", return_value={"snapshots": []}) as generate:
+            status, _ = self.request({"source": "int main() {}", "max_steps": 3000, "timeout": 30})
+        self.assertEqual(status, 200)
+        self.assertEqual(generate.call_args.kwargs, dict(stdin="", max_steps=3000, timeout=30))
+
+    def test_rejects_out_of_range_limits(self):
+        for limits in ({"max_steps": 0}, {"max_steps": 5001}, {"max_steps": True},
+                       {"max_steps": "100"}, {"timeout": 61}, {"timeout": 1.5}):
+            with self.subTest(limits=limits), patch("server.generate") as generate:
+                status, body = self.request({"source": "int main() {}", **limits})
+                generate.assert_not_called()
+                self.assertEqual(status, 400)
+                self.assertIn("whole number", body["error"])
+
     def test_rejects_empty_source(self):
         self.assertEqual(self.request({"source": " "})[0], 400)
 

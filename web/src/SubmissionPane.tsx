@@ -1,4 +1,5 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
+import {CodeEditor, parseIssues, type EditorHandle} from './CodeEditor';
 import {parseTrace, type Trace} from './trace';
 import {ExampleGlyph} from './ExampleGlyph';
 
@@ -96,17 +97,51 @@ int main() {
 `;
 
 /** Draft state lives in the shell, so switching screens never discards edits. */
-export type Draft = {source: string; stdin: string};
+export type Draft = {source: string; stdin: string; maxSteps: number; timeout: number};
+export const DEFAULT_LIMITS = {maxSteps: 1000, timeout: 15};
 
-export function SubmissionPane({draft, onDraft, onTrace}:
-    {draft: Draft; onDraft: (draft: Draft) => void; onTrace: (trace: Trace) => void}) {
-  const {source, stdin} = draft;
-  const setSource = (value: string) => onDraft({source: value, stdin});
-  const setStdin = (value: string) => onDraft({source, stdin: value});
-  const load = (example: string, input: string) => {onDraft({source: example, stdin: input}); setError('');};
+type Recent = {source: string; stdin: string; at: number; title: string};
+const RECENT_KEY = 'stackbloom.recent';
+
+/** Name a run after its first function other than main, which says more than "main.cpp". */
+function titleOf(source: string) {
+  for (const match of source.matchAll(/^[ \t]*[\w:<>*&\s]+?\b(\w+)\s*\([^;]*\)\s*\{/gm))
+    if (match[1] !== 'main' && !['if', 'for', 'while', 'switch'].includes(match[1])) return `${match[1]}()`;
+  return 'main.cpp';
+}
+
+// Browser storage can be unavailable (private windows, blocked site data); never fail on it.
+function readRecent(): Recent[] {
+  try {return JSON.parse(localStorage.getItem(RECENT_KEY) ?? '[]');} catch {return [];}
+}
+function remember(source: string, stdin: string) {
+  try {
+    const kept = readRecent().filter(item => item.source !== source || item.stdin !== stdin);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(
+      [{source, stdin, at: Date.now(), title: titleOf(source)}, ...kept].slice(0, 8)));
+  } catch {/* Recent runs are a convenience only. */}
+}
+function ago(time: number) {
+  const minutes = Math.round((Date.now() - time) / 60000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  return hours < 24 ? `${hours} h ago` : `${Math.round(hours / 24)} d ago`;
+}
+
+export function SubmissionPane({draft, onDraft, onTrace, compilerOutput = ''}: {
+  draft: Draft; onDraft: (draft: Draft) => void; onTrace: (trace: Trace) => void; compilerOutput?: string;
+}) {
+  const {source, stdin, maxSteps, timeout} = draft;
+  const update = (change: Partial<Draft>) => onDraft({...draft, ...change});
+  const load = (example: string, input: string) => {update({source: example, stdin: input}); setError('');};
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [elapsed, setElapsed] = useState(0);
+  const [recent, setRecent] = useState<Recent[]>(readRecent);
+  const editor = useRef<EditorHandle>(null);
+  const recentMenu = useRef<HTMLDetailsElement>(null);
+  const issues = useMemo(() => parseIssues(compilerOutput), [compilerOutput]);
   useEffect(() => {
     if (!busy) return;
     const started = Date.now();
@@ -122,10 +157,12 @@ export function SubmissionPane({draft, onDraft, onTrace}:
 
   async function run() {
     setBusy(true); setElapsed(0); setError('');
+    remember(source, stdin);
+    setRecent(readRecent());
     try {
       const response = await fetch('/api/trace', {
         method: 'POST', headers: {'Content-Type': 'application/json', 'X-CPPV-Request': 'trace'},
-        body: JSON.stringify({source, stdin}),
+        body: JSON.stringify({source, stdin, max_steps: maxSteps, timeout}),
       });
       const text = await response.text();
       if (!text) throw new Error('Start the local backend with python tracer/server.py, then try again.');
@@ -142,20 +179,49 @@ export function SubmissionPane({draft, onDraft, onTrace}:
     finally {setBusy(false);}
   }
 
+  const errors = issues.filter(issue => issue.severity === 'error').length;
   return <section className="submission" aria-label="Submit C++ code">
     <div className="example-gallery" aria-label="Example programs">{examples.map(example => <button key={example.title}
       className={`example-choice ${source === example.code ? 'chosen' : ''}`} aria-pressed={source === example.code}
       disabled={busy} onClick={() => load(example.code, example.input)}>
       <ExampleGlyph kind={example.kind} /><span><strong>{example.title}</strong><small>{example.description}</small></span>
     </button>)}</div>
-    <div className="panel-title"><h2>Your program</h2><span className="language-badge">C++17 <span aria-hidden="true">/</span> main.cpp</span></div>
+    <div className="panel-title"><h2>Your program</h2>
+      <div className="panel-title-actions">
+        {recent.length > 0 && <details className="recent-runs" ref={recentMenu}>
+          <summary>Recent runs ({recent.length})</summary>
+          <ul>{recent.map(item => <li key={item.at}><button disabled={busy} onClick={() => {
+            update({source: item.source, stdin: item.stdin}); setError('');
+            recentMenu.current?.removeAttribute('open');
+          }}><strong>{item.title}</strong>
+            <small>{item.source.split('\n').length} lines{item.stdin.trim() ? ` · input ${item.stdin.trim().slice(0, 12)}` : ''} · {ago(item.at)}</small></button></li>)}</ul>
+        </details>}
+        <span className="language-badge">C++17 <span aria-hidden="true">/</span> main.cpp</span>
+      </div>
+    </div>
     <div className="submission-fields">
-      <div className="editor-column"><label className="editor-label">C++ source<textarea aria-label="C++ source" spellCheck={false} value={source} onChange={e => setSource(e.target.value)} disabled={busy} /></label>
-        <div className="editor-footer"><span>{source.split('\n').length} lines</span><span>Single file · 1,000 stop limit</span></div></div>
-      <div className="submission-options"><label>Program input <span className="optional">Optional</span><textarea aria-label="Standard input" spellCheck={false} value={stdin} onChange={e => setStdin(e.target.value)} disabled={busy} placeholder="Values your program reads with std::cin" /></label>
+      <div className="editor-column"><span className="field-label">C++ source</span>
+        <CodeEditor ref={editor} value={source} onChange={value => update({source: value})} disabled={busy} issues={issues} />
+        <div className="editor-footer"><span>{source.split('\n').length} lines</span>
+          <span>Single file · {maxSteps.toLocaleString()} stop limit</span></div>
+        {compilerOutput && <div className="compiler-issues" role="alert">
+          <h3>{errors ? `${errors} compile ${errors === 1 ? 'error' : 'errors'}` : 'The program did not compile'}</h3>
+          {issues.length > 0 && <ul>{issues.map((issue, i) => <li key={i} className={issue.severity}>
+            <button onClick={() => editor.current?.reveal(issue.line, issue.column)}>
+              <span className="issue-where">Line {issue.line}</span>{issue.message}</button></li>)}</ul>}
+          <details open={!issues.length}><summary>Full compiler output</summary><pre>{compilerOutput}</pre></details>
+        </div>}
+      </div>
+      <div className="submission-options"><label>Program input <span className="optional">Optional</span><textarea aria-label="Standard input" spellCheck={false} value={stdin} onChange={e => update({stdin: e.target.value})} disabled={busy} placeholder="Values your program reads with std::cin" /></label>
+        <div className="limits">
+          <label>Stop limit<select value={maxSteps} disabled={busy} onChange={e => update({maxSteps: Number(e.target.value)})}>
+            {[1000, 2500, 5000].map(value => <option key={value} value={value}>{value.toLocaleString()} stops</option>)}</select></label>
+          <label>Time limit<select value={timeout} disabled={busy} onChange={e => update({timeout: Number(e.target.value)})}>
+            {[15, 30, 60].map(value => <option key={value} value={value}>{value} seconds</option>)}</select></label>
+        </div>
         <div className="run-explainer"><h3>From code to a picture.</h3><p>Run your program, then explore its calls, memory and output at your own pace.</p></div>
         <button className="primary run-button" disabled={busy || !source.trim()} onClick={() => void run()}><span aria-hidden="true">{busy ? '◌' : '▶'}</span> {busy ? 'Compiling & tracing…' : 'Run & visualize'}</button>
-        {busy ? <div className="run-progress" role="status"><div className="run-clock"><span className="working-dot" />Working locally <strong>{elapsed}s</strong></div><p>Capturing your program’s execution. Usually finishes within 45 seconds.</p><div className="run-tip">While you wait: {elapsed < 8 ? 'The highlight marks the next line to execute, before its values change.' : elapsed < 16 ? 'Use Play to watch calls unfold, then pause to inspect any value.' : 'Repeated calls appear as separate branches in the recursion tree.'}</div></div>
+        {busy ? <div className="run-progress" role="status"><div className="run-clock"><span className="working-dot" />Working locally <strong>{elapsed}s</strong></div><p>Capturing your program’s execution. It stops after {timeout} seconds or {maxSteps.toLocaleString()} stops, whichever comes first.</p><div className="run-tip">While you wait: {elapsed < 8 ? 'The highlight marks the next line to execute, before its values change.' : elapsed < 16 ? 'Use Play to watch calls unfold, then pause to inspect any value.' : 'Repeated calls appear as separate branches in the recursion tree.'}</div></div>
           : <p className="run-help">No setup between runs. Change a value and try again.</p>}
       </div>
     </div>

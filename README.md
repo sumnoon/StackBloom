@@ -119,16 +119,36 @@ Node.js is used only for that build step, never to run the app.
 the existing build as-is. Rebuilds happen automatically when the viewer's sources
 change, so pulling new code needs no extra step.
 
-Paste a single-file C++17 program into **C++ source**, add **stdin** if your program
-reads input, and click **Run & visualize**. The buttons at the top load ready-made
+Paste a single-file C++17 program into **C++ source**, add **Program input** if it reads
+`std::cin`, and click **Run & visualize**. The cards at the top load ready-made
 examples: factorial, Fibonacci, a linked list and a binary search tree.
 
-The trace opens on its own screen. Step with **Forward** / **Back**, the arrow keys or
-the timeline. **Deepest call** jumps to the deepest point of the stack, **Next memory
-change** to the next stop where a heap object changes. The **Call stack**, **Recursion
-tree**, **Memory** and **Output** tabs sit beside the source; arrow keys move between
-them once a tab has focus. **Hide code** gives a wide graph the whole window, and
-**← Edit code** returns to your program with it still there.
+- **Compile errors point at the code.** The editor has a line-number gutter, and when a
+  program does not compile, the lines GCC complained about are marked in it. Each error
+  is listed underneath; click one to jump to that line with the cursor at the column.
+  The full compiler output is one click away.
+- **Limits you can change.** **Stop limit** (1,000 to 5,000) and **Time limit** (15 to 60
+  seconds) cover programs that need more room, like `fib(12)` at about 1,600 stops.
+- **Recent runs** keeps your last eight programs in this browser, named after their
+  first function, so closing the tab doesn't lose work.
+
+The trace opens on its own screen:
+
+- **Step like a debugger.** **Step** moves to the very next stop, **Over** skips the calls
+  the current line makes, and **Out** runs until the current call returns. The keys are
+  GDB's own: `s`, `n` and `f`. Arrow keys step, and Space plays or pauses.
+- **Run to a line.** Line numbers the program stopped at are clickable; each click goes
+  to the next time that line runs.
+- **Jump to** the deepest call, the next memory change or the next output.
+- **Watch a variable.** Press **Watch** on any local in the call stack to pin it above the
+  workspace, with its current value and a chart of how it changed across the run. Click
+  the chart to jump there. Up to three at a time.
+- **Keep or share a trace.** **Download** saves it as JSON; drop a trace file anywhere on
+  the window, or use **Open trace**, to load one. Opening a trace never runs code.
+
+The **Call stack**, **Recursion tree**, **Memory** and **Output** tabs sit beside the
+source; arrow keys move between them once a tab has focus. **Hide code** gives a wide
+graph the whole window, and **← Edit code** returns to your program with it still there.
 
 The server listens only on `127.0.0.1`, serves the viewer only from `web/dist`, accepts
 submissions only from its own origin with a custom request header, and runs one job at
@@ -189,6 +209,8 @@ differ on Ubuntu.
 - `web/src/MemoryGraph.tsx`: pointer and heap-object graph for the current stop.
 - `web/src/layout.ts`: structure heuristics (list, tree, grid, graph) and positions.
 - `web/src/Sparkline.tsx`: depth sparkline, run totals and per-line stop counts.
+- `web/src/CodeEditor.tsx`: source editor with a line gutter and compiler-error markers.
+- `web/src/Watches.tsx`: watched variables and their value history across the run.
 - `web/src/zoom.tsx`: fit-to-panel zoom shared by both graph panels.
 - `web/src/compact.ts`: reader for compact traces.
 - `web/src/trace.ts`: runtime JSON Schema validation and TypeScript types.
@@ -203,7 +225,7 @@ python -m unittest discover -s tests -v
 npm --prefix web run build
 ```
 
-33 tests run real compilers and debuggers, not fixtures:
+35 tests run real compilers and debuggers, not fixtures:
 
 - `tests/test_trace.py`: nested locals, loop stops, stdin, output truncation, shadowing,
   library callbacks, thread detection, compile errors, signals, step limits, wall
@@ -214,8 +236,8 @@ npm --prefix web run build
 - `tests/test_compact.py`: compact round trip, random seek against the full-snapshot
   baseline, explicit deletion records and size reduction.
 - `tests/test_server.py`: viewer file serving, refusing paths outside the build, the
-  missing-build message, submission forwarding, origin rejection, invalid input and
-  missing-toolchain errors.
+  missing-build message, submission forwarding, custom and out-of-range limits,
+  origin rejection, invalid input and missing-toolchain errors.
 
 CI runs the suite and the web build on Ubuntu 22.04.
 
