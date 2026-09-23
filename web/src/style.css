@@ -518,3 +518,15 @@ button.ghost.on {color: var(--brand-dark); background: var(--brand-soft);}
 .history-node.inspected-call .node-body {stroke:var(--accent); stroke-width:3;}
 .inspect-call-button {font:inherit; color:inherit; padding:0 3px; background:transparent; border-color:transparent; text-align:left;}
 .inspect-call-button:hover, .inspect-call-button[aria-pressed=true] {color:var(--accent);}
+
+.event-timeline {padding:0 6px;}
+.event-markers {position:relative; height:18px;}
+.event-marker {position:absolute; transform:translateX(-50%); top:0; width:10px; height:18px; padding:0; background:transparent; border:0; border-radius:2px;}
+.event-marker span {display:block; width:4px; height:8px; margin:auto; border-radius:2px; background:var(--brand);}
+.event-marker.return span {background:var(--ok);}
+.event-marker.memory span {background:var(--accent); transform:rotate(45deg); border-radius:0;}
+.event-marker.output span {background:var(--warn); width:7px; height:7px; border-radius:50%;}
+.event-marker.error span {background:var(--bad); height:12px;}
+.event-key {display:flex; align-items:center; gap:5px; color:var(--muted); font-size:10px; margin-bottom:4px;}
+.event-key label {display:flex; align-items:center; gap:5px;}
+.event-key select, .event-key button {padding:1px 5px; font-size:10px; min-height:22px;}

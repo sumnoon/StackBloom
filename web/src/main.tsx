@@ -12,6 +12,7 @@ import {highlight} from './highlight';
 import {DepthSparkline, lineHeat, runStats} from './Sparkline';
 import {unsetLocals} from './display';
 import {InfoTip} from './InfoTip';
+import {EventTimeline} from './EventTimeline';
 
 type TabId = 'stack' | 'calls' | 'memory' | 'output';
 const TABS: {id: TabId; label: string}[] = [
@@ -245,6 +246,7 @@ function App() {
       </div>
       <div className="timeline">
         <div className="timeline-track">
+          <EventTimeline trace={trace} index={index} onSeek={seek} />
           <DepthSparkline trace={trace} index={index} onSeek={seek} />
           <input id="timeline" type="range" min="0" max={last} value={index} aria-label="Execution timeline"
           style={{background: `linear-gradient(to right, var(--brand) ${last ? index / last * 100 : 0}%, var(--line-strong) ${last ? index / last * 100 : 0}%)`}}
