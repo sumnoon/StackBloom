@@ -1,3 +1,12 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 sumnoon and the StackBloom contributors.
+//
+// Additional permission under GNU GPL version 3 section 7: this file is compiled
+// into the programs StackBloom traces. You may compile it into, link it with, and
+// run or distribute any such program under terms of your choice, without that
+// program being covered by the GPL. Changes to this file itself remain under the
+// GPL, and you may remove this permission from modified versions.
+//
 // Linked into every traced program. Records heap extents in a fixed ring buffer
 // that the GDB recorder reads directly at each stop: no breakpoints, no inferior
 // function calls. Replacing global operator new/delete is standard C++; direct

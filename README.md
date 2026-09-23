@@ -271,3 +271,23 @@ CI runs the suite and the web build on Ubuntu 22.04.
 
 If GDB reports `Operation not permitted` inside a container, the runtime is blocking
 ptrace. Use a reviewed debugger worker policy rather than disabling host protections.
+
+## License
+
+StackBloom is free software: you can redistribute it and/or modify it under the terms
+of the GNU General Public License as published by the Free Software Foundation, either
+version 3 of the License, or (at your option) any later version. It is distributed in
+the hope that it will be useful, but **without any warranty**; without even the implied
+warranty of merchantability or fitness for a particular purpose. See [LICENSE](LICENSE)
+for the full text.
+
+Copyright © 2026 sumnoon and the StackBloom contributors.
+
+This is the same license as the GCC, GDB and binutils that the Windows bundle ships,
+so the whole download is covered by one set of terms.
+
+**Your own programs stay yours.** The GPL covers StackBloom's code, not the programs
+you trace with it or the traces it records. The one piece of StackBloom that ends up
+inside your program — the small allocation recorder in `tracer/alloc_ledger.cpp` —
+carries an additional permission that lets you compile, link, run and share the result
+under any terms you like.
