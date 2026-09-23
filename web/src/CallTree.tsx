@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {callHistory, type CallNode} from './callHistory';
 import {InfoTip} from './InfoTip';
 import type {Trace} from './trace';
@@ -60,6 +60,10 @@ export function CallTree({trace, index, onSeek}: {trace: Trace; index: number; o
   // Placeholder extents; the real ones are known once the layout below is built.
   const [extent, setExtent] = useState({width: 0, height: 0});
   const {ref, zoom, mode, setMode, fit, box} = useZoom(extent.width, extent.height, MIN_FIT);
+  const previousStop = useRef({trace, index});
+  const forwardStep = previousStop.current.trace === trace && index === previousStop.current.index + 1;
+  useEffect(() => {previousStop.current = {trace, index};}, [trace, index]);
+  const returnedNow = new Map((trace.snapshots[index].returns ?? []).map(item => [item.call_id, item.value]));
   const history = useMemo(() => callHistory(trace, index), [trace, index]);
   // Cap the drawing independently of the trace budget to bound SVG/layout work.
   const visible = [...history.nodes.values()].slice(0, MAX_NODES);
@@ -77,6 +81,8 @@ export function CallTree({trace, index, onSeek}: {trace: Trace; index: number; o
   visible.forEach(node => frequencies.set(node.label, (frequencies.get(node.label) ?? 0) + 1));
   const seek = (node: CallNode) => onSeek(node.last);
   const active = visible.find(node => node.state === 'active');
+  const activePath = new Set<string>();
+  for (let node = active; node; node = node.parent ? history.nodes.get(node.parent) : undefined) activePath.add(node.id);
   useEffect(() => {
     if (extent.width !== width || extent.height !== height) setExtent({width, height});
   }, [width, height]);
@@ -114,15 +120,23 @@ export function CallTree({trace, index, onSeek}: {trace: Trace; index: number; o
           const from = positions.get(node.parent!)!, to = positions.get(node.id)!;
           const label = labels.get(node.id);
           const mx = (from.x + to.x) / 2, my = (from.y + dims.height + to.y) / 2;
-          return <g key={`edge-${node.id}`} className="tree-edge">
+          return <g key={`edge-${node.id}`} className={`tree-edge ${activePath.has(node.id) ? 'active-path' : ''} ${forwardStep && node.first === index ? 'call-arriving' : ''}`}>
+            {returnedNow.has(node.id) && <g className="return-label" transform={`translate(${mx},${my})`}>
+              <rect x="-40" y="-12" width="80" height="24" rx="12" />
+              <text textAnchor="middle" dy="4">↥ {truncate(returnedNow.get(node.id) ?? 'return', 10)}</text>
+              <title>Returned {returnedNow.get(node.id) ?? '(value unavailable)'} to {history.nodes.get(node.parent!)?.label}</title>
+            </g>}
+            {forwardStep && returnedNow.has(node.id) && <circle key={`${index}-return`} className="return-traveller" r="4">
+              <animateMotion dur="0.35s" path={`M${to.x},${to.y - 5} L${from.x},${from.y + dims.height}`} fill="freeze" />
+            </circle>}
             <path d={`M${from.x},${from.y + dims.height} L${to.x},${to.y - 5}`} markerEnd="url(#call-arrow)" />
-            {label && <g transform={`translate(${mx},${my})`}><circle r="10" /><text textAnchor="middle" dy="4">{label}</text></g>}
+            {label && !returnedNow.has(node.id) && <g transform={`translate(${mx},${my})`}><circle r="10" /><text textAnchor="middle" dy="4">{label}</text></g>}
           </g>;
         })}
         {visible.map(node => {
           const p = positions.get(node.id)!;
           const repeated = node.frame.locals.some(local => local.is_argument) && (frequencies.get(node.label) ?? 0) > 1;
-          return <g key={node.id} transform={`translate(${p.x - dims.width / 2},${p.y})`} className={`history-node ${node.state}`} role="button" tabIndex={0}
+          return <g key={node.id} transform={`translate(${p.x - dims.width / 2},${p.y})`} className={`history-node ${node.state} ${forwardStep && node.first === index ? 'call-arriving' : ''}`} role="button" tabIndex={0}
             aria-label={`${node.label}, ${statusText(node)}, visit stop ${node.last + 1}`} onClick={() => seek(node)} onKeyDown={e => {if (e.key === 'Enter' || e.key === ' ') {e.preventDefault(); e.stopPropagation(); seek(node);}}}>
             <title>{node.label} · {statusText(node)} · call #{order.get(node.id)}</title>
             {repeated && <rect x="-5" y="-5" width={dims.width + 10} height={dims.height + 10} rx={compact ? 16 : 26} className="repeat-halo" />}
