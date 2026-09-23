@@ -465,3 +465,21 @@ code.unset {color: var(--muted); font-style: italic;}
 button.ghost.on {color: var(--brand-dark); background: var(--brand-soft);}
 .source.wrap .code-line {min-width: 0;}
 .source.wrap .code-line code {white-space: pre-wrap; overflow-wrap: anywhere;}
+
+/* Editing shares replay's semantic palette; the caret remains the visual anchor. */
+.editor-tools {display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; color:var(--muted); font-size:11px; flex-wrap:wrap;}
+.editor-tools label {flex-direction:row; align-items:center; font-size:11px;}
+.editor-tools select {padding:3px 6px;}
+.cm-host .cm-editor {width:100%; font-size:var(--editor-font-size); outline:none;}
+.cm-host .cm-scroller {font-family:var(--code); line-height:1.65; overflow:auto;}
+.cm-host .cm-content {padding:13px 0; caret-color:var(--text);}
+.cm-host .cm-line {padding:0 12px;}
+.cm-host .cm-gutters {background:var(--surface-3); color:var(--muted); border-right:1px solid var(--line);}
+.cm-host .cm-activeLine, .cm-host .cm-activeLineGutter {background:var(--brand-soft);}
+.cm-host .cm-cursor {border-left-color:var(--text);}
+.cm-host .cm-selectionBackground, .cm-host .cm-focused .cm-selectionBackground {background:color-mix(in srgb, var(--brand) 30%, transparent);}
+.cm-host .cm-matchingBracket {background:var(--ok-soft); outline:1px solid var(--ok); border-radius:2px;}
+.cm-host .cm-indent-guides {background-image:repeating-linear-gradient(to right, transparent 0, transparent calc(4ch - 1px), var(--line-strong) calc(4ch - 1px), var(--line-strong) 4ch); background-repeat:no-repeat; background-position:12px 0;}
+.cm-host .cm-issue-error {box-shadow:inset 3px 0 var(--bad);}
+.cm-host .cm-issue-warning {box-shadow:inset 3px 0 var(--warn);}
+.cm-host .cm-issue-note {box-shadow:inset 3px 0 var(--brand);}
