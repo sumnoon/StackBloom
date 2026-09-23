@@ -32,9 +32,15 @@ ROOTS = ("mingw-w64-ucrt-x86_64-gcc", "mingw-w64-ucrt-x86_64-gdb")
 PREFIX = "/ucrt64/"
 
 # Whole packages the app never touches: Python's GUI stack and database.
-SKIP_PACKAGES = {"tcl", "tk", "sqlite3"}
-# Packages whose headers and static libraries a C++ program links against.
-BUILD_PACKAGES = {"gcc", "crt", "headers", "winpthreads", "libwinpthread", "cc-libs", "binutils"}
+SKIP_PACKAGES = ("tcl", "tk", "sqlite")
+# Large packages needed only to *run* gdb and Python, never to compile a C++
+# program: their headers and static libraries are dropped. Matched by prefix and
+# listed deliberately rather than guessing which packages GCC builds against, so
+# a renamed or new package keeps its headers. A wrong guess here costs zip size,
+# never a compiler that cannot find <wchar.h> (which happened when MSYS2's
+# package names changed between snapshots).
+RUNTIME_ONLY = ("python", "openssl", "ncurses", "readline", "termcap", "gettext", "libffi",
+                "mpdecimal", "expat", "bzip2", "xz", "libb2", "tzdata")
 SKIP_PATTERNS = [
     "share/doc/*", "share/man/*", "share/info/*", "share/locale/*", "share/gtk-doc/*",
     "lib/python3.*/test/*", "lib/python3.*/idlelib/*", "lib/python3.*/tkinter/*",
@@ -107,7 +113,7 @@ def wanted(relative, package):
     if any(fnmatch.fnmatch(relative, pattern) for pattern in SKIP_PATTERNS):
         return False
     name = PurePosixPath(relative).name
-    if short(package) not in BUILD_PACKAGES:
+    if short(package).startswith(RUNTIME_ONLY):
         # Headers and static archives of run-time-only libraries are never linked.
         if relative.startswith("include/") or name.endswith((".a", ".la")) or relative.startswith("lib/pkgconfig/"):
             return False
@@ -127,7 +133,7 @@ def copy_toolchain(target, msys2):
     source = Path(msys2) / "ucrt64"
     manifest = {}
     for package in closure(msys2):
-        if short(package) in SKIP_PACKAGES:
+        if short(package).startswith(SKIP_PACKAGES):
             continue
         version = run([msys("pacman", msys2), "-Q", package]).split()[1]
         kept = 0
@@ -190,20 +196,30 @@ def smoke_test(bundle):
     """Trace a real program with nothing but the bundle and Windows on PATH."""
     system = os.environ.get("SystemRoot", r"C:\Windows")
     env = {key: value for key, value in os.environ.items() if key.upper() not in ("PATH", "PYTHONPATH", "PYTHONHOME")}
+    # Exactly what StackBloom.cmd sets, so the test exercises the portable code paths.
     env.update(PATH=os.pathsep.join([str(bundle / "toolchain" / "bin"), rf"{system}\System32", system]),
-               PYTHONNOUSERSITE="1", PYTHONDONTWRITEBYTECODE="1")
+               PYTHONNOUSERSITE="1", PYTHONDONTWRITEBYTECODE="1", STACKBLOOM_PORTABLE="1")
     output = bundle / "smoke-trace.json"
     try:
+        # trace.py exits nonzero for compile errors too; the trace says why, so read it.
         subprocess.run([str(bundle / "toolchain" / "bin" / "python.exe"), str(bundle / "app" / "tracer" / "trace.py"),
                         str(bundle / "app" / "examples" / "fib.cpp"), "--output", str(output)],
-                       env=env, check=True, cwd=bundle)
+                       env=env, cwd=bundle)
+        if not output.is_file():
+            raise SystemExit("Smoke test failed: the tracer wrote no trace")
         trace = json.loads(output.read_text(encoding="utf-8"))
     finally:
         output.unlink(missing_ok=True)
     final = trace["snapshots"][-1]
     calls = {frame["call_id"] for stop in trace["snapshots"] for frame in stop["frames"] if frame.get("call_id")}
     if final["event"] != "exit" or final["diagnostic"]["exit_code"] != 0 or len(calls) < 5:
-        raise SystemExit(f"Smoke test failed: {final['event']}, {len(calls)} calls")
+        detail = (final.get("diagnostic") or {}).get("message", "")
+        # Where the bundled compiler looks for headers says more than which one it missed.
+        probe = subprocess.run([str(bundle / "toolchain" / "bin" / "g++.exe"), "-xc++", "-E", "-v", "-"],
+                               input="", capture_output=True, text=True, env=env).stderr
+        raise SystemExit(f"Smoke test failed: {final['event']}, {len(calls)} calls\n{detail}\n"
+                         f"--- g++ -v ---\n{probe}\n--- wchar.h present: "
+                         f"{sorted(str(p.relative_to(bundle)) for p in (bundle / 'toolchain').rglob('wchar.h'))}")
     print(f"  smoke test: fib traced in isolation, {len(trace['snapshots'])} stops, {len(calls)} calls")
 
 

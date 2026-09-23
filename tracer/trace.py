@@ -68,6 +68,26 @@ def printer_directory(compiler):
     return None
 
 
+def portable_flags(compiler):
+    """Point a relocated MSYS2 GCC at its own headers and libraries.
+
+    GCC 16 in MSYS2 is configured with --with-sysroot=/ucrt64 and a system header
+    directory of /include, so once the toolchain is unzipped elsewhere it looks
+    for <wchar.h> in the literal /ucrt64/include. GCC 15 used a relative path and
+    needs nothing. `-idirafter` appends the bundle's include directory exactly
+    where the system one would be searched, after libstdc++'s wrappers; `-B`/`-L`
+    do the same for start files such as crt2.o and for libraries. For GCC 15 these
+    are harmless duplicates. Only the portable bundle, whose layout is known, gets them.
+    """
+    if os.environ.get("STACKBLOOM_PORTABLE") != "1":
+        return []
+    found = shutil.which(compiler)
+    if not found:
+        return []
+    toolchain = Path(found).resolve().parent.parent.as_posix()
+    return ["-idirafter", f"{toolchain}/include", f"-B{toolchain}/lib/", f"-L{toolchain}/lib"]
+
+
 def terminal(trace, event, message):
     previous = trace["snapshots"][-1] if trace["snapshots"] else dict(
         location=None, thread_id=None, frames=[], heap={}, stdout="", stderr="", output_truncated=False)
@@ -95,7 +115,7 @@ def generate(source, stdin="", max_steps=1000, timeout=15, compiler="g++", debug
         trace["source"]["path"] = "main.cpp"
         binary = work / ("program.exe" if os.name == "nt" else "program")
         build_log = work / "build.log"
-        flags = ["-std=c++17", "-g", "-O0", "-fno-omit-frame-pointer"]
+        flags = ["-std=c++17", "-g", "-O0", "-fno-omit-frame-pointer", *portable_flags(compiler)]
         obj, ledger = work / "main.o", work / "cppv_ledger.o"
         with build_log.open("wb") as log:
             code, timed_out = supervise([compiler, *flags, "-c", str(submitted), "-o", str(obj)], work, 30, log)
