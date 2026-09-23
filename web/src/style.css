@@ -376,3 +376,71 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
 .heap-edge.arriving {stroke-dasharray: 260; animation: draw-edge .45s ease-out;}
 @keyframes draw-edge {from {stroke-dashoffset: 260;} to {stroke-dashoffset: 0;}}
 .value-change-label s {opacity: .75;}
+
+/* ---------- editor: gutter, compiler issues, limits, recent runs ---------- */
+.field-label {display: block; font-size: 12.5px; font-weight: 600; color: var(--muted); margin-bottom: 7px;}
+.panel-title-actions {display: flex; align-items: center; gap: 14px;}
+.code-editor {display: flex; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface-2); overflow: hidden;
+  height: min(44vh, 480px); min-height: 340px;}
+.code-editor:focus-within {border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft);}
+.code-editor.disabled {opacity: .7;}
+/* The gutter and the textarea share font, line height and top padding, so rows line up. */
+.editor-gutter {flex-shrink: 0; overflow: hidden; padding: 13px 8px 13px 0; min-width: 44px; text-align: right;
+  font: 13px/1.65 var(--code); color: var(--muted); background: var(--surface-3); border-right: 1px solid var(--line); user-select: none;}
+.editor-gutter > div {padding-left: 10px;}
+.editor-gutter .gutter-error {color: #fff; background: var(--bad); font-weight: 700;}
+.editor-gutter .gutter-warning {color: var(--text); background: var(--warn-soft); box-shadow: inset 3px 0 var(--warn);}
+.editor-gutter .gutter-note {box-shadow: inset 3px 0 var(--line-strong);}
+.submission .code-editor textarea {flex: 1; height: 100%; min-height: 0; border: 0; border-radius: 0; background: transparent;
+  resize: none; white-space: pre; overflow: auto;}
+.submission .code-editor textarea:focus {box-shadow: none;}
+.compiler-issues {margin-top: 14px; border: 1px solid color-mix(in srgb, var(--bad) 40%, var(--line)); border-radius: 10px; background: var(--bad-soft); padding: 12px 14px;}
+.compiler-issues h3 {font-size: 14px; color: var(--bad); margin-bottom: 8px;}
+.compiler-issues ul {list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 4px;}
+.compiler-issues li button {width: 100%; text-align: left; white-space: normal; display: flex; gap: 10px; align-items: baseline;
+  background: var(--surface); border-color: var(--line); font-size: 12.5px; padding: 7px 10px;}
+.compiler-issues li.warning button {border-left: 3px solid var(--warn);}
+.compiler-issues li.error button {border-left: 3px solid var(--bad);}
+.compiler-issues li.note button {border-left: 3px solid var(--line-strong); color: var(--muted);}
+.issue-where {font: 600 11.5px var(--code); color: var(--muted); white-space: nowrap;}
+.compiler-issues details summary {font-size: 12px; color: var(--muted); cursor: pointer;}
+.compiler-issues pre {max-height: 200px; overflow: auto; font-size: 12px; white-space: pre-wrap; margin: 8px 0 0;}
+.limits {display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px;}
+.limits select {font: inherit; font-size: 12.5px; font-weight: 400; color: var(--text); padding: 7px 8px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface);}
+.recent-runs {position: relative;}
+.recent-runs summary {font-size: 12.5px; color: var(--brand-dark); cursor: pointer; list-style: none;}
+.recent-runs summary::-webkit-details-marker {display: none;}
+.recent-runs summary::after {content: ' ▾';}
+.recent-runs ul {position: absolute; right: 0; top: 26px; z-index: 5; min-width: 240px; margin: 0; padding: 6px; list-style: none;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);}
+.recent-runs li button {width: 100%; border: 0; display: flex; justify-content: space-between; gap: 16px; text-align: left; font-size: 12.5px;}
+.recent-runs li small {color: var(--muted);}
+
+/* ---------- trace: jump menu, run-to-line, watches, download, drop ---------- */
+.jump-menu {position: relative;}
+.jump-menu summary {list-style: none; cursor: pointer; font-size: 13.5px; padding: 7px 13px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface);}
+.jump-menu summary::-webkit-details-marker {display: none;}
+.jump-menu summary::after {content: ' ▾'; color: var(--muted);}
+.jump-menu[open] summary {border-color: var(--brand);}
+.jump-list {position: absolute; top: 40px; left: 0; z-index: 6; display: grid; gap: 2px; padding: 6px; min-width: 200px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);}
+.jump-list button {border: 0; text-align: left;}
+button.line-number {border: 0; padding: 0; font: 12px var(--code); color: var(--muted); cursor: pointer; margin-right: 18px; white-space: nowrap;}
+button.line-number:hover {color: var(--brand-dark); text-decoration: underline; background: color-mix(in srgb, var(--brand) 14%, transparent);}
+.watches {display: flex; gap: 8px; padding: 0 20px 6px; overflow-x: auto; flex-shrink: 0;}
+/* One compact row per watch, so pinning a value never pushes the workspace far down. */
+.watch-card {display: flex; align-items: center; gap: 10px; padding: 5px 6px 5px 12px; border: 1px solid var(--line);
+  border-radius: 10px; background: var(--surface); flex-shrink: 0;}
+.watch-text {display: flex; flex-direction: column; min-width: 90px; max-width: 170px;}
+.watch-name {font-size: 11px; color: var(--muted); white-space: nowrap;}
+.watch-name strong {font-family: var(--code); color: var(--text);}
+.watch-value {font-size: 13px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.watch-card.out-of-scope .watch-value {color: var(--muted); font-weight: 400;}
+.watch-chart {display: block; width: 150px; height: 30px; cursor: pointer;}
+.watch-line {fill: none; stroke: var(--ok); stroke-width: 1.6; vector-effect: non-scaling-stroke;}
+.watch-line.faint {stroke: var(--line-strong); stroke-dasharray: 3 3;}
+.watch-range {display: flex; flex-direction: column; justify-content: space-between; height: 30px; font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums;}
+.watch-remove {padding: 2px 7px; font-size: 15px; line-height: 1; align-self: flex-start;}
+.watch-toggle {display: inline-block; margin-top: 4px; font-size: 10.5px; padding: 1px 8px; border-radius: 999px; color: var(--muted);}
+.watch-toggle.on {background: var(--ok-soft); border-color: var(--ok); color: var(--ok);}
+.app.dragging {outline: 3px dashed var(--brand); outline-offset: -8px;}

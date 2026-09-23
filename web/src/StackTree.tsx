@@ -1,11 +1,14 @@
 import type {Frame, PointerState} from './trace';
+import type {Watch} from './Watches';
 
 const pointerText: Record<PointerState, string> = {
   null: 'null', heap: 'heap object', stack: 'stack', dangling: 'dangling', unknown: 'unproven',
 };
 
 /** A snapshot contains the active branch, not the history of completed calls. */
-export function StackTree({frames, previousFrames = []}: {frames: Frame[]; previousFrames?: Frame[]}) {
+export function StackTree({frames, previousFrames = [], watched = [], onWatch}: {
+  frames: Frame[]; previousFrames?: Frame[]; watched?: Watch[]; onWatch?: (watch: Watch) => void;
+}) {
   const path = [...frames].reverse();
   return <section className="stack-panel">
     <div className="panel-title"><h2>Call stack</h2><span>{frames.length} frames</span></div>
@@ -28,7 +31,11 @@ export function StackTree({frames, previousFrames = []}: {frames: Frame[]; previ
             <div className="call-meta"><span>Depth {depth}</span><span>Line {frame.location.line}</span>{recursive && <span className="recursion-tag">Recursion</span>}</div>
             <details open={current} className="call-values"><summary>{frame.locals.length} locals{!current && frame.locals[0]?.status === 'readable' ? ` · ${frame.locals[0].name} = ${frame.locals[0].value?.slice(0, 36)}` : ''}</summary>
             <div className="bubble-locals">{frame.locals.map(local => <div className={`local-box ${changed.has(local.id) ? 'value-changed' : ''}`} key={local.id}>
-              <div><strong>{local.name}</strong><small>{local.type}</small></div>
+              <div><strong>{local.name}</strong><small>{local.type}</small>
+                {onWatch && <button className={`watch-toggle ${watched.some(w => w.fn === frame.function && w.name === local.name) ? 'on' : ''}`}
+                  aria-pressed={watched.some(w => w.fn === frame.function && w.name === local.name)}
+                  title={`Watch ${local.name} across the whole run`}
+                  onClick={() => onWatch({fn: frame.function, name: local.name})}>Watch</button>}</div>
               <code title={local.address ?? undefined}>{local.status === 'readable' ? local.value : local.status.replace('_', ' ')}{changed.has(local.id) && <span className="value-change-label">
                   was <s>{(changed.get(local.id) || '—').slice(0, 24)}</s></span>}</code>
               {local.pointers?.length ? <div className="pointer-chips">{local.pointers.map(edge =>

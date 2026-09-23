@@ -20,6 +20,15 @@ BUILD_HINT = ("The viewer is not built yet. Run `python stackbloom.py`, which bu
               "for you, or build it once with `npm --prefix web ci && npm --prefix web run build`.")
 
 
+def limit(data, name, default, low, high):
+    """An optional whole-number limit from the request, refused when out of range."""
+    value = data.get(name, default)
+    # bool is an int subclass; `true` is not a stop count.
+    if isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high:
+        raise ValueError(f"{name} must be a whole number from {low} to {high}.")
+    return value
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "StackBloom"
     root = VIEWER
@@ -105,10 +114,12 @@ class Handler(BaseHTTPRequestHandler):
             stdin = data.get("stdin", "")
             if not isinstance(stdin, str) or len(stdin.encode("utf-8")) > 65536:
                 raise ValueError("stdin must be text smaller than 64 KiB.")
+            max_steps = limit(data, "max_steps", 1000, 1, 5000)
+            timeout = limit(data, "timeout", 15, 1, 60)
             with tempfile.TemporaryDirectory(prefix="cppv-submit-") as directory:
                 source = Path(directory) / "main.cpp"
                 source.write_text(data["source"], encoding="utf-8")
-                result = generate(source, stdin=stdin, max_steps=1000, timeout=15)
+                result = generate(source, stdin=stdin, max_steps=max_steps, timeout=timeout)
             self.reply(200, result)
         except (ValueError, UnicodeError) as exc:
             self.reply(400, {"error": str(exc)})
