@@ -1,13 +1,13 @@
 import {useMemo, useRef, useState} from 'react';
 import {useZoom, ZoomControl} from './zoom';
+import {pointerText, shortType, shortValue} from './display';
+import {InfoTip} from './InfoTip';
 import {CELL, HEADER, isCells, layoutHeap, MAX_ROWS, NODE_WIDTH, ROW, type Placed} from './layout';
 import type {HeapNode, PointerEdge, PointerState, Snapshot, Trace} from './trace';
 
 const STACK_X = 24, STACK_WIDTH = 210, STACK_GAP = 26, ORIGIN = STACK_X + STACK_WIDTH + 70;
 
-const stateText: Record<PointerState, string> = {
-  null: '∅ null', heap: '', stack: '↑ stack', dangling: '✕ dangling', unknown: '? unproven',
-};
+const truncate = (text: string, length: number) => text.length > length ? text.slice(0, length - 1) + '…' : text;
 const shapeText = {
   list: 'linked list', tree: 'tree', grid: 'grid', graph: 'graph',
 };
@@ -71,7 +71,8 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
   }, [snapshot]);
 
   // Declared before the empty-state return so hook order stays stable.
-  const {ref, zoom, mode, setMode, fit} = useZoom(view.width, view.height);
+  // Field text stays legible: past 70% the graph scrolls rather than shrinking further.
+  const {ref, zoom, mode, setMode, fit} = useZoom(view.width, view.height, 0.7);
   const {sources, slots, stackSlots} = view;
   if (!sources.length && !Object.keys(snapshot.heap).length)
     return <section className="memory-graph" aria-label="Memory graph">
@@ -85,8 +86,22 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
     return undefined;
   };
 
+  // Several pointers into one box arrive at different heights instead of one point,
+  // and stop a pixel short of the border so the arrowhead is never hidden by it.
+  const arrivals = new Map<Slot, number>();
+  const arrivalCount = new Map<Slot, number>();
+  function arrivalY(to: Slot) {
+    const total = arrivalCount.get(to) ?? 1;
+    const index = arrivals.get(to) ?? 0;
+    arrivals.set(to, index + 1);
+    if (total === 1) return to.y + HEADER / 2 + 4;
+    // Fan out downward from the header, never past the bottom of the box.
+    const step = Math.min(12, (to.height - 24) / (total - 1));
+    return to.y + 12 + step * index;
+  }
+
   function edgePath(from: {x: number; y: number}, to: Slot, cycle: boolean) {
-    const sx = from.x, sy = from.y, tx = to.x, ty = to.y + HEADER / 2 + 4;
+    const sx = from.x, sy = from.y, tx = to.x - 1, ty = arrivalY(to);
     if (cycle || tx < sx) {   // Route a back edge under its row rather than through boxes.
       const drop = Math.max(sy, ty) + 46;
       return `M${sx},${sy} C${sx + 60},${drop} ${tx - 60},${drop} ${tx},${ty}`;
@@ -111,16 +126,25 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
       slot, from: slot.key,
     }))),
   ];
+  for (const {edge, slot} of allEdges) {
+    const to = target(edge);
+    if (to && slot.rows.get(edge.path) !== undefined) arrivalCount.set(to, (arrivalCount.get(to) ?? 0) + 1);
+  }
 
   return <section className="memory-graph" aria-label="Memory graph">
     <div className="panel-title"><h2>Memory</h2><span>{Object.keys(snapshot.heap).length} heap objects · {shapeText[view.shape]}</span></div>
     <div className="tree-controls">
       <div className="tree-legend"><span className="heap">Heap object</span><span className="fresh">New here</span>
         <span className="dangling">Dangling</span><span className="unknown">Unproven</span></div>
-      <ZoomControl label="Memory zoom" mode={mode} setMode={setMode} fit={fit} />
+      <div className="panel-title-actions">
+        <ZoomControl label="Memory zoom" mode={mode} setMode={setMode} fit={fit} />
+        <InfoTip label="About the memory graph">Pointers on the left point into heap objects on the right; aliases meet
+          at one box and cycles loop back. Detected shape: <strong>{shapeText[view.shape]}</strong>. Field names are only
+          hints, so a shared child or a cycle is drawn as a graph. Only allocations the program made through
+          <code>new</code> or <code>malloc</code> are followed, and a readable object is not proof that it is alive:
+          freed memory keeps its old contents, so a dangling pointer is marked, never followed.</InfoTip>
+      </div>
     </div>
-    <p className="note">Detected shape: <strong>{shapeText[view.shape]}</strong>. Field names are only hints, so a shared
-      child or a cycle is drawn as a graph rather than a tree. Only allocations recorded by the ledger are followed.</p>
     {snapshot.heap_truncated && <p className="note">Graph truncated: the node budget or the allocation record filled up.</p>}
     <div className="graph-canvas" ref={ref} tabIndex={0} aria-label="Scrollable memory graph">
       <svg width={view.width * zoom} height={view.height * zoom} viewBox={`0 0 ${view.width} ${view.height}`}
@@ -147,7 +171,8 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
             <rect width={STACK_WIDTH} height={slot.height} rx="10" />
             <text x="12" y="19" className="box-title">{source.label}</text>
             {source.edges.map((edge, i) => <text key={edge.path || i} x="12" y={HEADER + i * ROW + 14} className="box-row">
-              {(edge.path || '•') + ' '}<tspan className={`state ${edge.state}`}>{stateText[edge.state] || edge.target}</tspan>
+              <title>{edge.target ?? 'null'}</title>
+              {(edge.path || '•') + ' '}<tspan className={`state ${edge.state}`}>{pointerText(edge, snapshot)}</tspan>
             </text>)}
           </g>;
         })}
@@ -157,7 +182,7 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
           return <g key={slot.key} transform={`translate(${slot.x},${slot.y})`}
             className={`heap-box ${node.kind} ${fresh(slot.key) ? 'fresh' : ''}`}>
             <rect width={slot.width} height={slot.height} rx="10" />
-            <text x="12" y="19" className="box-title">{node.type.length > 24 ? node.type.slice(0, 22) + '…' : node.type}
+            <text x="12" y="19" className="box-title"><title>{node.type}</title>{truncate(shortType(node.type), 24)}
               <tspan className="box-meta"> {node.allocation_id} · {node.size_bytes}B</tspan></text>
             {isCells(node)
               ? node.fields.map((field, i) => <g key={field.name + i}
@@ -169,9 +194,11 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
                 </g>)
               : node.fields.slice(0, MAX_ROWS).map((field, i) => <text key={field.name + i} x="12" y={HEADER + i * ROW + 14}
                   className={`box-row ${changed(slot.key, field.name, field.value) ? 'changed' : ''}`}>
-                  {field.name}{' = '}
-                  <tspan className={`state ${field.state ?? ''}`}>{field.state && field.state !== 'heap'
-                    ? stateText[field.state] : (field.value ?? '').slice(0, 18)}</tspan>
+                  <title>{field.value ?? ''}</title>
+                  {field.name}{' '}
+                  <tspan className={`state ${field.state ?? ''}`}>{field.state
+                    ? pointerText({state: field.state, target: field.target}, snapshot)
+                    : `= ${truncate(shortValue(field.value ?? '').text, 20)}`}</tspan>
                 </text>)}
             {!isCells(node) && node.fields.length > MAX_ROWS && <text x="12" y={HEADER + MAX_ROWS * ROW + 14}
               className="box-row">+{node.fields.length - MAX_ROWS} more</text>}
@@ -179,7 +206,5 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
         })}
       </svg>
     </div>
-    <p className="note">A readable object is not proof that it is alive or initialized. Freed memory keeps its old
-      contents, so a dangling pointer can still look plausible; it is marked, never followed.</p>
   </section>;
 }

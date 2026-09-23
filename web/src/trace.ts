@@ -10,7 +10,7 @@ export type HeapNode = {type: string; kind: 'object' | 'array' | 'opaque' | 'con
   size_bytes: number | null; fields: HeapField[]; truncated: boolean};
 export type Local = {id: string; name: string; type: string; value: string | null;
   address: string | null; status: 'readable' | 'optimized_out' | 'unavailable'; initialization: 'unknown';
-  is_argument?: boolean; pointers?: PointerEdge[]};
+  is_argument?: boolean; decl_line?: number; pointers?: PointerEdge[]};
 export type Frame = {id: string; call_id?: string; function: string; location: Location; locals: Local[]; truncated: boolean};
 export type Snapshot = {id: number; event: string; location: Location | null; thread_id: number | null;
   frames: Frame[]; heap: Record<string, HeapNode>; heap_truncated?: boolean;

@@ -19,6 +19,9 @@ def read_local(symbol, frame, scope):
     item = dict(id=f"{scope}:{symbol.name}", name=symbol.name, type=str(symbol.type),
                 value=None, address=None, status="unavailable", initialization="unknown",
                 is_argument=bool(symbol.is_argument))
+    # Where the variable is declared, so the viewer can tell "not set yet" from a value.
+    if symbol.line:
+        item["decl_line"] = symbol.line
     try:
         value = symbol.value(frame)
         if value.is_optimized_out:

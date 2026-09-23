@@ -4,9 +4,10 @@ import {useLayoutEffect, useMemo, useRef, useState} from 'react';
 export type ZoomMode = 'fit' | number;
 
 const STEPS = [0.25, 0.5, 0.75, 1, 1.5, 2];
-const MIN_FIT = 0.1, PADDING = 18;
+const PADDING = 18;
 
-export function useZoom(width: number, height: number) {
+/** `minFit` keeps text legible: past it the graph scrolls rather than shrinking further. */
+export function useZoom(width: number, height: number, minFit = 0.1) {
   const ref = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<ZoomMode>('fit');
   const [box, setBox] = useState({width: 0, height: 0});
@@ -30,10 +31,10 @@ export function useZoom(width: number, height: number) {
   const fit = useMemo(() => {
     if (!box.width || !box.height || !width || !height) return 1;
     // Never enlarge past 100%: a two-node graph blown up reads worse, not better.
-    return Math.max(MIN_FIT, Math.min(1, (box.width - PADDING) / width, (box.height - PADDING) / height));
-  }, [box.width, box.height, width, height]);
+    return Math.max(minFit, Math.min(1, (box.width - PADDING) / width, (box.height - PADDING) / height));
+  }, [box.width, box.height, width, height, minFit]);
 
-  return {ref, mode, setMode, fit, zoom: mode === 'fit' ? fit : mode};
+  return {ref, mode, setMode, fit, box, zoom: mode === 'fit' ? fit : mode};
 }
 
 export function ZoomControl({label, mode, setMode, fit}:
