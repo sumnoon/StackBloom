@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {callHistory, type CallNode} from './callHistory';
 import {InfoTip} from './InfoTip';
-import type {Trace} from './trace';
+import type {Trace, Frame} from './trace';
 import {useZoom, ZoomControl} from './zoom';
 
 type Dims = {width: number; height: number; gap: number; level: number};
@@ -56,7 +56,7 @@ function layout(history: ReturnType<typeof callHistory>, order: Map<string, numb
   return {positions, labels, width, height};
 }
 
-export function CallTree({trace, index, onSeek}: {trace: Trace; index: number; onSeek: (index: number) => void}) {
+export function CallTree({trace, index, onSelect, selectedCall}: {trace: Trace; index: number; onSelect: (frame: Frame, index: number) => void; selectedCall: string | null}) {
   // Placeholder extents; the real ones are known once the layout below is built.
   const [extent, setExtent] = useState({width: 0, height: 0});
   const {ref, zoom, mode, setMode, fit, box} = useZoom(extent.width, extent.height, MIN_FIT);
@@ -79,7 +79,7 @@ export function CallTree({trace, index, onSeek}: {trace: Trace; index: number; o
   const {positions, labels, width, height} = compact ? layout(history, order, compactDims) : full;
   const frequencies = new Map<string, number>();
   visible.forEach(node => frequencies.set(node.label, (frequencies.get(node.label) ?? 0) + 1));
-  const seek = (node: CallNode) => onSeek(node.last);
+  const seek = (node: CallNode) => onSelect(node.frame, node.last);
   const active = visible.find(node => node.state === 'active');
   const activePath = new Set<string>();
   for (let node = active; node; node = node.parent ? history.nodes.get(node.parent) : undefined) activePath.add(node.id);
@@ -136,7 +136,7 @@ export function CallTree({trace, index, onSeek}: {trace: Trace; index: number; o
         {visible.map(node => {
           const p = positions.get(node.id)!;
           const repeated = node.frame.locals.some(local => local.is_argument) && (frequencies.get(node.label) ?? 0) > 1;
-          return <g key={node.id} transform={`translate(${p.x - dims.width / 2},${p.y})`} className={`history-node ${node.state} ${forwardStep && node.first === index ? 'call-arriving' : ''}`} role="button" tabIndex={0}
+          return <g key={node.id} transform={`translate(${p.x - dims.width / 2},${p.y})`} className={`history-node ${node.state} ${selectedCall === (node.frame.call_id ?? node.frame.id) ? 'inspected-call' : ''} ${forwardStep && node.first === index ? 'call-arriving' : ''}`} role="button" tabIndex={0} aria-pressed={selectedCall === (node.frame.call_id ?? node.frame.id)}
             aria-label={`${node.label}, ${statusText(node)}, visit stop ${node.last + 1}`} onClick={() => seek(node)} onKeyDown={e => {if (e.key === 'Enter' || e.key === ' ') {e.preventDefault(); e.stopPropagation(); seek(node);}}}>
             <title>{node.label} · {statusText(node)} · call #{order.get(node.id)}</title>
             {repeated && <rect x="-5" y="-5" width={dims.width + 10} height={dims.height + 10} rx={compact ? 16 : 26} className="repeat-halo" />}

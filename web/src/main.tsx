@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import sample from '../../examples/sample.trace.json';
-import {parseTrace, type Trace} from './trace';
+import {parseTrace, type Trace, type Frame} from './trace';
 import './style.css';
 import {StackTree} from './StackTree';
 import {CallTree} from './CallTree';
@@ -24,6 +24,7 @@ const TABS: {id: TabId; label: string}[] = [
 function App() {
   const [trace, setTrace] = useState<Trace>(() => parseTrace(sample));
   const [index, setIndex] = useState(0);
+  const [selectedCall, setSelectedCall] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [view, setView] = useState<'editor' | 'trace'>('editor');
   const [draft, setDraft] = useState<Draft>({source: sample.source.text, stdin: '3\n', ...DEFAULT_LIMITS});
@@ -38,6 +39,11 @@ function App() {
   const active = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const step = trace.snapshots[index];
+  const inspected = step.frames.find(frame => (frame.call_id ?? frame.id) === selectedCall);
+  const sourceLine = inspected?.location.line ?? step.location?.line;
+  const inspectCall = (frame: Frame, at = index) => {
+    setPlaying(false); setIndex(at); setSelectedCall(frame.call_id ?? frame.id); setShowCode(true);
+  };
   const last = trace.snapshots.length - 1;
   const highlighted = useMemo(() => highlight(trace.source.text), [trace.source.text]);
   const heat = useMemo(() => lineHeat(trace), [trace]);
@@ -45,9 +51,10 @@ function App() {
   const unset = useMemo(() => unsetLocals(trace, index), [trace, index]);
   const previousUnset = useMemo(() => unsetLocals(trace, index - 1), [trace, index]);
   const [wrap, setWrap] = useState(false);
-  const seek = (position: number) => {setPlaying(false); setIndex(position);};
-  const move = (delta: number) => {setPlaying(false); setIndex(i => Math.max(0, Math.min(last, i + delta)));};
+  const seek = (position: number) => {setSelectedCall(null); setPlaying(false); setIndex(position);};
+  const move = (delta: number) => {setSelectedCall(null); setPlaying(false); setIndex(i => Math.max(0, Math.min(last, i + delta)));};
   const togglePlayback = () => {
+    setSelectedCall(null);
     if (index === last) setIndex(0);
     setPlaying(value => !value);
   };
@@ -149,7 +156,7 @@ function App() {
     if (line.offsetTop < pane.scrollTop) pane.scrollTop = line.offsetTop;
     else if (line.offsetTop + line.offsetHeight > pane.scrollTop + pane.clientHeight)
       pane.scrollTop = line.offsetTop + line.offsetHeight - pane.clientHeight;
-  }, [index, trace, view, showCode]);
+  }, [index, trace, view, showCode, selectedCall]);
 
   async function load(file?: File) {
     if (!file) return;
@@ -161,6 +168,7 @@ function App() {
   }
 
   function show(next: Trace) {
+    setSelectedCall(null);
     setPlaying(false);
     setTrace(next);
     setIndex(next.snapshots[0].event === 'step' ? 0 : next.snapshots.length - 1);
@@ -251,6 +259,8 @@ function App() {
       <span className={`context-dot ${playing ? 'is-playing' : ''}`} /><strong>{step.frames[0]?.function ?? (step.event === 'exit' ? 'Execution finished' : 'Execution stopped')}</strong>
       <span>{step.location ? `Line ${step.location.line}` : step.event.replace('_', ' ')}</span><span className="context-stat">{step.frames.length} active {step.frames.length === 1 ? 'call' : 'calls'}</span>
       {changes.heap.includes(index) && <span className="change-tag">Memory changed</span>}{changes.output.includes(index) && <span className="change-tag">New output</span>}
+      {inspected && <button className="inspection-chip" onClick={() => setSelectedCall(null)} title="Clear call selection">
+        Inspecting {inspected.function} · line {inspected.location.line} ×</button>}
       <span className="shortcut-hint">Space play · ← → step · n over · f out</span></div>
 
     {watches.length > 0 && <Watches trace={trace} index={index} watches={watches} onRemove={toggleWatch} onSeek={seek} />}
@@ -269,8 +279,8 @@ function App() {
             <button className="ghost" onClick={() => setShowCode(false)} title="Hide the source to widen the panels">Hide code</button>
           </div></div>
         <div className={`source ${wrap ? 'wrap' : ''}`} tabIndex={0} aria-label="Source code">
-          {trace.source.text.split('\n').map((line, i) => <div key={i} ref={step.location?.line === i + 1 ? active : null}
-            className={`code-line ${step.location?.line === i + 1 ? 'active' : ''}`}
+          {trace.source.text.split('\n').map((line, i) => <div key={i} ref={sourceLine === i + 1 ? active : null}
+            className={`code-line ${step.location?.line === i + 1 ? 'active' : ''} ${inspected && sourceLine === i + 1 ? 'inspected-line' : ''}`}
             aria-current={step.location?.line === i + 1 ? 'step' : undefined}>
             {/* Lines the program stopped at double as "run to this line" targets. */}
             {heat.counts.has(i + 1)
@@ -296,8 +306,8 @@ function App() {
         </div>
         <div className="tab-panel" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
           {tab === 'stack' && <StackTree snapshot={step} previousFrames={trace.snapshots[index - 1]?.frames}
-            unset={unset} previousUnset={previousUnset} watched={watches} onWatch={toggleWatch} />}
-          {tab === 'calls' && <CallTree trace={trace} index={index} onSeek={seek} />}
+            selectedCall={selectedCall} onInspect={inspectCall} unset={unset} previousUnset={previousUnset} watched={watches} onWatch={toggleWatch} />}
+          {tab === 'calls' && <CallTree trace={trace} index={index} onSelect={inspectCall} selectedCall={selectedCall} />}
           {tab === 'memory' && <MemoryGraph trace={trace} index={index} />}
           {tab === 'output' && <section className="output">
             <div><h2>stdout</h2><pre>{step.stdout || 'No output flushed yet.'}</pre></div>
