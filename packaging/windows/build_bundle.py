@@ -50,7 +50,7 @@ SKIP_PATTERNS = [
     # Only C++ is compiled, and never with -flto.
     "lib/gcc/*/cc1.exe", "lib/gcc/*/lto1.exe", "bin/lto-dump.exe",
 ]
-APP_FILES = ["stackbloom.py", "tracer/*.py", "tracer/alloc_ledger.cpp", "web/dist/**/*", "examples/*.cpp"]
+APP_FILES = ["LICENSE", "stackbloom.py", "tracer/*.py", "tracer/alloc_ledger.cpp", "web/dist/**/*", "examples/*.cpp"]
 
 LAUNCHER = r"""@echo off
 rem StackBloom, portable. Only this folder and Windows itself are on PATH, so an
@@ -85,7 +85,8 @@ Options go after the file name when started from a terminal:
   StackBloom.cmd --port 9000     use another port
   StackBloom.cmd --no-browser    do not open a browser window
 
-Third-party components and their licences: see THIRD_PARTY.md.
+StackBloom is free software under the GNU GPL, version 3 or later: see
+app/LICENSE. Third-party components and their licences: see THIRD_PARTY.md.
 """
 
 
@@ -165,6 +166,8 @@ def copy_app(target):
 def third_party(manifest):
     rows = "\n".join(f"| `{name}` | {info['version']} |" for name, info in sorted(manifest.items()))
     return f"""# Third-party components
+
+StackBloom itself is licensed under the GNU GPL, version 3 or later (`app/LICENSE`).
 
 This bundle redistributes unmodified binaries from the [MSYS2](https://www.msys2.org/)
 UCRT64 repository. Each package's licence texts are in `toolchain/share/licenses/`.
