@@ -23,6 +23,11 @@ with your permissions.
 - **Source stops and locals.** A stop happens *before* the highlighted line runs. Each
   call bubble carries its own locals, with standard library values (`std::string`,
   `vector`, `map`, smart pointers) shown as contents rather than internal layout.
+- **Values that read like code.** Types are shortened (`std::vector<int>`, not the
+  allocator-laden spelling), containers show an item count, and pointers name what
+  they point at — `→ a4 (key 3)`, `→ root`, `null` or `✕ dangling` — instead of a hex
+  address. A local whose declaration hasn't run yet shows *not set yet* rather than
+  leftover memory. Hover any value for the raw debugger text and address.
 - **A recursion tree.** Every invocation with the arguments it received and the value
   it returned. With two calls the first is the left branch (L) and the second the
   right (R), so `fib(n-1)` and `fib(n-2)` sit where you expect.
@@ -50,9 +55,12 @@ compiling/tracing. The replay workspace colors C++ syntax and flags stops that c
 memory or output. Light/dark appearance follows your system, and decorative motion
 respects the reduced-motion setting.
 
-Both graphs scale to fit their panel, so a wide recursion tree or a long list is
-visible without scrolling. Pick a zoom level from the dropdown to read the details,
-and **Hide code** gives the graph the whole window.
+Both graphs scale to fit their panel, but never below a legible size: past that they
+scroll instead. Wide recursion trees switch to compact one-line nodes
+(`insert(a4, 4) → a4`) and scroll to keep the running call in view. Pick a zoom level
+from the dropdown to read the details, and **Hide code** gives the graph the whole
+window. Each panel's explanation sits behind its ⓘ button, and **Wrap** folds long
+source lines instead of scrolling sideways.
 
 Read the [design and data flow](docs/design.md), the exact
 [JSON trace schema](trace.schema.json), and the [phased roadmap](docs/roadmap.md).
@@ -324,11 +332,11 @@ python -m unittest discover -s tests -v
 npm --prefix web run build
 ```
 
-39 tests run real compilers and debuggers, not fixtures:
+40 tests run real compilers and debuggers, not fixtures:
 
 - `tests/test_trace.py`: nested locals, loop stops, stdin, output truncation, shadowing,
   library callbacks, thread detection, compile errors, signals, step limits, wall
-  timeout, the recursion call tree and standard library values.
+  timeout, the recursion call tree, standard library values and declaration lines.
 - `tests/test_memory.py`: aliases, cycles, stack pointers, null versus dangling, reused
   addresses, array extents, `malloc`/`void*`, and the fallback when a program replaces
   `operator new`.

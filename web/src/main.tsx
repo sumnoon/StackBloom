@@ -10,6 +10,8 @@ import {DEFAULT_LIMITS, SubmissionPane, type Draft} from './SubmissionPane';
 import {Watches, type Watch} from './Watches';
 import {highlight} from './highlight';
 import {DepthSparkline, lineHeat, runStats} from './Sparkline';
+import {unsetLocals} from './display';
+import {InfoTip} from './InfoTip';
 
 type TabId = 'stack' | 'calls' | 'memory' | 'output';
 const TABS: {id: TabId; label: string}[] = [
@@ -40,6 +42,9 @@ function App() {
   const highlighted = useMemo(() => highlight(trace.source.text), [trace.source.text]);
   const heat = useMemo(() => lineHeat(trace), [trace]);
   const stats = useMemo(() => runStats(trace), [trace]);
+  const unset = useMemo(() => unsetLocals(trace, index), [trace, index]);
+  const previousUnset = useMemo(() => unsetLocals(trace, index - 1), [trace, index]);
+  const [wrap, setWrap] = useState(false);
   const seek = (position: number) => {setPlaying(false); setIndex(position);};
   const move = (delta: number) => {setPlaying(false); setIndex(i => Math.max(0, Math.min(last, i + delta)));};
   const togglePlayback = () => {
@@ -255,8 +260,15 @@ function App() {
     <div className={`workspace ${showCode ? '' : 'code-hidden'}`}>
       {showCode && <section className="source-panel">
         <div className="panel-title"><h2>{trace.source.path}</h2>
-          <button className="ghost" onClick={() => setShowCode(false)} title="Hide the source to widen the panels">Hide code</button></div>
-        <div className="source" tabIndex={0} aria-label="Source code">
+          <div className="panel-title-actions">
+            <button className={`ghost ${wrap ? 'on' : ''}`} aria-pressed={wrap} onClick={() => setWrap(value => !value)}
+              title="Wrap long lines instead of scrolling sideways">Wrap</button>
+            <InfoTip label="About the source view">The highlighted line is the next one to run. A line can produce several
+              stops, for example a loop condition. Line numbers the program stopped at are shaded by how often it did,
+              and clicking one runs to its next stop.</InfoTip>
+            <button className="ghost" onClick={() => setShowCode(false)} title="Hide the source to widen the panels">Hide code</button>
+          </div></div>
+        <div className={`source ${wrap ? 'wrap' : ''}`} tabIndex={0} aria-label="Source code">
           {trace.source.text.split('\n').map((line, i) => <div key={i} ref={step.location?.line === i + 1 ? active : null}
             className={`code-line ${step.location?.line === i + 1 ? 'active' : ''}`}
             aria-current={step.location?.line === i + 1 ? 'step' : undefined}>
@@ -269,7 +281,6 @@ function App() {
                   {i + 1}</button>
               : <span className="line-number">{i + 1}</span>}<code>{highlighted[i]?.length ? highlighted[i] : line || ' '}</code></div>)}
         </div>
-        <p className="note">The highlight marks the next line to execute. A line may produce several stops.</p>
       </section>}
 
       <section className="detail-panel">
@@ -284,8 +295,8 @@ function App() {
           {!showCode && <button className="ghost show-code" onClick={() => setShowCode(true)}>Show code</button>}
         </div>
         <div className="tab-panel" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
-          {tab === 'stack' && <StackTree frames={step.frames} previousFrames={trace.snapshots[index - 1]?.frames}
-            watched={watches} onWatch={toggleWatch} />}
+          {tab === 'stack' && <StackTree snapshot={step} previousFrames={trace.snapshots[index - 1]?.frames}
+            unset={unset} previousUnset={previousUnset} watched={watches} onWatch={toggleWatch} />}
           {tab === 'calls' && <CallTree trace={trace} index={index} onSeek={seek} />}
           {tab === 'memory' && <MemoryGraph trace={trace} index={index} />}
           {tab === 'output' && <section className="output">

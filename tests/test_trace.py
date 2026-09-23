@@ -73,6 +73,12 @@ class TraceTests(unittest.TestCase):
         self.assertIn("{1, 2, 3}", values["nums"])
         self.assertIn('["amy"] = 30', values["ages"])
 
+    def test_locals_record_their_declaration_line(self):
+        """The viewer marks a local "not set yet" until its declaration line has run."""
+        stops = self.run_source("int main() {\n int first = 1;\n int later = 2;\n return first + later;\n}\n")
+        declared = {v["name"]: v.get("decl_line") for s in stops for f in s["frames"] for v in f["locals"]}
+        self.assertEqual(declared, {"first": 2, "later": 3})
+
     def test_compile_error(self):
         self.assertEqual(self.run_source("int main( { broken")[0]["event"], "compile_error")
 

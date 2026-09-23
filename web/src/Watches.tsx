@@ -1,5 +1,6 @@
 import {useMemo} from 'react';
 import type {Snapshot, Trace} from './trace';
+import {shortValue} from './display';
 
 /** A watched variable: a local name inside a function. Recursive calls share it,
  *  and the innermost (newest) call is the one watched at each stop. */
@@ -52,7 +53,7 @@ function WatchCard({trace, index, watch, onRemove, onSeek}:
     <div className="watch-text">
       <span className="watch-name">{watch.fn} · <strong>{watch.name}</strong></span>
       <code className="watch-value" title={inScope ? undefined : 'Not in scope at this stop; showing its last value'}>
-        {inScope ? current ?? 'not set yet' : lastKnown ?? '—'}</code>
+        {shortValue(inScope ? current ?? 'not set yet' : lastKnown ?? '—').text}</code>
     </div>
     {charted && <svg className="watch-chart" viewBox="0 0 100 18" preserveAspectRatio="none" role="img"
       aria-label={`${watch.name} over the run, from ${low} to ${high}`}

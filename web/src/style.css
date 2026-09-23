@@ -159,7 +159,7 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
 .code-line.active {background: var(--brand-soft); border-left-color: var(--brand);}
 .line-number {color: var(--muted); opacity: .8; min-width: 48px; text-align: right; margin-right: 18px; user-select: none; font-size: 12px;}
 .code-line code {white-space: pre;}
-.note {font-size: 11.5px; line-height: 1.55; color: var(--muted); margin: 10px 16px;}
+.note {font-size: 12.5px; line-height: 1.55; color: var(--muted); margin: 10px 16px;}
 .empty {padding: 28px 16px; color: var(--muted); text-align: center;}
 
 /* ---------- tabs ---------- */
@@ -192,7 +192,7 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
 .call-heading h3 {font: 600 14.5px/1.5 var(--code); overflow-wrap: anywhere; min-width: 0;}
 .call-state {font-size: 11px; color: var(--muted); white-space: nowrap; padding: 3px 9px; border-radius: 999px; background: var(--surface-3);}
 .current-call .call-state {background: var(--brand); color: #fff;}
-.call-meta {display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--muted); margin: 7px 0 10px;}
+.call-meta {display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); margin: 7px 0 10px;}
 .recursion-tag {color: var(--accent); font-weight: 600;}
 .bubble-locals {display: grid; gap: 6px;}
 .call-values summary {font-size: 12px; cursor: pointer; color: var(--muted); overflow-wrap: anywhere;}
@@ -212,7 +212,7 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
 .memory-graph, .history-tree {min-height: 0;}
 .tree-controls {display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding: 10px 16px 0; font-size: 12.5px;}
 .tree-controls select {font: inherit; font-size: 12.5px; margin-left: 6px; padding: 4px 7px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--surface); color: var(--text);}
-.tree-legend {display: flex; flex-wrap: wrap; gap: 13px; font-size: 11.5px; color: var(--muted);}
+.tree-legend {display: flex; flex-wrap: wrap; gap: 13px; font-size: 12px; color: var(--muted);}
 .tree-legend span::before {content: ''; display: inline-block; width: 11px; height: 11px; border-radius: 4px; margin-right: 6px; vertical-align: -1px; border: 2px solid;}
 .tree-legend .active::before, .tree-legend .heap::before {background: var(--brand-soft); border-color: var(--brand);}
 .tree-legend .waiting::before {background: var(--warn-soft); border-color: var(--warn);}
@@ -237,7 +237,7 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
 .history-node.interrupted .node-body {fill: var(--bad-soft); stroke: var(--bad); stroke-width: 2;}
 .history-node:hover .node-body, .history-node:focus-visible .node-body {stroke: var(--brand-dark); stroke-width: 3;}
 .node-label {font: 600 13px var(--code); fill: var(--text);}
-.node-status {font: 11px 'Segoe UI', system-ui, sans-serif; fill: var(--muted);}
+.node-status {font: 12px 'Segoe UI', system-ui, sans-serif; fill: var(--muted);}
 .repeat-halo {fill: none; stroke: var(--ok); stroke-width: 2; stroke-dasharray: 5 4;}
 
 .stack-box rect {fill: var(--warn-soft); stroke: var(--warn); stroke-width: 1.5;}
@@ -245,8 +245,8 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
 .heap-box.opaque rect {fill: var(--surface-3); stroke: var(--line-strong); stroke-dasharray: 5 4;}
 .heap-box.fresh rect {stroke: var(--ok); stroke-width: 2.5;}
 .box-title {font: 600 12px var(--code); fill: var(--text);}
-.box-meta {font: 10px 'Segoe UI', system-ui, sans-serif; fill: var(--muted);}
-.box-row {font: 12px var(--code); fill: var(--text);}
+.box-meta {font: 11px 'Segoe UI', system-ui, sans-serif; fill: var(--muted);}
+.box-row {font: 13px var(--code); fill: var(--text);}
 .box-row.changed {fill: var(--warn); font-weight: 700;}
 .box-row .state.null, .box-row .state.unknown {fill: var(--muted);}
 .box-row .state.dangling {fill: var(--bad); font-weight: 700;}
@@ -326,8 +326,8 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
 .context-stat {border-left: 1px solid var(--line-strong); padding-left: 12px;}
 .shortcut-hint {margin-left: auto; font-size: 11px;}
 .change-tag {padding: 2px 9px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); font-size: 11px;}
-.local-box.value-changed {background: var(--ok-soft); border-color: var(--ok);}
-.value-change-label {display: block; font: 10px 'Segoe UI', sans-serif; margin-top: 3px; color: var(--ok);}
+.local-box.value-changed {background: var(--warn-soft); border-color: var(--warn);}
+.value-change-label {display: block; font: 11px 'Segoe UI', sans-serif; margin-top: 3px; color: var(--warn);}
 .tree-canvas, .graph-canvas {background-image: radial-gradient(var(--line-strong) .6px, transparent .6px); background-size: 20px 20px;}
 .sr-only {position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;}
 .syntax-keyword {color: var(--accent); font-weight: 600;}
@@ -365,7 +365,7 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
 .timeline-track input {width: 100%;}
 /* Warmer gutter numbers mark lines the program stopped at more often. */
 /* A faint warmth, readable at a glance without competing with the active line. */
-.line-number {background: color-mix(in srgb, var(--warn) calc(var(--heat, 0) * 22%), transparent); border-radius: 4px;}
+.line-number {box-shadow: inset 3px 0 color-mix(in srgb, var(--warn) calc(var(--heat, 0) * 100%), transparent);}
 .code-line.active .line-number {background: transparent;}
 .run-stats {display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; padding: 0; list-style: none;}
 .run-stats div {display: flex; flex-direction: column; gap: 1px;}
@@ -425,7 +425,7 @@ button.ghost:hover {color: var(--text); background: var(--surface-3);}
 .jump-list {position: absolute; top: 40px; left: 0; z-index: 6; display: grid; gap: 2px; padding: 6px; min-width: 200px;
   background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);}
 .jump-list button {border: 0; text-align: left;}
-button.line-number {border: 0; padding: 0; font: 12px var(--code); color: var(--muted); cursor: pointer; margin-right: 18px; white-space: nowrap;}
+button.line-number {border: 0; padding: 0; background: transparent; font: 12px var(--code); color: var(--muted); cursor: pointer; margin-right: 18px; white-space: nowrap;}
 button.line-number:hover {color: var(--brand-dark); text-decoration: underline; background: color-mix(in srgb, var(--brand) 14%, transparent);}
 .watches {display: flex; gap: 8px; padding: 0 20px 6px; overflow-x: auto; flex-shrink: 0;}
 /* One compact row per watch, so pinning a value never pushes the workspace far down. */
@@ -444,3 +444,24 @@ button.line-number:hover {color: var(--brand-dark); text-decoration: underline; 
 .watch-toggle {display: inline-block; margin-top: 4px; font-size: 10.5px; padding: 1px 8px; border-radius: 999px; color: var(--muted);}
 .watch-toggle.on {background: var(--ok-soft); border-color: var(--ok); color: var(--ok);}
 .app.dragging {outline: 3px dashed var(--brand); outline-offset: -8px;}
+
+/* ---------- readability ---------- */
+/* Explanations on demand instead of a paragraph in every panel. */
+.info-tip {position: relative; display: inline-block;}
+.info-tip summary {list-style: none; cursor: pointer; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
+  color: var(--muted); font-size: 15px; line-height: 1;}
+.info-tip summary::-webkit-details-marker {display: none;}
+.info-tip summary:hover, .info-tip[open] summary {color: var(--brand-dark); background: var(--brand-soft);}
+.info-body {position: absolute; right: 0; top: 30px; z-index: 10; width: min(340px, 80vw); padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
+  font-size: 12.5px; line-height: 1.6; color: var(--text); white-space: normal; text-align: left; font-weight: 400;}
+.stack-panel {position: relative;}
+.stack-panel > .info-tip {position: absolute; top: 8px; right: 14px; z-index: 3;}
+/* Leftover memory reads as "not set yet", never as a number that looks like a result. */
+code.unset {color: var(--muted); font-style: italic;}
+.count-badge {display: inline-block; margin-left: 8px; padding: 0 7px; border-radius: 999px; font: 10.5px 'Segoe UI', sans-serif;
+  background: var(--surface-3); color: var(--muted); vertical-align: 1px; font-style: normal;}
+.node-label.compact {font-size: 15px;}
+button.ghost.on {color: var(--brand-dark); background: var(--brand-soft);}
+.source.wrap .code-line {min-width: 0;}
+.source.wrap .code-line code {white-space: pre-wrap; overflow-wrap: anywhere;}
