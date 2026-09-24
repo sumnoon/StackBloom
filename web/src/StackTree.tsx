@@ -15,7 +15,8 @@ function display(local: Local, unset: boolean, snapshot: Snapshot) {
 }
 
 /** A snapshot contains the active branch, not the history of completed calls. */
-export function StackTree({snapshot, previousFrames = [], unset, previousUnset, watched = [], onWatch}: {
+export function StackTree({snapshot, previousFrames = [], unset, previousUnset, watched = [], onWatch, selectedCall, onInspect}: {
+  selectedCall?: string | null; onInspect?: (frame: Frame) => void;
   snapshot: Snapshot; previousFrames?: Frame[]; unset: Set<string>; previousUnset: Set<string>;
   watched?: Watch[]; onWatch?: (watch: Watch) => void;
 }) {
@@ -44,8 +45,8 @@ export function StackTree({snapshot, previousFrames = [], unset, previousUnset, 
         const summary = first ? display(first, unset.has(localKey(frame, first)), snapshot).text : '';
         return <li className="call-node" key={`${depth}:${frame.id}`} style={{marginLeft: Math.min(depth, 6) * 12}}>
           {depth > 0 && <div className="call-connector" aria-hidden="true"><span>↓ {recursive ? 'recursive call' : 'calls'}</span></div>}
-          <article className={`call-bubble ${current ? 'current-call' : ''}`} aria-label={`${frame.function}, depth ${depth}${current ? ', active' : ''}`}>
-            <div className="call-heading"><h3>{frame.function}</h3><span className="call-state">{current ? 'Executing' : 'Waiting'}</span></div>
+          <article className={`call-bubble ${current ? 'current-call' : ''} ${selectedCall === (frame.call_id ?? frame.id) ? 'inspected-call' : ''}`} aria-label={`${frame.function}, depth ${depth}${current ? ', active' : ''}`}>
+            <div className="call-heading"><h3><button className="inspect-call-button" onClick={() => onInspect?.(frame)} aria-pressed={selectedCall === (frame.call_id ?? frame.id)} title="Inspect this call in the source and recursion tree">{frame.function}</button></h3><span className="call-state">{current ? 'Executing' : 'Waiting'}</span></div>
             <div className="call-meta"><span>Depth {depth}</span><span>Line {frame.location.line}</span>{recursive && <span className="recursion-tag">Recursion</span>}</div>
             <details open={current} className="call-values"><summary>{frame.locals.length} locals{!current && first ? ` · ${first.name} = ${summary.slice(0, 36)}` : ''}</summary>
             <div className="bubble-locals">{frame.locals.map(local => {

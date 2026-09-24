@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import sample from '../../examples/sample.trace.json';
-import {parseTrace, type Trace} from './trace';
+import {parseTrace, type Trace, type Frame} from './trace';
 import './style.css';
 import {StackTree} from './StackTree';
 import {CallTree} from './CallTree';
@@ -12,6 +12,7 @@ import {highlight} from './highlight';
 import {DepthSparkline, lineHeat, runStats} from './Sparkline';
 import {unsetLocals} from './display';
 import {InfoTip} from './InfoTip';
+import {EventTimeline} from './EventTimeline';
 
 type TabId = 'stack' | 'calls' | 'memory' | 'output';
 const TABS: {id: TabId; label: string}[] = [
@@ -24,6 +25,7 @@ const TABS: {id: TabId; label: string}[] = [
 function App() {
   const [trace, setTrace] = useState<Trace>(() => parseTrace(sample));
   const [index, setIndex] = useState(0);
+  const [selectedCall, setSelectedCall] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [view, setView] = useState<'editor' | 'trace'>('editor');
   const [draft, setDraft] = useState<Draft>({source: sample.source.text, stdin: '3\n', ...DEFAULT_LIMITS});
@@ -32,12 +34,32 @@ function App() {
   const [dragging, setDragging] = useState(false);
   const jumpMenu = useRef<HTMLDetailsElement>(null);
   const [tab, setTab] = useState<TabId>('stack');
+  const [sourceWidth, setSourceWidth] = useState(42);
+  const workspace = useRef<HTMLDivElement>(null);
+  const detailPanel = useRef<HTMLElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    const changed = () => setExpanded(document.fullscreenElement === detailPanel.current);
+    document.addEventListener('fullscreenchange', changed);
+    return () => document.removeEventListener('fullscreenchange', changed);
+  }, []);
+  async function toggleExpanded() {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await detailPanel.current?.requestFullscreen();
+    } catch {setError('Fullscreen is unavailable in this browser. Use Hide code to widen the graph.');}
+  }
   const [showCode, setShowCode] = useState(true);
   const [playing, setPlaying] = useState(false);
   const [interval, setIntervalMs] = useState(750);
   const active = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const step = trace.snapshots[index];
+  const inspected = step.frames.find(frame => (frame.call_id ?? frame.id) === selectedCall);
+  const sourceLine = inspected?.location.line ?? step.location?.line;
+  const inspectCall = (frame: Frame, at = index) => {
+    setPlaying(false); setIndex(at); setSelectedCall(frame.call_id ?? frame.id); setShowCode(true);
+  };
   const last = trace.snapshots.length - 1;
   const highlighted = useMemo(() => highlight(trace.source.text), [trace.source.text]);
   const heat = useMemo(() => lineHeat(trace), [trace]);
@@ -45,9 +67,10 @@ function App() {
   const unset = useMemo(() => unsetLocals(trace, index), [trace, index]);
   const previousUnset = useMemo(() => unsetLocals(trace, index - 1), [trace, index]);
   const [wrap, setWrap] = useState(false);
-  const seek = (position: number) => {setPlaying(false); setIndex(position);};
-  const move = (delta: number) => {setPlaying(false); setIndex(i => Math.max(0, Math.min(last, i + delta)));};
+  const seek = (position: number) => {setSelectedCall(null); setPlaying(false); setIndex(position);};
+  const move = (delta: number) => {setSelectedCall(null); setPlaying(false); setIndex(i => Math.max(0, Math.min(last, i + delta)));};
   const togglePlayback = () => {
+    setSelectedCall(null);
     if (index === last) setIndex(0);
     setPlaying(value => !value);
   };
@@ -126,7 +149,7 @@ function App() {
 
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).closest('input, button, textarea, select, summary, [role="button"], [contenteditable="true"]')) return;
+      if ((e.target as HTMLElement).closest('input, button, textarea, select, summary, [role="button"], [role="separator"], [contenteditable="true"]')) return;
       if (view !== 'trace') return;
       if (e.code === 'Space' && !e.repeat) {e.preventDefault(); togglePlayback(); return;}
       // GDB's own verbs: s(tep) into, n(ext) over, f(inish) out.
@@ -149,7 +172,7 @@ function App() {
     if (line.offsetTop < pane.scrollTop) pane.scrollTop = line.offsetTop;
     else if (line.offsetTop + line.offsetHeight > pane.scrollTop + pane.clientHeight)
       pane.scrollTop = line.offsetTop + line.offsetHeight - pane.clientHeight;
-  }, [index, trace, view, showCode]);
+  }, [index, trace, view, showCode, selectedCall]);
 
   async function load(file?: File) {
     if (!file) return;
@@ -161,6 +184,7 @@ function App() {
   }
 
   function show(next: Trace) {
+    setSelectedCall(null);
     setPlaying(false);
     setTrace(next);
     setIndex(next.snapshots[0].event === 'step' ? 0 : next.snapshots.length - 1);
@@ -237,6 +261,7 @@ function App() {
       </div>
       <div className="timeline">
         <div className="timeline-track">
+          <EventTimeline trace={trace} index={index} onSeek={seek} />
           <DepthSparkline trace={trace} index={index} onSeek={seek} />
           <input id="timeline" type="range" min="0" max={last} value={index} aria-label="Execution timeline"
           style={{background: `linear-gradient(to right, var(--brand) ${last ? index / last * 100 : 0}%, var(--line-strong) ${last ? index / last * 100 : 0}%)`}}
@@ -251,13 +276,15 @@ function App() {
       <span className={`context-dot ${playing ? 'is-playing' : ''}`} /><strong>{step.frames[0]?.function ?? (step.event === 'exit' ? 'Execution finished' : 'Execution stopped')}</strong>
       <span>{step.location ? `Line ${step.location.line}` : step.event.replace('_', ' ')}</span><span className="context-stat">{step.frames.length} active {step.frames.length === 1 ? 'call' : 'calls'}</span>
       {changes.heap.includes(index) && <span className="change-tag">Memory changed</span>}{changes.output.includes(index) && <span className="change-tag">New output</span>}
+      {inspected && <button className="inspection-chip" onClick={() => setSelectedCall(null)} title="Clear call selection">
+        Inspecting {inspected.function} · line {inspected.location.line} ×</button>}
       <span className="shortcut-hint">Space play · ← → step · n over · f out</span></div>
 
     {watches.length > 0 && <Watches trace={trace} index={index} watches={watches} onRemove={toggleWatch} onSeek={seek} />}
 
     {error && <div role="alert" className="diagnostic">{error}</div>}
 
-    <div className={`workspace ${showCode ? '' : 'code-hidden'}`}>
+    <div ref={workspace} className={`workspace ${showCode ? '' : 'code-hidden'}`} style={{'--source-width': `${sourceWidth}%`} as React.CSSProperties}>
       {showCode && <section className="source-panel">
         <div className="panel-title"><h2>{trace.source.path}</h2>
           <div className="panel-title-actions">
@@ -269,8 +296,8 @@ function App() {
             <button className="ghost" onClick={() => setShowCode(false)} title="Hide the source to widen the panels">Hide code</button>
           </div></div>
         <div className={`source ${wrap ? 'wrap' : ''}`} tabIndex={0} aria-label="Source code">
-          {trace.source.text.split('\n').map((line, i) => <div key={i} ref={step.location?.line === i + 1 ? active : null}
-            className={`code-line ${step.location?.line === i + 1 ? 'active' : ''}`}
+          {trace.source.text.split('\n').map((line, i) => <div key={i} ref={sourceLine === i + 1 ? active : null}
+            className={`code-line ${step.location?.line === i + 1 ? 'active' : ''} ${inspected && sourceLine === i + 1 ? 'inspected-line' : ''}`}
             aria-current={step.location?.line === i + 1 ? 'step' : undefined}>
             {/* Lines the program stopped at double as "run to this line" targets. */}
             {heat.counts.has(i + 1)
@@ -283,8 +310,24 @@ function App() {
         </div>
       </section>}
 
-      <section className="detail-panel">
-        <div className="tabs" role="tablist" aria-label="Execution views">
+      {showCode && <div className="panel-resizer" role="separator" tabIndex={0} aria-label="Source panel width"
+        aria-orientation="vertical" aria-valuemin={25} aria-valuemax={65} aria-valuenow={Math.round(sourceWidth)}
+        onPointerDown={event => {event.currentTarget.setPointerCapture(event.pointerId); event.preventDefault();}}
+        onPointerMove={event => {
+          if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
+          const box = workspace.current!.getBoundingClientRect();
+          setSourceWidth(Math.max(25, Math.min(65, (event.clientX - box.left - 20) / (box.width - 40) * 100)));
+        }}
+        onPointerUp={event => event.currentTarget.releasePointerCapture(event.pointerId)}
+        onDoubleClick={() => setSourceWidth(42)}
+        onKeyDown={event => {
+          if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+          event.preventDefault(); event.stopPropagation();
+          setSourceWidth(value => event.key === 'Home' ? 25 : event.key === 'End' ? 65 : Math.max(25, Math.min(65, value + (event.key === 'ArrowRight' ? 2 : -2))));
+        }} />}
+      <section className="detail-panel" ref={detailPanel}>
+        <div className="tabs">
+          <div className="tab-list" role="tablist" aria-label="Execution views">
           {TABS.map((item, position) => <button key={item.id} role="tab" id={`tab-${item.id}`}
             ref={element => {tabRefs.current[position] = element;}}
             aria-selected={tab === item.id} aria-controls={`panel-${item.id}`} tabIndex={tab === item.id ? 0 : -1}
@@ -292,12 +335,21 @@ function App() {
             onClick={() => setTab(item.id)} onKeyDown={e => tabKey(e, position)}>
             {item.label}{counts[item.id] !== '' && <span className="tab-badge">{counts[item.id]}</span>}
           </button>)}
+          </div>
+          {/* Fullscreen covers the toolbar, so the panel carries its own stepping controls. */}
+          {expanded && <div className="fullscreen-controls" role="group" aria-label="Playback">
+            <button onClick={() => move(-1)} disabled={index === 0} aria-label="Previous stop" title="Back (←)">←</button>
+            <button className="primary" onClick={togglePlayback} disabled={last === 0} title="Play / pause (Space)">{playing ? 'Ⅱ Pause' : index === last ? '↻ Replay' : '▶ Play'}</button>
+            <button onClick={() => move(1)} disabled={index === last} aria-label="Next stop" title="Step into (→ or s)">→</button>
+            <span className="stop-count">Stop <strong>{index + 1}</strong> / {last + 1}</span>
+          </div>}
+          <button className="ghost expand-graph" onClick={() => void toggleExpanded()} aria-label={expanded ? 'Exit fullscreen graph' : 'Fullscreen graph'}>{expanded ? '↙ Restore' : '⛶ Expand'}</button>
           {!showCode && <button className="ghost show-code" onClick={() => setShowCode(true)}>Show code</button>}
         </div>
         <div className="tab-panel" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
           {tab === 'stack' && <StackTree snapshot={step} previousFrames={trace.snapshots[index - 1]?.frames}
-            unset={unset} previousUnset={previousUnset} watched={watches} onWatch={toggleWatch} />}
-          {tab === 'calls' && <CallTree trace={trace} index={index} onSeek={seek} />}
+            selectedCall={selectedCall} onInspect={inspectCall} unset={unset} previousUnset={previousUnset} watched={watches} onWatch={toggleWatch} />}
+          {tab === 'calls' && <CallTree trace={trace} index={index} onSelect={inspectCall} selectedCall={selectedCall} />}
           {tab === 'memory' && <MemoryGraph trace={trace} index={index} />}
           {tab === 'output' && <section className="output">
             <div><h2>stdout</h2><pre>{step.stdout || 'No output flushed yet.'}</pre></div>

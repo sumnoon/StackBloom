@@ -57,10 +57,16 @@ respects the reduced-motion setting.
 
 Both graphs scale to fit their panel, but never below a legible size: past that they
 scroll instead. Wide recursion trees switch to compact one-line nodes
-(`insert(a4, 4) → a4`) and scroll to keep the running call in view. Pick a zoom level
-from the dropdown to read the details, and **Hide code** gives the graph the whole
-window. Each panel's explanation sits behind its ⓘ button, and **Wrap** folds long
-source lines instead of scrolling sideways.
+(`insert(a4, 4) → a4`) and scroll to keep the running call in view; untick **Follow
+call** to pan freely while you step. When a graph is bigger than its panel, an
+**Overview** in the corner shows the whole thing with your view outlined: click it to
+jump there, or hide it with ×. Pick a zoom level from the dropdown to read the details.
+
+For more room, drag the divider between the source and the graph (arrow keys work
+too; double-click resets it), **Hide code** to give the graph the whole window, or
+**⛶ Expand** to take the graph fullscreen, with its own step and play controls. Each
+panel's explanation sits behind its ⓘ button, and **Wrap** folds long source lines
+instead of scrolling sideways.
 
 Read the [design and data flow](docs/design.md), the exact
 [JSON trace schema](trace.schema.json), and the [phased roadmap](docs/roadmap.md).
