@@ -40,6 +40,14 @@ with your permissions.
 - **Time travel.** Step forward and back, jump to the next memory change or the next
   output, or drag the timeline. Replay never re-runs your program; it only reads what
   was recorded.
+- **Events on the timeline.** Markers above the scrubber show where calls, returns,
+  new heap objects, output and errors happen; click one to go there. Filter them by
+  kind, and use ‹ › to step from one event to the next.
+- **Follow a call everywhere.** The recursion tree highlights the path from `main` to
+  the running call. Stepping forward fades new calls in and sends each recorded return
+  value back up to its caller. Select a call in the tree or the call stack and its
+  source line turns purple, its locals come from a real recorded stop, and the
+  selection stays as you switch tabs; stepping or pressing × clears it.
 - **Watch it unfold.** Play or pause the trace at 0.5×, 1× or 2× speed. Playback
   stops at the end, when you seek manually, or when the page becomes hidden.
   Press Space to play/pause outside form controls; arrow keys step through stops.
@@ -205,6 +213,8 @@ Paste a single-file C++17 program into **C++ source**, add **Program input** if 
 `std::cin`, and click **Run & visualize**. The cards at the top load ready-made
 examples: factorial, Fibonacci, a linked list and a binary search tree.
 
+- **An editor that knows C++.** Syntax colours, indentation guides, bracket matching and
+  a highlighted current line, with a **Text size** control from 12 to 20px.
 - **Compile errors point at the code.** The editor has a line-number gutter, and when a
   program does not compile, the lines GCC complained about are marked in it. Each error
   is listed underneath; click one to jump to that line with the cursor at the column.
@@ -212,8 +222,11 @@ examples: factorial, Fibonacci, a linked list and a binary search tree.
 - **Tab indents like a code editor.** Tab moves to the next 4-space stop, Tab and
   Shift+Tab indent or outdent every selected line, and Ctrl+Z undoes them. Press Esc,
   then Tab, to move focus out of the editor.
-- **Limits you can change.** **Stop limit** (1,000 to 5,000) and **Time limit** (15 to 60
-  seconds) cover programs that need more room, like `fib(12)` at about 1,600 stops.
+- **Run is always in reach.** **Run & visualize** sits in a bar along the bottom with the
+  current limits, and shows the elapsed time while your program is traced.
+- **Limits you can change.** Under **Execution limits**, **Stop limit** (1,000 to 5,000)
+  and **Time limit** (15 to 60 seconds) cover programs that need more room, like
+  `fib(12)` at about 1,600 stops.
 - **Recent runs** keeps your last eight programs in this browser, named after their
   first function, so closing the tab doesn't lose work.
 
@@ -322,7 +335,11 @@ the same on a fresh GitHub runner. Pushing a `v*` tag attaches the zip to that r
 - `web/src/MemoryGraph.tsx`: pointer and heap-object graph for the current stop.
 - `web/src/layout.ts`: structure heuristics (list, tree, grid, graph) and positions.
 - `web/src/Sparkline.tsx`: depth sparkline, run totals and per-line stop counts.
-- `web/src/CodeEditor.tsx`: source editor with a line gutter and compiler-error markers.
+- `web/src/CodeEditor.tsx`: CodeMirror C++ editor with compiler-error markers, loaded separately so replay never downloads it.
+- `web/src/editorIssues.ts`: parses GCC/Clang diagnostics into line and column markers.
+- `web/src/EventTimeline.tsx` and `web/src/traceEvents.ts`: timeline event markers, filters and event-to-event navigation.
+- `web/src/GraphOverview.tsx`: the corner overview for graphs larger than their panel.
+- `web/src/display.ts`: short type names, container values and pointer labels.
 - `web/src/Watches.tsx`: watched variables and their value history across the run.
 - `web/src/zoom.tsx`: fit-to-panel zoom shared by both graph panels.
 - `web/src/compact.ts`: reader for compact traces.
@@ -336,6 +353,7 @@ python -m venv .venv
 pip install -r requirements-dev.txt
 python -m unittest discover -s tests -v
 npm --prefix web run build
+node --test web/tests/traceEvents.test.mjs
 ```
 
 40 tests run real compilers and debuggers, not fixtures:
@@ -352,6 +370,10 @@ npm --prefix web run build
   missing-build message, submission forwarding, custom and out-of-range limits,
   origin rejection, invalid input and missing-toolchain errors.
 - `tests/test_launcher.py`: the portable bundle's check for folders too deep for GCC.
+
+Three viewer tests (Node 22.18+ or 24, which run the TypeScript directly) cover timeline
+events: returns only where the tracer recorded one, heap objects told apart by
+allocation even when an address is reused, and output and failing exits.
 
 CI runs the suite and the web build on Ubuntu 22.04.
 
