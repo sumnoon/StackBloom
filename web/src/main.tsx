@@ -34,6 +34,21 @@ function App() {
   const [dragging, setDragging] = useState(false);
   const jumpMenu = useRef<HTMLDetailsElement>(null);
   const [tab, setTab] = useState<TabId>('stack');
+  const [sourceWidth, setSourceWidth] = useState(42);
+  const workspace = useRef<HTMLDivElement>(null);
+  const detailPanel = useRef<HTMLElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    const changed = () => setExpanded(document.fullscreenElement === detailPanel.current);
+    document.addEventListener('fullscreenchange', changed);
+    return () => document.removeEventListener('fullscreenchange', changed);
+  }, []);
+  async function toggleExpanded() {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await detailPanel.current?.requestFullscreen();
+    } catch {setError('Fullscreen is unavailable in this browser. Use Hide code to widen the graph.');}
+  }
   const [showCode, setShowCode] = useState(true);
   const [playing, setPlaying] = useState(false);
   const [interval, setIntervalMs] = useState(750);
@@ -134,7 +149,7 @@ function App() {
 
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).closest('input, button, textarea, select, summary, [role="button"], [contenteditable="true"]')) return;
+      if ((e.target as HTMLElement).closest('input, button, textarea, select, summary, [role="button"], [role="separator"], [contenteditable="true"]')) return;
       if (view !== 'trace') return;
       if (e.code === 'Space' && !e.repeat) {e.preventDefault(); togglePlayback(); return;}
       // GDB's own verbs: s(tep) into, n(ext) over, f(inish) out.
@@ -269,7 +284,7 @@ function App() {
 
     {error && <div role="alert" className="diagnostic">{error}</div>}
 
-    <div className={`workspace ${showCode ? '' : 'code-hidden'}`}>
+    <div ref={workspace} className={`workspace ${showCode ? '' : 'code-hidden'}`} style={{'--source-width': `${sourceWidth}%`} as React.CSSProperties}>
       {showCode && <section className="source-panel">
         <div className="panel-title"><h2>{trace.source.path}</h2>
           <div className="panel-title-actions">
@@ -295,8 +310,24 @@ function App() {
         </div>
       </section>}
 
-      <section className="detail-panel">
-        <div className="tabs" role="tablist" aria-label="Execution views">
+      {showCode && <div className="panel-resizer" role="separator" tabIndex={0} aria-label="Source panel width"
+        aria-orientation="vertical" aria-valuemin={25} aria-valuemax={65} aria-valuenow={Math.round(sourceWidth)}
+        onPointerDown={event => {event.currentTarget.setPointerCapture(event.pointerId); event.preventDefault();}}
+        onPointerMove={event => {
+          if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
+          const box = workspace.current!.getBoundingClientRect();
+          setSourceWidth(Math.max(25, Math.min(65, (event.clientX - box.left - 20) / (box.width - 40) * 100)));
+        }}
+        onPointerUp={event => event.currentTarget.releasePointerCapture(event.pointerId)}
+        onDoubleClick={() => setSourceWidth(42)}
+        onKeyDown={event => {
+          if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+          event.preventDefault(); event.stopPropagation();
+          setSourceWidth(value => event.key === 'Home' ? 25 : event.key === 'End' ? 65 : Math.max(25, Math.min(65, value + (event.key === 'ArrowRight' ? 2 : -2))));
+        }} />}
+      <section className="detail-panel" ref={detailPanel}>
+        <div className="tabs">
+          <div className="tab-list" role="tablist" aria-label="Execution views">
           {TABS.map((item, position) => <button key={item.id} role="tab" id={`tab-${item.id}`}
             ref={element => {tabRefs.current[position] = element;}}
             aria-selected={tab === item.id} aria-controls={`panel-${item.id}`} tabIndex={tab === item.id ? 0 : -1}
@@ -304,6 +335,15 @@ function App() {
             onClick={() => setTab(item.id)} onKeyDown={e => tabKey(e, position)}>
             {item.label}{counts[item.id] !== '' && <span className="tab-badge">{counts[item.id]}</span>}
           </button>)}
+          </div>
+          {/* Fullscreen covers the toolbar, so the panel carries its own stepping controls. */}
+          {expanded && <div className="fullscreen-controls" role="group" aria-label="Playback">
+            <button onClick={() => move(-1)} disabled={index === 0} aria-label="Previous stop" title="Back (←)">←</button>
+            <button className="primary" onClick={togglePlayback} disabled={last === 0} title="Play / pause (Space)">{playing ? 'Ⅱ Pause' : index === last ? '↻ Replay' : '▶ Play'}</button>
+            <button onClick={() => move(1)} disabled={index === last} aria-label="Next stop" title="Step into (→ or s)">→</button>
+            <span className="stop-count">Stop <strong>{index + 1}</strong> / {last + 1}</span>
+          </div>}
+          <button className="ghost expand-graph" onClick={() => void toggleExpanded()} aria-label={expanded ? 'Exit fullscreen graph' : 'Fullscreen graph'}>{expanded ? '↙ Restore' : '⛶ Expand'}</button>
           {!showCode && <button className="ghost show-code" onClick={() => setShowCode(true)}>Show code</button>}
         </div>
         <div className="tab-panel" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>

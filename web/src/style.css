@@ -530,3 +530,26 @@ button.ghost.on {color: var(--brand-dark); background: var(--brand-soft);}
 .event-key {display:flex; align-items:center; gap:5px; color:var(--muted); font-size:10px; margin-bottom:4px;}
 .event-key label {display:flex; align-items:center; gap:5px;}
 .event-key select, .event-key button {padding:1px 5px; font-size:10px; min-height:22px;}
+
+.graph-stage {position:relative; flex:1; min-height:0; display:flex; flex-direction:column;}
+.graph-overview {position:absolute; bottom:12px; right:12px; width:140px; padding:5px; border:1px solid var(--line-strong); background:var(--surface); border-radius:8px; box-shadow:var(--shadow);}
+.graph-overview-head span {font-size:10px; color:var(--muted);}
+.graph-overview svg {display:block; width:100%; height:72px; cursor:crosshair;}
+.overview-node {fill:var(--muted); opacity:.55;}
+.overview-viewport {fill:var(--brand-soft); fill-opacity:.4; stroke:var(--brand); stroke-width:2; vector-effect:non-scaling-stroke;}
+.follow-call {display:flex; align-items:center; gap:4px; font-size:11px; white-space:nowrap;}
+.expand-graph {margin-left:auto; white-space:nowrap;}
+.detail-panel:fullscreen {background:var(--surface); border-radius:0; padding:12px;}
+.detail-panel:fullscreen .tab-panel {flex:1; min-height:0;}
+.panel-resizer {display:none;}
+@media (min-width:981px) {
+  .workspace:not(.code-hidden) {grid-template-columns:minmax(260px, var(--source-width, 42%)) 8px minmax(0, 1fr); gap:6px;}
+  .panel-resizer {display:block; cursor:col-resize; touch-action:none; border-radius:6px; background:linear-gradient(var(--line-strong), var(--line-strong)) center/2px 44px no-repeat;}
+  .panel-resizer:hover, .panel-resizer:focus-visible {background-color:var(--brand-soft);}
+}
+.tab-list {display:flex; align-items:center; gap:4px;}
+.graph-overview-head {display:flex; align-items:center; justify-content:space-between;}
+.graph-overview-head button {padding:0 5px; min-height:18px; font-size:13px; line-height:1;}
+.graph-overview-toggle {position:absolute; bottom:12px; right:12px; font-size:11px; padding:3px 8px; background:var(--surface); border:1px solid var(--line-strong); box-shadow:var(--shadow);}
+.fullscreen-controls {display:flex; align-items:center; gap:6px; margin-left:12px;}
+.fullscreen-controls .stop-count {font-size:12px; color:var(--muted); white-space:nowrap;}

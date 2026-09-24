@@ -1,5 +1,6 @@
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {callHistory, type CallNode} from './callHistory';
+import {GraphOverview} from './GraphOverview';
 import {InfoTip} from './InfoTip';
 import type {Trace, Frame} from './trace';
 import {useZoom, ZoomControl} from './zoom';
@@ -15,6 +16,8 @@ const MIN_FIT = 0.6;
 const COMPACT_BELOW = 0.8;
 // Compact labels: 15px monospace is about 8.3px per character.
 const COMPACT_CHARS = 24, CHAR_WIDTH = 8.4;
+// Room taken by the graph overview in the canvas corner, plus a margin.
+const OVERVIEW = {width: 180, height: 150};
 
 function truncate(text: string, length: number) {
   return text.length > length ? text.slice(0, length - 2) + '…' : text;
@@ -57,6 +60,8 @@ function layout(history: ReturnType<typeof callHistory>, order: Map<string, numb
 }
 
 export function CallTree({trace, index, onSelect, selectedCall}: {trace: Trace; index: number; onSelect: (frame: Frame, index: number) => void; selectedCall: string | null}) {
+  // Off lets the reader pan freely while stepping; on keeps the running call in view.
+  const [follow, setFollow] = useState(true);
   // Placeholder extents; the real ones are known once the layout below is built.
   const [extent, setExtent] = useState({width: 0, height: 0});
   const {ref, zoom, mode, setMode, fit, box} = useZoom(extent.width, extent.height, MIN_FIT);
@@ -91,18 +96,22 @@ export function CallTree({trace, index, onSelect, selectedCall}: {trace: Trace; 
   useEffect(() => {
     const canvas = ref.current;
     const at = active && positions.get(active.id);
-    if (!canvas || !at) return;
+    if (!canvas || !at || !follow) return;
     const x = at.x * zoom, y = at.y * zoom;
-    const inView = x > canvas.scrollLeft + 40 && x < canvas.scrollLeft + canvas.clientWidth - 40
-      && y > canvas.scrollTop && y < canvas.scrollTop + canvas.clientHeight - 60;
+    const right = canvas.scrollLeft + canvas.clientWidth, bottom = canvas.scrollTop + canvas.clientHeight;
+    // The bottom-right corner belongs to the overview, so a call parked under it counts as out of view.
+    const underOverview = x > right - OVERVIEW.width && y > bottom - OVERVIEW.height;
+    const inView = x > canvas.scrollLeft + 40 && x < right - 40
+      && y > canvas.scrollTop && y < bottom - 60 && !underOverview;
     if (!inView) canvas.scrollTo({left: x - canvas.clientWidth / 2, top: y - canvas.clientHeight / 3});
-  }, [index, zoom, compact, active?.id]);
+  }, [index, zoom, compact, active?.id, follow]);
 
   return <section className="history-tree" aria-label="Recursion call tree">
     <div className="panel-title"><h2>Recursion tree</h2><span>{history.nodes.size} calls recorded so far</span></div>
     <div className="tree-controls">
       <div className="tree-legend"><span className="active">Executing</span><span className="waiting">Waiting</span><span className="completed">Returned</span><span className="repeat">Repeated arguments</span></div>
       <div className="panel-title-actions">
+        <label className="follow-call"><input type="checkbox" checked={follow} onChange={e => setFollow(e.target.checked)} />Follow call</label>
         <ZoomControl label="Tree zoom" mode={mode} setMode={setMode} fit={fit} />
         <InfoTip label="About the recursion tree">Each call branches down into the calls it makes, in call order: with
           two calls the first is the left branch (L) and the second the right (R). L and R follow call order, not field
@@ -113,7 +122,7 @@ export function CallTree({trace, index, onSelect, selectedCall}: {trace: Trace; 
       </div>
     </div>
     {history.approximate && <p className="note">Legacy trace: call boundaries are approximate. Run the code again for invocation tracking.</p>}
-    <div className="tree-canvas" ref={ref} tabIndex={0} aria-label="Scrollable call tree">
+    <div className="graph-stage"><div className="tree-canvas" ref={ref} tabIndex={0} aria-label="Scrollable call tree">
       {visible.length ? <svg width={width * zoom} height={height * zoom} viewBox={`0 0 ${width} ${height}`} role="group" aria-label="Function invocation tree">
         <defs><marker id="call-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" className="tree-arrow" /></marker></defs>
         {visible.filter(node => node.parent && positions.has(node.parent)).map(node => {
@@ -151,6 +160,9 @@ export function CallTree({trace, index, onSelect, selectedCall}: {trace: Trace; 
           </g>;
         })}
       </svg> : <p className="empty">No recorded calls at this stop.</p>}
+    </div>
+    <GraphOverview canvas={ref} width={width} height={height} zoom={zoom}
+      nodes={[...positions.values()].map(p => ({x:p.x - dims.width / 2, y:p.y, width:dims.width, height:dims.height}))} />
     </div>
     {visible.length < history.nodes.size && <p className="note">Showing the first {MAX_NODES} calls. Step backward to explore earlier execution.</p>}
   </section>;

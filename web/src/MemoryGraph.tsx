@@ -1,6 +1,7 @@
 import {useMemo, useRef, useState} from 'react';
 import {useZoom, ZoomControl} from './zoom';
 import {pointerText, shortType, shortValue} from './display';
+import {GraphOverview} from './GraphOverview';
 import {InfoTip} from './InfoTip';
 import {CELL, HEADER, isCells, layoutHeap, MAX_ROWS, NODE_WIDTH, ROW, type Placed} from './layout';
 import type {HeapNode, PointerEdge, PointerState, Snapshot, Trace} from './trace';
@@ -146,7 +147,7 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
       </div>
     </div>
     {snapshot.heap_truncated && <p className="note">Graph truncated: the node budget or the allocation record filled up.</p>}
-    <div className="graph-canvas" ref={ref} tabIndex={0} aria-label="Scrollable memory graph">
+    <div className="graph-stage"><div className="graph-canvas" ref={ref} tabIndex={0} aria-label="Scrollable memory graph">
       <svg width={view.width * zoom} height={view.height * zoom} viewBox={`0 0 ${view.width} ${view.height}`}
         role="group" aria-label="Pointers and heap objects">
         <defs><marker id="heap-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
@@ -205,6 +206,8 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
           </g>;
         })}
       </svg>
+    </div>
+    <GraphOverview canvas={ref} width={view.width} height={view.height} zoom={zoom} nodes={[...stackSlots.values(), ...slots.values()].map(({x, y, width, height}) => ({x, y, width, height}))} />
     </div>
   </section>;
 }
