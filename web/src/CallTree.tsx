@@ -28,6 +28,8 @@ const REPEAT_ROOM = 22;
 const RUNNING_ROOM = 96;
 // Room taken by the graph overview in the canvas corner, plus a margin.
 const OVERVIEW = {width: 180, height: 150};
+// Room the step's sticky note takes in the canvas's top-right corner, plus a margin.
+const NOTE = {width: 270, height: 110};
 
 function truncate(text: string, length: number) {
   return text.length > length ? text.slice(0, length - 2) + '…' : text;
@@ -144,8 +146,11 @@ export function CallTree({trace, index, onSelect, selectedCall}: {trace: Trace; 
     const right = canvas.scrollLeft + canvas.clientWidth, bottom = canvas.scrollTop + canvas.clientHeight;
     // The bottom-right corner belongs to the overview, so a call parked under it counts as out of view.
     const underOverview = x > right - OVERVIEW.width && y > bottom - OVERVIEW.height;
+    // So does the top-right corner, where the step's sticky note is pinned (phones keep it above the board).
+    const pinned = canvas.clientWidth > 480;
+    const underNote = pinned && x + dims.width * zoom / 2 > right - NOTE.width && y < canvas.scrollTop + NOTE.height;
     const inView = x > canvas.scrollLeft + 40 && x < right - 40
-      && y > canvas.scrollTop && y < bottom - 60 && !underOverview;
+      && y > canvas.scrollTop && y < bottom - 60 && !underOverview && !underNote;
     if (!inView) canvas.scrollTo({left: x - canvas.clientWidth / 2, top: y - canvas.clientHeight / 3});
   }, [index, zoom, compact, active?.id, follow]);
 
@@ -164,9 +169,11 @@ export function CallTree({trace, index, onSelect, selectedCall}: {trace: Trace; 
           call to revisit its last stop. Large trees switch to compact nodes and follow the running call.</InfoTip>
       </div>
     </div>
-    {note && <p className="step-note">{note}</p>}
     {history.approximate && <p className="note">Legacy trace: call boundaries are approximate. Run the code again for invocation tracking.</p>}
-    <div className="graph-stage"><div className="tree-canvas" ref={ref} tabIndex={0} aria-label="Scrollable call tree">
+    <div className="graph-stage">
+    {/* Pinned to the board's top-right corner like a sticky note; clicks pass through to the tree. */}
+    {note && <p className="step-note">{note}</p>}
+    <div className="tree-canvas" ref={ref} tabIndex={0} aria-label="Scrollable call tree">
       {visible.length ? <svg width={width * zoom} height={height * zoom} viewBox={`0 0 ${width} ${height}`} role="group" aria-label="Function invocation tree">
         {visible.filter(node => node.parent && positions.has(node.parent)).map(node => {
           const from = positions.get(node.parent!)!, to = positions.get(node.id)!;

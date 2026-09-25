@@ -329,7 +329,7 @@ The tree and the stack write state as marks:
 - **Legends:** legends draw the real marks (the same strokes, ticks and hand lettering) instead of colour swatches.
 
 ### Sticky notes
-Yellow paper, rotated -0.6° to -1°, with the sticky paper shadow. The step note narrates the last step in Patrick Hand at 19px. Info tips open as 330px notes from a 30px round trigger and scale in from the trigger corner. The editor's run explainer is a note with a 24px hand title.
+Yellow paper with the sticky paper shadow. The step note narrates the last step in Patrick Hand at 19px; it is pinned to the tree board's top-right corner (230px wide, tilted 1.5°), lets clicks pass through to the tree, and Follow call treats that corner as covered. On phones it sits inline above the board, tilted -0.6°. Info tips open as 330px notes from a 30px round trigger and scale in from the trigger corner. The editor's run explainer is a note with a 24px hand title.
 
 ### Chalk tray
 The sunk strip along the bottom holds the event strip and the scrubber. Event marks use law colours by kind: ink-soft ticks for steps, ret ticks for returns, ptr diamonds for memory, done dots for output, and taller bad ticks for errors. Below them sit a depth sparkline in ink and a range input with an 18px run thumb.

@@ -212,10 +212,12 @@ input[type=checkbox] {accent-color: var(--run); width: 16px; height: 16px; margi
 }
 @starting-style {.info-tip[open] .info-body {opacity: 0; transform: rotate(-1deg) scale(.95);}}
 .info-body code {font-size: 12.5px;}
-/* The note on the recursion tree says, in words, what the last step did. */
+/* The note on the recursion tree says, in words, what the last step did. It is pinned to the
+   board's top-right corner, tilted like a real sticky note; clicks pass through to the tree. */
 .step-note {
-  align-self: flex-start; margin: 2px 18px 10px; padding: 5px 12px 6px; max-width: calc(100% - 36px);
-  font: 19px/1.25 var(--font-hand); border-radius: 2px 2px 3px 10px; transform: rotate(-.6deg);
+  position: absolute; top: 18px; right: 22px; z-index: 4; margin: 0; width: min(230px, 40%);
+  padding: 12px 14px 13px; font: 19px/1.25 var(--font-hand); border-radius: 2px 2px 3px 12px;
+  transform: rotate(1.5deg); pointer-events: none;
 }
 
 /* ---------- editor screen ---------- */
@@ -652,7 +654,9 @@ code.unset {color: var(--ink-faint); font-style: italic;}
   .tree-legend {display: none;}
   .tree-controls {padding: 8px 12px; flex-wrap: nowrap;}
   .tree-controls .panel-title-actions {gap: 10px; margin-left: auto;}
-  .step-note {margin: 0 12px 8px;}
+  /* A pinned note would cover a phone-width tree: it sits above the board instead. */
+  .step-note {position: static; width: auto; align-self: flex-start; margin: 0 12px 8px; padding: 5px 12px 6px; transform: rotate(-.6deg);}
+  .graph-stage {padding-top: 2px;}
   .call-crumbs {max-width: calc(100% - 28px);}
   .graph-overview, .graph-overview-toggle {display: none;}
   .trace-view .workspace.code-hidden {grid-template-rows: 650px;}
