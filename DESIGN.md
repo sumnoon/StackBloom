@@ -277,7 +277,7 @@ The board is flat. Depth comes from rails and tone: raised surfaces are slightly
 
 ### Shadow Vocabulary
 - **Lift** (`0 14px 28px -16px rgba(28,29,32,.38)` light, `0 16px 30px -16px rgba(0,0,0,.7)` dark): popovers (jump menu, recent runs) and the graph overview.
-- **Sticky paper** (`0 1px 0 var(--note-edge), 0 12px 22px -14px rgba(0,0,0,.55)`): sticky notes only. The 1px edge is the paper's thickness, and the notes are rotated -0.6° to -1°.
+- **Sticky paper** (`0 1px 0 var(--note-edge), 0 12px 22px -14px rgba(0,0,0,.55)`): sticky notes only. The 1px edge is the paper's thickness, and the notes are tilted between -1° and 1.5°.
 
 ### Named Rules
 **The One Stroke Rule.** Panels, bubbles, fields and buttons are drawn with a single stroke (1.5px chalk outline at 35–50% ink, 2px rails between boards, 1px hairlines inside panels) and never with a shadow. If something needs to stand out, give it a stroke or a mark, not a lift.
