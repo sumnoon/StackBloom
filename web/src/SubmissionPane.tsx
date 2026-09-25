@@ -3,6 +3,7 @@ import {parseIssues, type EditorHandle} from './editorIssues';
 const CodeEditor = lazy(() => import('./CodeEditor').then(module => ({default: module.CodeEditor})));
 import {parseTrace, type Trace} from './trace';
 import {ExampleGlyph} from './ExampleGlyph';
+import {Icon} from './Icon';
 
 const recursion = `#include <iostream>
 
@@ -190,7 +191,7 @@ export function SubmissionPane({draft, onDraft, onTrace, compilerOutput = ''}: {
     <div className="panel-title"><h2>Your program</h2>
       <div className="panel-title-actions">
         {recent.length > 0 && <details className="recent-runs" ref={recentMenu}>
-          <summary>Recent runs ({recent.length})</summary>
+          <summary>Recent runs ({recent.length})<Icon name="chevron" size={16} /></summary>
           <ul>{recent.map(item => <li key={item.at}><button disabled={busy} onClick={() => {
             update({source: item.source, stdin: item.stdin}); setError('');
             recentMenu.current?.removeAttribute('open');
@@ -232,7 +233,7 @@ export function SubmissionPane({draft, onDraft, onTrace, compilerOutput = ''}: {
         <strong>{busy ? `Capturing execution · ${elapsed}s` : 'Ready to explore?'}</strong>
         <span>{maxSteps.toLocaleString()} stops · {timeout}s execution limit</span>
       </div>
-        <button className="primary run-button" disabled={busy || !source.trim()} onClick={() => void run()}><span aria-hidden="true">{busy ? '◌' : '▶'}</span> {busy ? 'Compiling & tracing…' : 'Run & visualize'}</button>
+        <button className="primary run-button" disabled={busy || !source.trim()} onClick={() => void run()}>{busy ? <span className="working-dot" aria-hidden="true" /> : <Icon name="run" size={20} />}{busy ? 'Compiling & tracing…' : 'Run & visualize'}</button>
       </div>
     </div>
     {error && <div className="diagnostic" role="alert">{error}</div>}

@@ -1,0 +1,1331 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-25T05:33:19.420Z",
+  "title": "Design System: StackBloom",
+  "extensions": {
+    "themes": {
+      "mechanism": "prefers-color-scheme",
+      "light": "Enamel whiteboard, marker inks (:root). Frontmatter component refs resolve to these.",
+      "dark": "Slate chalkboard, coloured chalk (@media (prefers-color-scheme: dark) :root). Same CSS variables, swapped values.",
+      "boardTexture": {
+        "light": "none",
+        "dark": "radial-gradient(rgba(237, 233, 221, .035) 1px, transparent 1.5px) / 7px 9px"
+      }
+    },
+    "colorMeta": {
+      "enamel-board": {
+        "role": "neutral",
+        "displayName": "Enamel Board",
+        "canonical": "#f5f5f1",
+        "oklch": "oklch(96.9% 0.005 106.5)",
+        "cssVar": "--board",
+        "theme": "light",
+        "tonalRamp": [
+          "#0b0b09",
+          "#252522",
+          "#42423f",
+          "#61615e",
+          "#82827f",
+          "#a5a5a1",
+          "#c9c9c5",
+          "#efefeb"
+        ]
+      },
+      "enamel-raised": {
+        "role": "neutral",
+        "displayName": "Enamel Raised",
+        "canonical": "#fdfdfb",
+        "oklch": "oklch(99.3% 0.003 106.4)",
+        "cssVar": "--board-raised",
+        "theme": "light",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#252524",
+          "#424240",
+          "#616160",
+          "#828281",
+          "#a5a5a3",
+          "#c9c9c7",
+          "#eeeeec"
+        ]
+      },
+      "enamel-sunk": {
+        "role": "neutral",
+        "displayName": "Enamel Tray",
+        "canonical": "#ecece6",
+        "oklch": "oklch(94.1% 0.008 106.6)",
+        "cssVar": "--board-sunk",
+        "theme": "light",
+        "tonalRamp": [
+          "#0b0b08",
+          "#252521",
+          "#42423d",
+          "#62625c",
+          "#83837d",
+          "#a5a5a0",
+          "#c9c9c4",
+          "#efefe9"
+        ]
+      },
+      "marker-ink": {
+        "role": "neutral",
+        "displayName": "Marker Ink",
+        "canonical": "#1c1d20",
+        "oklch": "oklch(23.1% 0.006 271.2)",
+        "cssVar": "--ink",
+        "theme": "light",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#242528",
+          "#414245",
+          "#606165",
+          "#818286",
+          "#a3a5a9",
+          "#c7c9cd",
+          "#edeef3"
+        ]
+      },
+      "marker-ink-soft": {
+        "role": "neutral",
+        "displayName": "Marker Ink Soft",
+        "canonical": "#52555b",
+        "oklch": "oklch(44.9% 0.010 264.5)",
+        "cssVar": "--ink-soft",
+        "theme": "light",
+        "tonalRamp": [
+          "#090b10",
+          "#22252a",
+          "#3f4248",
+          "#5e6167",
+          "#7f8289",
+          "#a2a5ac",
+          "#c6c9d0",
+          "#ebeff6"
+        ]
+      },
+      "marker-ink-faint": {
+        "role": "neutral",
+        "displayName": "Marker Ink Faint",
+        "canonical": "#63666b",
+        "oklch": "oklch(50.9% 0.009 260.7)",
+        "cssVar": "--ink-faint",
+        "theme": "light",
+        "tonalRamp": [
+          "#090b0f",
+          "#232529",
+          "#3f4247",
+          "#5e6166",
+          "#7f8288",
+          "#a2a5ab",
+          "#c6c9cf",
+          "#ebeff4"
+        ]
+      },
+      "aluminium-rail": {
+        "role": "neutral",
+        "displayName": "Aluminium Rail",
+        "canonical": "#d6d8d8",
+        "oklch": "oklch(88.1% 0.002 197.1)",
+        "cssVar": "--rail",
+        "theme": "light",
+        "tonalRamp": [
+          "#0a0b0b",
+          "#242525",
+          "#414242",
+          "#606262",
+          "#818383",
+          "#a3a5a5",
+          "#c7c9c9",
+          "#edefef"
+        ]
+      },
+      "aluminium-rail-strong": {
+        "role": "neutral",
+        "displayName": "Aluminium Rail Strong",
+        "canonical": "#a4a8ab",
+        "oklch": "oklch(72.9% 0.006 239.9)",
+        "cssVar": "--rail-strong",
+        "theme": "light",
+        "tonalRamp": [
+          "#090c0e",
+          "#222528",
+          "#3f4245",
+          "#5e6264",
+          "#7f8386",
+          "#a2a6a9",
+          "#c6cacd",
+          "#ebeff2"
+        ]
+      },
+      "run-blue-marker": {
+        "role": "primary",
+        "displayName": "Run: Blue Marker",
+        "canonical": "#1f56d0",
+        "oklch": "oklch(49.7% 0.197 263.0)",
+        "cssVar": "--run",
+        "theme": "light",
+        "tonalRamp": [
+          "#00062b",
+          "#001a63",
+          "#0131a3",
+          "#1e55cf",
+          "#3f79f6",
+          "#76a3fb",
+          "#aecafd",
+          "#e6effe"
+        ]
+      },
+      "run-blue-wash": {
+        "role": "primary",
+        "displayName": "Run Wash (enamel)",
+        "canonical": "#dfe8fb",
+        "oklch": "oklch(93.0% 0.028 265.4)",
+        "cssVar": "--run-wash",
+        "theme": "light",
+        "tonalRamp": [
+          "#060b17",
+          "#1f2533",
+          "#3b4251",
+          "#5a6171",
+          "#7a8293",
+          "#9da5b7",
+          "#c1c9dc",
+          "#e7effe"
+        ]
+      },
+      "on-run-light": {
+        "role": "primary",
+        "displayName": "On Run (enamel)",
+        "canonical": "#ffffff",
+        "oklch": "oklch(100.0% 0.000 89.9)",
+        "cssVar": "--on-run",
+        "theme": "light",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "ret-red-marker": {
+        "role": "secondary",
+        "displayName": "Return: Red Marker",
+        "canonical": "#c8302a",
+        "oklch": "oklch(54.9% 0.190 27.8)",
+        "cssVar": "--ret",
+        "theme": "light",
+        "tonalRamp": [
+          "#1f0000",
+          "#4d0002",
+          "#810006",
+          "#b41617",
+          "#dd463c",
+          "#fe7467",
+          "#fdb4aa",
+          "#ffe9e6"
+        ]
+      },
+      "ret-red-wash": {
+        "role": "secondary",
+        "displayName": "Return Wash (enamel)",
+        "canonical": "#f9e0dd",
+        "oklch": "oklch(92.6% 0.028 25.9)",
+        "cssVar": "--ret-wash",
+        "theme": "light",
+        "tonalRamp": [
+          "#150706",
+          "#31201e",
+          "#503c3a",
+          "#705b59",
+          "#937c7a",
+          "#b69f9c",
+          "#dbc3c0",
+          "#fee9e6"
+        ]
+      },
+      "done-green-marker": {
+        "role": "tertiary",
+        "displayName": "Done: Green Marker",
+        "canonical": "#137a52",
+        "oklch": "oklch(51.4% 0.109 160.8)",
+        "cssVar": "--done",
+        "theme": "light",
+        "tonalRamp": [
+          "#000f07",
+          "#002e1b",
+          "#004f33",
+          "#03744c",
+          "#3a966c",
+          "#60ba8e",
+          "#85dfb2",
+          "#c4fedf"
+        ]
+      },
+      "done-green-wash": {
+        "role": "tertiary",
+        "displayName": "Done Wash (enamel)",
+        "canonical": "#dcf0e6",
+        "oklch": "oklch(93.8% 0.025 164.4)",
+        "cssVar": "--done-wash",
+        "theme": "light",
+        "tonalRamp": [
+          "#020e08",
+          "#192922",
+          "#36463f",
+          "#55665d",
+          "#75877e",
+          "#97aaa1",
+          "#bbcfc5",
+          "#e0f4ea"
+        ]
+      },
+      "ptr-orange-marker": {
+        "role": "tertiary",
+        "displayName": "Pointer: Orange Marker",
+        "canonical": "#a15600",
+        "oklch": "oklch(53.2% 0.127 58.2)",
+        "cssVar": "--ptr",
+        "theme": "light",
+        "tonalRamp": [
+          "#160700",
+          "#3b1c01",
+          "#643402",
+          "#904e07",
+          "#ba6c27",
+          "#e0904e",
+          "#ffb781",
+          "#ffeadb"
+        ]
+      },
+      "ptr-orange-wash": {
+        "role": "tertiary",
+        "displayName": "Pointer Wash (enamel)",
+        "canonical": "#f8ead8",
+        "oklch": "oklch(94.3% 0.028 74.3)",
+        "cssVar": "--ptr-wash",
+        "theme": "light",
+        "tonalRamp": [
+          "#120901",
+          "#2d2315",
+          "#4b4031",
+          "#6b5f50",
+          "#8d8070",
+          "#b0a392",
+          "#d4c7b5",
+          "#faecda"
+        ]
+      },
+      "warn-ochre-light": {
+        "role": "off-board",
+        "displayName": "Limit Ochre (enamel)",
+        "canonical": "#8a5a00",
+        "oklch": "oklch(50.8% 0.108 73.3)",
+        "cssVar": "--warn",
+        "theme": "light",
+        "tonalRamp": [
+          "#130900",
+          "#352001",
+          "#5b3a02",
+          "#845706",
+          "#a9772e",
+          "#ce9a53",
+          "#f4be77",
+          "#ffebd3"
+        ]
+      },
+      "warn-ochre-wash-light": {
+        "role": "off-board",
+        "displayName": "Limit Wash (enamel)",
+        "canonical": "#f7eed8",
+        "oklch": "oklch(95.0% 0.031 88.4)",
+        "cssVar": "--warn-wash",
+        "theme": "light",
+        "tonalRamp": [
+          "#100a00",
+          "#2b2413",
+          "#49412f",
+          "#68614e",
+          "#8a826e",
+          "#ada490",
+          "#d1c9b3",
+          "#f7eed8"
+        ]
+      },
+      "bad-crimson-light": {
+        "role": "off-board",
+        "displayName": "Error Crimson (enamel)",
+        "canonical": "#9b1c31",
+        "oklch": "oklch(45.1% 0.161 18.4)",
+        "cssVar": "--bad",
+        "theme": "light",
+        "tonalRamp": [
+          "#1f0003",
+          "#4b0311",
+          "#7d0922",
+          "#a92c3c",
+          "#d1525c",
+          "#f9767d",
+          "#fdb3b3",
+          "#fee8e8"
+        ]
+      },
+      "bad-crimson-wash-light": {
+        "role": "off-board",
+        "displayName": "Error Wash (enamel)",
+        "canonical": "#f7e1e5",
+        "oklch": "oklch(92.9% 0.025 5.1)",
+        "cssVar": "--bad-wash",
+        "theme": "light",
+        "tonalRamp": [
+          "#14070a",
+          "#302023",
+          "#4e3d40",
+          "#6e5c5f",
+          "#907c80",
+          "#b49fa3",
+          "#d8c3c7",
+          "#fee8ec"
+        ]
+      },
+      "sticky-yellow-light": {
+        "role": "paper",
+        "displayName": "Sticky Yellow (enamel)",
+        "canonical": "#ffe45c",
+        "oklch": "oklch(91.7% 0.155 98.0)",
+        "cssVar": "--note",
+        "theme": "light",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2c2502",
+          "#4d4205",
+          "#70610c",
+          "#968215",
+          "#bea50c",
+          "#e4c93c",
+          "#fff0a7"
+        ]
+      },
+      "sticky-edge-light": {
+        "role": "paper",
+        "displayName": "Sticky Edge (enamel)",
+        "canonical": "#d9bd35",
+        "oklch": "oklch(80.0% 0.149 96.9)",
+        "cssVar": "--note-edge",
+        "theme": "light",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2c2501",
+          "#4e4202",
+          "#716107",
+          "#97820f",
+          "#bea41d",
+          "#e5c944",
+          "#feefae"
+        ]
+      },
+      "sticky-ink": {
+        "role": "paper",
+        "displayName": "Sticky Ink",
+        "canonical": "#2b2508",
+        "oklch": "oklch(26.4% 0.045 97.5)",
+        "cssVar": "--note-ink",
+        "theme": "both",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2b2508",
+          "#484226",
+          "#686244",
+          "#898364",
+          "#aca686",
+          "#d1caa9",
+          "#f6efcd"
+        ]
+      },
+      "syntax-keyword-light": {
+        "role": "syntax",
+        "displayName": "Keyword and Type (enamel)",
+        "canonical": "#7a3cc9",
+        "oklch": "oklch(51.2% 0.206 299.0)",
+        "cssVar": "--syn-keyword, --syn-type",
+        "theme": "light",
+        "tonalRamp": [
+          "#110028",
+          "#31035c",
+          "#540a98",
+          "#7535c3",
+          "#965cea",
+          "#b48afe",
+          "#d1bdfd",
+          "#f1ebfe"
+        ]
+      },
+      "syntax-string-light": {
+        "role": "syntax",
+        "displayName": "String (enamel)",
+        "canonical": "#137a52",
+        "oklch": "oklch(51.4% 0.109 160.8)",
+        "cssVar": "--syn-string",
+        "theme": "light",
+        "tonalRamp": [
+          "#000f07",
+          "#002e1b",
+          "#004f33",
+          "#03744c",
+          "#3a966c",
+          "#60ba8e",
+          "#85dfb2",
+          "#c4fedf"
+        ]
+      },
+      "syntax-number-light": {
+        "role": "syntax",
+        "displayName": "Number (enamel)",
+        "canonical": "#a85a00",
+        "oklch": "oklch(54.9% 0.131 58.2)",
+        "cssVar": "--syn-number",
+        "theme": "light",
+        "tonalRamp": [
+          "#160700",
+          "#3a1c02",
+          "#633405",
+          "#8f4e0c",
+          "#bb6b21",
+          "#e18f4a",
+          "#feb882",
+          "#ffeadc"
+        ]
+      },
+      "syntax-comment-light": {
+        "role": "syntax",
+        "displayName": "Comment (enamel)",
+        "canonical": "#63666b",
+        "oklch": "oklch(50.9% 0.009 260.7)",
+        "cssVar": "--syn-comment",
+        "theme": "light",
+        "tonalRamp": [
+          "#090b0f",
+          "#232529",
+          "#3f4247",
+          "#5e6166",
+          "#7f8288",
+          "#a2a5ab",
+          "#c6c9cf",
+          "#ebeff4"
+        ]
+      },
+      "slate-board": {
+        "role": "neutral",
+        "displayName": "Slate Board",
+        "canonical": "#1c2824",
+        "oklch": "oklch(26.4% 0.018 172.4)",
+        "cssVar": "--board",
+        "theme": "dark",
+        "tonalRamp": [
+          "#040e0a",
+          "#1c2824",
+          "#384541",
+          "#576560",
+          "#788681",
+          "#9aa9a4",
+          "#becdc8",
+          "#e3f3ed"
+        ]
+      },
+      "slate-raised": {
+        "role": "neutral",
+        "displayName": "Slate Raised",
+        "canonical": "#22302b",
+        "oklch": "oklch(29.5% 0.021 170.9)",
+        "cssVar": "--board-raised",
+        "theme": "dark",
+        "tonalRamp": [
+          "#030e0a",
+          "#1b2824",
+          "#374640",
+          "#566560",
+          "#768781",
+          "#99aaa3",
+          "#bccec7",
+          "#e1f3ec"
+        ]
+      },
+      "slate-sunk": {
+        "role": "neutral",
+        "displayName": "Slate Tray",
+        "canonical": "#17221e",
+        "oklch": "oklch(24.0% 0.017 170.4)",
+        "cssVar": "--board-sunk",
+        "theme": "dark",
+        "tonalRamp": [
+          "#040e0a",
+          "#1d2824",
+          "#394541",
+          "#586560",
+          "#798681",
+          "#9ba9a3",
+          "#bfcdc7",
+          "#e4f2ed"
+        ]
+      },
+      "chalk-ink": {
+        "role": "neutral",
+        "displayName": "Chalk Ink",
+        "canonical": "#ede9dd",
+        "oklch": "oklch(93.4% 0.017 91.6)",
+        "cssVar": "--ink",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0e0b04",
+          "#28251c",
+          "#454238",
+          "#656157",
+          "#868277",
+          "#a9a59a",
+          "#cdc9bd",
+          "#f2eee2"
+        ]
+      },
+      "chalk-ink-soft": {
+        "role": "neutral",
+        "displayName": "Chalk Ink Soft",
+        "canonical": "#b6beb6",
+        "oklch": "oklch(79.3% 0.014 145.4)",
+        "cssVar": "--ink-soft",
+        "theme": "dark",
+        "tonalRamp": [
+          "#080d08",
+          "#212721",
+          "#3d443d",
+          "#5c635c",
+          "#7d857d",
+          "#a0a8a0",
+          "#c4ccc4",
+          "#e9f1e9"
+        ]
+      },
+      "chalk-ink-faint": {
+        "role": "neutral",
+        "displayName": "Chalk Ink Faint",
+        "canonical": "#96a29b",
+        "oklch": "oklch(70.1% 0.017 160.4)",
+        "cssVar": "--ink-faint",
+        "theme": "dark",
+        "tonalRamp": [
+          "#050d09",
+          "#1e2822",
+          "#3a453f",
+          "#59645e",
+          "#7a867f",
+          "#9ca8a1",
+          "#c0cdc5",
+          "#e5f2eb"
+        ]
+      },
+      "slate-rail": {
+        "role": "neutral",
+        "displayName": "Slate Rail",
+        "canonical": "#33433d",
+        "oklch": "oklch(36.7% 0.023 170.1)",
+        "cssVar": "--rail",
+        "theme": "dark",
+        "tonalRamp": [
+          "#020e0a",
+          "#1a2923",
+          "#364640",
+          "#55665f",
+          "#758780",
+          "#98aaa3",
+          "#bbcec7",
+          "#e0f4ec"
+        ]
+      },
+      "slate-rail-strong": {
+        "role": "neutral",
+        "displayName": "Slate Rail Strong",
+        "canonical": "#6b7a74",
+        "oklch": "oklch(56.5% 0.020 169.6)",
+        "cssVar": "--rail-strong",
+        "theme": "dark",
+        "tonalRamp": [
+          "#040e0a",
+          "#1b2823",
+          "#384640",
+          "#57655f",
+          "#778680",
+          "#99a9a3",
+          "#bdcec7",
+          "#e2f3ec"
+        ]
+      },
+      "run-yellow-chalk": {
+        "role": "primary",
+        "displayName": "Run: Yellow Chalk",
+        "canonical": "#f4d35e",
+        "oklch": "oklch(87.3% 0.140 93.5)",
+        "cssVar": "--run",
+        "theme": "dark",
+        "tonalRamp": [
+          "#100b00",
+          "#2e2401",
+          "#4f4103",
+          "#745f0a",
+          "#9a8012",
+          "#c2a221",
+          "#e8c751",
+          "#feeeb8"
+        ]
+      },
+      "run-yellow-wash": {
+        "role": "primary",
+        "displayName": "Run Wash (slate)",
+        "canonical": "#37392a",
+        "oklch": "oklch(33.8% 0.025 113.9)",
+        "cssVar": "--run-wash",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0b0c02",
+          "#252718",
+          "#424434",
+          "#616353",
+          "#828473",
+          "#a4a795",
+          "#c8cbb9",
+          "#eef1de"
+        ]
+      },
+      "on-run-dark": {
+        "role": "primary",
+        "displayName": "On Run (slate)",
+        "canonical": "#1c2824",
+        "oklch": "oklch(26.4% 0.018 172.4)",
+        "cssVar": "--on-run",
+        "theme": "dark",
+        "tonalRamp": [
+          "#040e0a",
+          "#1c2824",
+          "#384541",
+          "#576560",
+          "#788681",
+          "#9aa9a4",
+          "#becdc8",
+          "#e3f3ed"
+        ]
+      },
+      "ret-pink-chalk": {
+        "role": "secondary",
+        "displayName": "Return: Pink Chalk",
+        "canonical": "#f49ac1",
+        "oklch": "oklch(78.8% 0.117 352.6)",
+        "cssVar": "--ret",
+        "theme": "dark",
+        "tonalRamp": [
+          "#1d000e",
+          "#47022a",
+          "#6d2048",
+          "#924167",
+          "#b76389",
+          "#dd85ac",
+          "#fdaecf",
+          "#ffe7f0"
+        ]
+      },
+      "ret-pink-wash": {
+        "role": "secondary",
+        "displayName": "Return Wash (slate)",
+        "canonical": "#3b2c35",
+        "oklch": "oklch(31.4% 0.027 342.1)",
+        "cssVar": "--ret-wash",
+        "theme": "dark",
+        "tonalRamp": [
+          "#13070e",
+          "#2e2029",
+          "#4c3d46",
+          "#6c5b65",
+          "#8e7c87",
+          "#b29faa",
+          "#d6c3ce",
+          "#fce8f3"
+        ]
+      },
+      "done-green-chalk": {
+        "role": "tertiary",
+        "displayName": "Done: Green Chalk",
+        "canonical": "#a7d98b",
+        "oklch": "oklch(83.1% 0.117 134.9)",
+        "cssVar": "--done",
+        "theme": "dark",
+        "tonalRamp": [
+          "#040f00",
+          "#132d00",
+          "#274d06",
+          "#426f24",
+          "#639247",
+          "#85b569",
+          "#a8da8c",
+          "#d0ffb7"
+        ]
+      },
+      "done-green-chalk-wash": {
+        "role": "tertiary",
+        "displayName": "Done Wash (slate)",
+        "canonical": "#283a2b",
+        "oklch": "oklch(32.8% 0.035 149.2)",
+        "cssVar": "--done-wash",
+        "theme": "dark",
+        "tonalRamp": [
+          "#020f04",
+          "#182a1c",
+          "#354738",
+          "#546756",
+          "#748977",
+          "#96ac99",
+          "#bad0bd",
+          "#dff6e2"
+        ]
+      },
+      "ptr-sky-chalk": {
+        "role": "tertiary",
+        "displayName": "Pointer: Sky Chalk",
+        "canonical": "#8ecae6",
+        "oklch": "oklch(80.8% 0.073 228.7)",
+        "cssVar": "--ptr",
+        "theme": "dark",
+        "tonalRamp": [
+          "#000d15",
+          "#012939",
+          "#034961",
+          "#2e6982",
+          "#508ba5",
+          "#73aeca",
+          "#97d3ef",
+          "#dbf3fe"
+        ]
+      },
+      "ptr-sky-wash": {
+        "role": "tertiary",
+        "displayName": "Pointer Wash (slate)",
+        "canonical": "#233746",
+        "oklch": "oklch(32.7% 0.037 241.7)",
+        "cssVar": "--ptr-wash",
+        "theme": "dark",
+        "tonalRamp": [
+          "#000c19",
+          "#142736",
+          "#304554",
+          "#4f6475",
+          "#6f8697",
+          "#91a8bb",
+          "#b5cde0",
+          "#e0f1ff"
+        ]
+      },
+      "warn-ochre-dark": {
+        "role": "off-board",
+        "displayName": "Limit Ochre (slate)",
+        "canonical": "#e8c07a",
+        "oklch": "oklch(82.8% 0.099 80.7)",
+        "cssVar": "--warn",
+        "theme": "dark",
+        "tonalRamp": [
+          "#120900",
+          "#322201",
+          "#573d02",
+          "#7e5a07",
+          "#a17b35",
+          "#c59e59",
+          "#ebc37d",
+          "#ffeccc"
+        ]
+      },
+      "warn-ochre-wash-dark": {
+        "role": "off-board",
+        "displayName": "Limit Wash (slate)",
+        "canonical": "#3d3023",
+        "oklch": "oklch(32.0% 0.029 66.5)",
+        "cssVar": "--warn-wash",
+        "theme": "dark",
+        "tonalRamp": [
+          "#130801",
+          "#2f2216",
+          "#4d3f32",
+          "#6d5e50",
+          "#8f7f70",
+          "#b2a292",
+          "#d7c6b6",
+          "#fcebdb"
+        ]
+      },
+      "bad-coral-dark": {
+        "role": "off-board",
+        "displayName": "Error Coral (slate)",
+        "canonical": "#ff8577",
+        "oklch": "oklch(75.0% 0.151 28.0)",
+        "cssVar": "--bad",
+        "theme": "dark",
+        "tonalRamp": [
+          "#1e0000",
+          "#4c0203",
+          "#7f0508",
+          "#a6342c",
+          "#cd584d",
+          "#f57c6e",
+          "#ffb3a9",
+          "#fee9e6"
+        ]
+      },
+      "bad-coral-wash-dark": {
+        "role": "off-board",
+        "displayName": "Error Wash (slate)",
+        "canonical": "#432a2a",
+        "oklch": "oklch(31.6% 0.038 19.4)",
+        "cssVar": "--bad-wash",
+        "theme": "dark",
+        "tonalRamp": [
+          "#180505",
+          "#351d1e",
+          "#543a3a",
+          "#755959",
+          "#987a79",
+          "#bc9c9c",
+          "#e1c0bf",
+          "#fee9e8"
+        ]
+      },
+      "sticky-yellow-dark": {
+        "role": "paper",
+        "displayName": "Sticky Yellow (slate)",
+        "canonical": "#f2d64b",
+        "oklch": "oklch(87.5% 0.155 97.6)",
+        "cssVar": "--note",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2c2501",
+          "#4d4204",
+          "#71610b",
+          "#968213",
+          "#bfa408",
+          "#e5c93a",
+          "#fef0ab"
+        ]
+      },
+      "sticky-edge-dark": {
+        "role": "paper",
+        "displayName": "Sticky Edge (slate)",
+        "canonical": "#b99f22",
+        "oklch": "oklch(70.5% 0.136 96.3)",
+        "cssVar": "--note-edge",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2d2500",
+          "#4e4101",
+          "#726004",
+          "#988109",
+          "#bea42a",
+          "#e3c956",
+          "#feefb0"
+        ]
+      },
+      "syntax-keyword-dark": {
+        "role": "syntax",
+        "displayName": "Keyword (slate)",
+        "canonical": "#8ecae6",
+        "oklch": "oklch(80.8% 0.073 228.7)",
+        "cssVar": "--syn-keyword",
+        "theme": "dark",
+        "tonalRamp": [
+          "#000d15",
+          "#012939",
+          "#034961",
+          "#2e6982",
+          "#508ba5",
+          "#73aeca",
+          "#97d3ef",
+          "#dbf3fe"
+        ]
+      },
+      "syntax-type-dark": {
+        "role": "syntax",
+        "displayName": "Type (slate)",
+        "canonical": "#c7aaff",
+        "oklch": "oklch(79.4% 0.122 299.3)",
+        "cssVar": "--syn-type",
+        "theme": "dark",
+        "tonalRamp": [
+          "#110027",
+          "#2f0c56",
+          "#4c2e78",
+          "#6c4f9c",
+          "#8d70c0",
+          "#b093e6",
+          "#d2bcfe",
+          "#f1ebff"
+        ]
+      },
+      "syntax-string-dark": {
+        "role": "syntax",
+        "displayName": "String (slate)",
+        "canonical": "#a7d98b",
+        "oklch": "oklch(83.1% 0.117 134.9)",
+        "cssVar": "--syn-string",
+        "theme": "dark",
+        "tonalRamp": [
+          "#040f00",
+          "#132d00",
+          "#274d06",
+          "#426f24",
+          "#639247",
+          "#85b569",
+          "#a8da8c",
+          "#d0ffb7"
+        ]
+      },
+      "syntax-number-dark": {
+        "role": "syntax",
+        "displayName": "Number (slate)",
+        "canonical": "#f6a95b",
+        "oklch": "oklch(79.5% 0.131 64.3)",
+        "cssVar": "--syn-number",
+        "theme": "dark",
+        "tonalRamp": [
+          "#150800",
+          "#381e02",
+          "#603704",
+          "#8a520c",
+          "#b76f15",
+          "#dd9243",
+          "#ffb874",
+          "#ffead8"
+        ]
+      },
+      "syntax-comment-dark": {
+        "role": "syntax",
+        "displayName": "Comment (slate)",
+        "canonical": "#8d9993",
+        "oklch": "oklch(67.1% 0.016 164.5)",
+        "cssVar": "--syn-comment",
+        "theme": "dark",
+        "tonalRamp": [
+          "#050d09",
+          "#1e2823",
+          "#3a4540",
+          "#59645f",
+          "#7a8680",
+          "#9ca8a2",
+          "#c0cdc6",
+          "#e5f2ec"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Board Headline",
+        "purpose": "Editor headline chalked across the board; once per screen, max 14ch."
+      },
+      "headline": {
+        "displayName": "Wordmark",
+        "purpose": "StackBloom in the top rail; editor section heads use 800 at 20px."
+      },
+      "title": {
+        "displayName": "Panel Title",
+        "purpose": "Panel titles; tabs at 650."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Base interface text; editor intro at 17px, 46ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons (14px), field labels, status words."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Source lines, locals and values; ligatures off. Editor line-height 1.7."
+      },
+      "code-node": {
+        "displayName": "Tree Node Label",
+        "purpose": "Recursion tree node labels (15px compact)."
+      },
+      "hand": {
+        "displayName": "Board Hand",
+        "purpose": "Annotations and sticky-note narration: ↑ value, ×N, ← running, branch labels (17-19px)."
+      },
+      "hand-sketch": {
+        "displayName": "Sketch Title",
+        "purpose": "Example sketch titles, run-explainer title, run-summary word."
+      }
+    },
+    "shadows": [
+      {
+        "name": "lift-light",
+        "value": "0 14px 28px -16px rgba(28, 29, 32, .38)",
+        "purpose": "Popovers and graph overview on enamel (--lift)."
+      },
+      {
+        "name": "lift-dark",
+        "value": "0 16px 30px -16px rgba(0, 0, 0, .7)",
+        "purpose": "Popovers and graph overview on slate (--lift)."
+      },
+      {
+        "name": "sticky-paper",
+        "value": "0 1px 0 var(--note-edge), 0 12px 22px -14px rgba(0, 0, 0, .55)",
+        "purpose": "Sticky notes only; paired with -0.6deg to -1deg rotation."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Entrances, presses, popovers, signature marks."
+      },
+      {
+        "name": "ease-in-out",
+        "value": "cubic-bezier(0.77, 0, 0.175, 1)",
+        "purpose": "Memory boxes moving on screen (250ms)."
+      },
+      {
+        "name": "dur-press",
+        "value": "140ms",
+        "purpose": "Press feedback: scale(.97) on every button."
+      },
+      {
+        "name": "dur-pop",
+        "value": "180ms",
+        "purpose": "Popovers and sticky notes via @starting-style from scale(.96) (.95 for notes) + opacity, from the trigger corner."
+      },
+      {
+        "name": "dur-write",
+        "value": "180ms",
+        "purpose": "write-in: translateY(-5px) scale(.96) + opacity, 40ms after the edge."
+      },
+      {
+        "name": "grow-edge",
+        "value": "160ms ease-out, from scale(.15) + opacity 0",
+        "purpose": "A new call edge grows out of its caller; also new heap edges."
+      },
+      {
+        "name": "rise",
+        "value": "200ms ease-out, from translateY(10px) + opacity 0, 40ms delay",
+        "purpose": "A returned value rises toward its caller."
+      },
+      {
+        "name": "rapid-step-threshold",
+        "value": "250ms",
+        "purpose": "Steps closer than this are a burst; the trace signature is skipped."
+      },
+      {
+        "name": "board-open",
+        "value": "300ms ease-out, from translateY(8px) + opacity 0; stagger 60/110/160/210ms",
+        "purpose": "Editor signature: headline, then four example sketches."
+      },
+      {
+        "name": "pulse",
+        "value": "1.2s ease-in-out infinite, opacity .3 at 50%",
+        "purpose": "Working dot and playing context dot."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation-name: fade-in; press, glide and pulse removed; popovers opacity only",
+        "purpose": "Keeps opacity, drops movement."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "720px",
+        "note": "max-width; page scrolls, icon-only rail, sticky scrubber strip"
+      },
+      {
+        "name": "stack",
+        "value": "980px",
+        "note": "max-width; code and board stack; resizable split from 981px"
+      },
+      {
+        "name": "gallery-2up",
+        "value": "1080px",
+        "note": "max-width; example sketches in two columns"
+      },
+      {
+        "name": "rail-wrap",
+        "value": "1279px",
+        "note": "max-width; transport wraps below the trace rail"
+      },
+      {
+        "name": "rail-icons",
+        "value": "1599px",
+        "note": "max-width; trace-rail action labels collapse to icons"
+      },
+      {
+        "name": "touch",
+        "value": "(pointer: coarse)",
+        "note": "44px minimum targets"
+      },
+      {
+        "name": "hover",
+        "value": "(hover: hover) and (pointer: fine)",
+        "note": "only context where hover styles apply"
+      }
+    ],
+    "legibility": {
+      "textContrast": "All text tokens >= 4.5:1 on board, raised and sunk in both themes (lowest: light done on sunk 4.50, light ret on sunk 4.53).",
+      "memoryGraphMinFit": 0.9,
+      "callTreeMinFit": 0.8,
+      "touchTarget": "44px under pointer: coarse"
+    },
+    "iconography": {
+      "grid": "24px",
+      "stroke": "1.9px, round cap and join, currentColor",
+      "source": "web/src/Icon.tsx",
+      "brandMark": "SproutMark: ink stem and soil, done-green leaves"
+    }
+  },
+  "components": [
+    {
+      "name": "Chalk Button",
+      "kind": "button",
+      "refersTo": "button-chalk",
+      "description": "Default control: a chalk outline at the uneven button radius, pressed to 0.97.",
+      "html": "<button class=\"ds-btn\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14 M13 6l6 6-6 6\"/></svg>Step</button>",
+      "css": ".ds-btn{font:600 14px/1.2 var(--font-ui);color:var(--ink);background:transparent;border:1.5px solid color-mix(in srgb,var(--ink) 50%,transparent);border-radius:var(--r-btn);padding:7px 12px;min-height:36px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;transition:transform var(--dur-press) var(--ease-out),background-color 150ms ease,border-color 150ms ease}.ds-btn:active{transform:scale(.97)}.ds-btn:focus-visible{outline:2px solid var(--run);outline-offset:2px}@media (hover:hover) and (pointer:fine){.ds-btn:hover{background-color:color-mix(in srgb,var(--ink) 7%,transparent);border-color:var(--ink)}}@media (pointer:coarse){.ds-btn{min-height:44px}}@media (prefers-reduced-motion:reduce){.ds-btn:active{transform:none}}"
+    },
+    {
+      "name": "Run Button",
+      "kind": "button",
+      "refersTo": "button-run",
+      "description": "The action that runs: solid run colour, the only filled button.",
+      "html": "<button class=\"ds-btn-run\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 5.5v13l11-6.5z\"/></svg>Run &amp; visualize</button>",
+      "css": ".ds-btn-run{font:700 16px/1.2 var(--font-ui);color:var(--on-run);background:var(--run);border:1.5px solid var(--run);border-radius:var(--r-btn);padding:10px 22px;min-height:48px;min-width:220px;display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;transition:transform var(--dur-press) var(--ease-out),background-color 150ms ease}.ds-btn-run:active{transform:scale(.97)}.ds-btn-run:focus-visible{outline:2px solid var(--run);outline-offset:2px}@media (hover:hover) and (pointer:fine){.ds-btn-run:hover{background-color:color-mix(in srgb,var(--run) 86%,var(--ink))}}@media (prefers-reduced-motion:reduce){.ds-btn-run:active{transform:none}}"
+    },
+    {
+      "name": "Ghost Toggle",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Borderless toggle in ink soft; the on state is ink with a run underline.",
+      "html": "<button class=\"ds-ghost\">Wrap</button> <button class=\"ds-ghost on\" aria-pressed=\"true\">Follow</button>",
+      "css": ".ds-ghost{font:600 14px/1.2 var(--font-ui);color:var(--ink-soft);background:transparent;border:1.5px solid transparent;border-radius:var(--r-btn);padding:6px 9px;min-height:36px;cursor:pointer;transition:transform var(--dur-press) var(--ease-out),color 150ms ease}.ds-ghost.on{color:var(--ink);box-shadow:inset 0 -2.5px var(--run)}.ds-ghost:active{transform:scale(.97)}.ds-ghost:focus-visible{outline:2px solid var(--run);outline-offset:2px}@media (hover:hover) and (pointer:fine){.ds-ghost:hover{color:var(--ink)}}"
+    },
+    {
+      "name": "Tabs",
+      "kind": "nav",
+      "refersTo": "tab-selected",
+      "description": "Unboxed text tabs; selected is ink with a 3px run underline and a filled count badge.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\"><button class=\"ds-tab\" role=\"tab\">Call stack <span class=\"ds-badge\">3</span></button><button class=\"ds-tab selected\" role=\"tab\" aria-selected=\"true\">Recursion tree <span class=\"ds-badge\">15</span></button><button class=\"ds-tab\" role=\"tab\">Memory</button></div>",
+      "css": ".ds-tabs{display:flex;gap:2px;border-bottom:1px solid var(--rail);min-height:50px}.ds-tab{font:650 14.5px var(--font-ui);color:var(--ink-soft);background:transparent;border:0;padding:12px 11px 10px;display:inline-flex;align-items:center;gap:7px;box-shadow:inset 0 -3px transparent;cursor:pointer;transition:transform var(--dur-press) var(--ease-out),color 150ms ease}.ds-tab:active{transform:scale(.97)}.ds-tab.selected{color:var(--ink);box-shadow:inset 0 -3px var(--run)}.ds-tab:focus-visible{outline:2px solid var(--run);outline-offset:2px}.ds-badge{font:600 12px var(--font-code);min-width:22px;height:20px;padding:0 6px;border-radius:999px;border:1.5px solid currentColor;display:inline-flex;align-items:center;justify-content:center}.ds-tab.selected .ds-badge{background:var(--run);border-color:var(--run);color:var(--on-run)}@media (hover:hover) and (pointer:fine){.ds-tab:hover:not(.selected){color:var(--ink)}}"
+    },
+    {
+      "name": "Call Bubbles",
+      "kind": "card",
+      "refersTo": "call-bubble-running",
+      "description": "Stack frames as chalk outlines: waiting calls underlined, the running call boxed in run, a changed local bold with a wavy underline and a hand-lettered was note.",
+      "html": "<div class=\"ds-bubble\"><h3>fib(4)</h3></div><div class=\"ds-conn\">calls</div><div class=\"ds-bubble running\"><div class=\"ds-head\"><h3>fib(2)</h3><span class=\"ds-state\">running</span></div><div class=\"ds-local\"><strong>n</strong><code class=\"changed\">2<span class=\"ds-was\">was <s>3</s></span></code></div></div>",
+      "css": ".ds-bubble{border:1.5px solid color-mix(in srgb,var(--ink) 45%,transparent);border-radius:var(--r-box);padding:12px 14px;color:var(--ink)}.ds-bubble h3{margin:0;font:600 15px/1.5 var(--font-code);text-decoration:underline 1.5px var(--ink-faint);text-underline-offset:5px}.ds-bubble.running{border:2.5px solid var(--run);background:color-mix(in srgb,var(--run) 7%,transparent)}.ds-bubble.running h3{text-decoration:none}.ds-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.ds-state{font:600 12px var(--font-ui);padding:2px 9px;border-radius:999px;border:1.5px solid var(--run);background:var(--run);color:var(--on-run)}.ds-conn{height:30px;margin-left:22px;padding-left:14px;border-left:2px dashed var(--rail-strong);display:flex;align-items:center;font:17px var(--font-hand);color:var(--ink-soft)}.ds-local{display:flex;justify-content:space-between;padding:8px 0;margin-top:8px;border-top:1px dashed var(--rail-strong);font-size:13.5px}.ds-local strong{font-family:var(--font-code)}.ds-local code{font-family:var(--font-code);text-align:right}.ds-local code.changed{font-weight:700;text-decoration:underline wavy 1.5px var(--ink-soft);text-underline-offset:4px}.ds-was{display:block;font:16px var(--font-hand);font-weight:400;color:var(--ink-soft);text-decoration:none}"
+    },
+    {
+      "name": "Tree Node Marks",
+      "kind": "custom",
+      "refersTo": "tree-node-running",
+      "description": "Recursion tree states as marks: running boxed in run with \"← running\" and the run path, waiting underlined, returned ticked and dimmed with ↑ value in ret, ×N for repeated arguments.",
+      "html": "<svg class=\"ds-tree\" width=\"380\" height=\"160\" viewBox=\"0 0 380 160\" role=\"img\" aria-label=\"Recursion tree\"><path class=\"edge active\" d=\"M110 44 L70 96\"/><path class=\"edge\" d=\"M110 44 L250 96\"/><g class=\"node waiting\" transform=\"translate(60,8)\"><rect width=\"100\" height=\"36\" rx=\"10\"/><text class=\"lbl\" x=\"50\" y=\"24\" text-anchor=\"middle\">fib(4)</text></g><g class=\"node active\" transform=\"translate(20,96)\"><rect width=\"100\" height=\"36\" rx=\"10\"/><text class=\"lbl\" x=\"50\" y=\"24\" text-anchor=\"middle\">fib(3)</text><text class=\"run\" x=\"108\" y=\"24\">← running</text></g><g class=\"node done\" transform=\"translate(250,96)\"><rect width=\"100\" height=\"36\" rx=\"10\"/><text class=\"lbl\" x=\"50\" y=\"24\" text-anchor=\"middle\">fib(2)</text><path class=\"tick\" d=\"M84 8l4 4 8-8\"/><text class=\"rep\" x=\"4\" y=\"54\">×2</text></g><text class=\"ret\" x=\"196\" y=\"66\">↑ 1</text></svg>",
+      "css": ".ds-tree .edge{fill:none;stroke:color-mix(in srgb,var(--ink) 38%,transparent);stroke-width:1.8;stroke-linecap:round}.ds-tree .edge.active{stroke:var(--run);stroke-width:3.2}.ds-tree .node rect{fill:var(--board-raised);stroke:color-mix(in srgb,var(--ink) 60%,transparent);stroke-width:1.8}.ds-tree .lbl{font:700 16px var(--font-code);fill:var(--ink)}.ds-tree .waiting .lbl{text-decoration:underline}.ds-tree .active rect{fill:var(--run-wash);stroke:var(--run);stroke-width:3.2}.ds-tree .done rect{fill:transparent;stroke:var(--ink-faint);stroke-width:1.5}.ds-tree .done rect,.ds-tree .done .lbl{opacity:.62}.ds-tree .tick{fill:none;stroke:var(--done);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}.ds-tree .run{font:19px var(--font-hand);fill:var(--run)}.ds-tree .rep{font:17px var(--font-hand);fill:var(--ink)}.ds-tree .ret{font:19px var(--font-hand);fill:var(--ret)}@media (hover:hover) and (pointer:fine){.ds-tree .node:hover rect{stroke:var(--ink);stroke-width:2.6}}"
+    },
+    {
+      "name": "Sticky Note",
+      "kind": "custom",
+      "refersTo": "sticky-note",
+      "description": "Yellow paper for explanations and step narration; with popovers, the only surface that lifts.",
+      "html": "<div class=\"ds-note\">fib(2) returned 1 to fib(3)</div>",
+      "css": ".ds-note{display:inline-block;background:var(--note);color:var(--note-ink);font:19px/1.25 var(--font-hand);padding:5px 12px 6px;border-radius:2px 2px 3px 12px;transform:rotate(-.6deg);box-shadow:0 1px 0 var(--note-edge),0 12px 22px -14px rgba(0,0,0,.55)}"
+    },
+    {
+      "name": "Code Field",
+      "kind": "input",
+      "refersTo": "code-field",
+      "description": "Sunk code surface with a chalk outline; focus is a 2px run outline, caret in run.",
+      "html": "<textarea class=\"ds-field\" rows=\"3\" aria-label=\"Program input\">5\n1 2 3 4 5</textarea>",
+      "css": ".ds-field{width:100%;min-height:110px;resize:vertical;border:1.5px solid color-mix(in srgb,var(--ink) 35%,transparent);border-radius:var(--r-box);background:var(--board-sunk);color:var(--ink);padding:12px 13px;font:14px/1.6 var(--font-code);font-variant-ligatures:none;caret-color:var(--run)}.ds-field:focus,.ds-field:focus-visible{outline:2px solid var(--run);outline-offset:1px}"
+    },
+    {
+      "name": "Breadcrumb",
+      "kind": "nav",
+      "refersTo": "crumb",
+      "description": "The call path chalked along the foot of the tree board; the running call outlined in run.",
+      "html": "<nav class=\"ds-crumbs\" aria-label=\"Call path\"><span class=\"ds-crumb\">main</span><span class=\"ds-crumb\">fib(4)</span><span class=\"ds-crumb current\">fib(3)</span></nav>",
+      "css": ".ds-crumbs{display:flex;align-items:center;gap:4px;font:13px var(--font-code)}.ds-crumb{padding:2px 9px;border:1.5px solid color-mix(in srgb,var(--ink) 45%,transparent);border-radius:var(--r-btn);color:var(--ink-soft);background:var(--board);white-space:nowrap}.ds-crumb+.ds-crumb::before{content:'\\203A';margin:0 6px 0 -2px;color:var(--ink-faint)}.ds-crumb.current{border:2px solid var(--run);color:var(--ink);font-weight:700}"
+    },
+    {
+      "name": "Pointer Chips",
+      "kind": "chip",
+      "refersTo": "pointer-chip",
+      "description": "Pointer state as outlined pills in ptr; dangling is dashed ink with ✕, null is dashed faint.",
+      "html": "<span class=\"ds-chip\">heap 0x5a1</span> <span class=\"ds-chip dangling\">✕ dangling</span> <span class=\"ds-chip null\">null</span>",
+      "css": ".ds-chip{font:12px var(--font-code);padding:1px 8px;border-radius:999px;border:1.5px solid currentColor;color:var(--ptr)}.ds-chip.dangling{color:var(--ink);border-style:dashed}.ds-chip.null{color:var(--ink-faint);border-style:dashed}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Lecture Board",
+    "overview": "The run is written up on a lecture board, one call at a time. In dark mode the board is a green-black slate with faint chalk dust (a 7px by 9px dot field at 3.5% chalk). In light mode it is a white enamel whiteboard written in marker ink with no dust. The two themes are one system: the same roles and the same law, swapped by `prefers-color-scheme`. The board is split into panels by thin aluminium rails. Every rule is a single stroke. Explanations sit on yellow sticky notes stuck to the board. The interface is not made of cards floating over a page.\n\nThis is a working surface for long study sessions, so it is dense and quiet. The running call leads and everything else recedes. Colour is scarce because each board colour has exactly one meaning. State is written as a mark (a box, an underline, a tick, a hand-lettered note), so the board still reads with colour removed. The world rejects the debugger-dashboard look: grey cards, icon toolbars, a blue accent on everything, drop-shadowed panels.\n\nMotion follows the chalk. A new call is written onto the board, and a returned value rises back to its caller. Motion only happens on deliberate forward steps, and reduced motion keeps the fades while dropping all movement.",
+    "keyCharacteristics": [
+      "Slate chalkboard (dark) and enamel whiteboard (light) share one role set and one colour law.",
+      "Four board colours, each with one meaning: run, ret, done, ptr. Everything else is ink.",
+      "State is a mark, not a hue: box, underline, tick-and-dim, ×N, ✕, wavy underline with a \"was\" note.",
+      "One-stroke chrome: 1.5px chalk outlines, 2px rails, slightly irregular corners, no card shadows.",
+      "Three voices: Bricolage Grotesque for the interface, JetBrains Mono (no ligatures) for code, Patrick Hand for board annotations only.",
+      "Yellow sticky notes carry every explanation and the step-by-step narration."
+    ],
+    "rules": [
+      {
+        "name": "The One Meaning Rule",
+        "body": "Each board colour means one thing: run = now, ret = a value coming back, done = finished or new, ptr = pointers. Everything else is ink. If a new element needs colour and fits none of the four meanings, it is ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The Off-Board Rule",
+        "body": "Warn and bad describe the program's failures and the run's limits. They never describe a call, a value or a pointer.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Accent Rule",
+        "body": "The board has no purple and no spare accent. Inspecting a call or line is drawn as a dashed ink outline or underline, never as a new hue.",
+        "section": "colors"
+      },
+      {
+        "name": "The Three Voices Rule",
+        "body": "Interface chrome speaks in the grotesque, the program speaks in mono, and the teacher speaks in hand. Hand titles belong to sketches, sticky notes and the run summary; never set a control, a value, a panel title, a tab or the wordmark in Patrick Hand, and never hand-letter code.",
+        "section": "typography"
+      },
+      {
+        "name": "The No Ligatures Rule",
+        "body": "Code is shown exactly as typed. `font-variant-ligatures: none` applies to every code surface, including CodeMirror.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Stroke Rule",
+        "body": "Panels, bubbles, fields and buttons are drawn with a single stroke (1.5px chalk outline at 35–50% ink, 2px rails between boards, 1px hairlines inside panels) and never with a shadow. If something needs to stand out, give it a stroke or a mark, not a lift.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** pick board colour by meaning only: run = now, ret = a value coming back, done = finished or new, ptr = pointers, everything else ink.",
+      "**Do** give every state a mark (box, underline, tick-and-dim, ×N, ✕, wavy underline and \"was\") so it reads without colour.",
+      "**Do** draw chrome with one stroke: 1.5px chalk outlines at the uneven radii (10px 12px 9px 11px boxes, 9px 11px 8px 10px buttons), 2px rails between boards.",
+      "**Do** put explanations on sticky notes, in place, next to what they explain.",
+      "**Do** keep every text token at 4.5:1 or better on board, raised and sunk surfaces in both themes.",
+      "**Do** keep graph text at 12px or larger on screen (minimum fit 0.9 for memory, 0.8 for the recursion tree); past that the graph scrolls.",
+      "**Do** make every control at least 44px under `pointer: coarse`, and gate hover effects behind `(hover: hover) and (pointer: fine)`.",
+      "**Do** keep one signature moment per screen, play it on deliberate steps only, and fall back to opacity under reduced motion."
+    ],
+    "donts": [
+      "**Don't** use warn or bad for a call, value or pointer state; they are for program errors and limits only.",
+      "**Don't** add purple or any spare accent to the board; inspection is dashed ink.",
+      "**Don't** give panels, bubbles or buttons drop shadows; only sticky notes and popovers lift.",
+      "**Don't** set controls, values, panel titles or tabs in Patrick Hand, or let syntax colours tint board chrome.",
+      "**Don't** enable code ligatures.",
+      "**Don't** animate hover on touch devices, or play the write-in during held-key bursts."
+    ]
+  }
+}

@@ -2,7 +2,14 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import sample from '../../examples/sample.trace.json';
 import {parseTrace, type Trace, type Frame} from './trace';
+import '@fontsource-variable/bricolage-grotesque';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/600.css';
+import '@fontsource/jetbrains-mono/700.css';
+import '@fontsource/jetbrains-mono/400-italic.css';
+import '@fontsource/patrick-hand/400.css';
 import './style.css';
+import {Icon, SproutMark} from './Icon';
 import {StackTree} from './StackTree';
 import {CallTree} from './CallTree';
 import {MemoryGraph} from './MemoryGraph';
@@ -206,22 +213,22 @@ function App() {
     tabRefs.current[next]?.focus();
   }
 
-  const openTrace = <label className="upload">Open trace
+  const openTrace = <label className="upload"><Icon name="open" /><span className="btn-label">Open trace</span>
     <input aria-label="Open JSON trace" type="file" accept=".json"
       onChange={e => {void load(e.target.files?.[0]); e.target.value = '';}} /></label>;
 
   if (view === 'editor') return <div className={`app editor-view ${dragging ? 'dragging' : ''}`} {...drop}>
     <header className="topbar">
-      <div className="brand"><span className="mark" aria-hidden="true" />
+      <div className="brand"><SproutMark />
         <div><h1>StackBloom</h1><p>Watch your C++ grow, one call at a time.</p></div></div>
       <div className="topbar-actions">
-        {trace.snapshots.length > 1 && <button onClick={() => setView('trace')}>Back to trace →</button>}
+        {trace.snapshots.length > 1 && <button onClick={() => setView('trace')}>Back to trace<Icon name="forward" /></button>}
         {openTrace}
       </div>
     </header>
     <div className="editor-scroll">
       <section className="editor-intro"><div><h2>See what your code is thinking.</h2><p>Follow a call. Watch a value change. Make the next step click.</p></div>
-        <button className="demo-link" onClick={() => {setView('trace'); setPlaying(false);}}>Explore the {trace === sample ? 'sample' : 'recorded'} trace <span aria-hidden="true">↗</span></button></section>
+        <button className="demo-link" onClick={() => {setView('trace'); setPlaying(false);}}>Explore the {trace === sample ? 'sample' : 'recorded'} trace<Icon name="external" size={16} /></button></section>
       {error && <div role="alert" className="diagnostic">{error}</div>}
       <SubmissionPane draft={draft} onDraft={setDraft} onTrace={show} compilerOutput={compileOutput} />
       <p className="hint">Your program is compiled and traced on this machine. Submit only code you trust.</p>
@@ -229,56 +236,47 @@ function App() {
   </div>;
 
   return <div className={`app trace-view ${dragging ? 'dragging' : ''}`} {...drop}>
-    <header className="topbar">
-      <div className="brand"><span className="mark" aria-hidden="true" />
+    {/* One rail: brand, transport and where you are, then the file actions. Wraps to two rows below 1280px. */}
+    <header className="topbar trace-rail">
+      <div className="brand"><SproutMark />
         <div><h1>StackBloom</h1><p className="file">{trace.source.path} · C++17</p></div></div>
+      <div className="controls">
+        <div className="control-buttons">
+          <button onClick={() => seek(0)} disabled={index === 0} aria-label="First stop" title="First stop"><Icon name="first" /></button>
+          <button onClick={() => move(-1)} disabled={index === 0} aria-label="Previous stop" title="Back (←)"><Icon name="back" /></button>
+          <button className="primary play-button" onClick={togglePlayback} disabled={last === 0} title="Play / pause (Space)">
+            <Icon name={playing ? 'pause' : index === last ? 'replay' : 'play'} />{playing ? 'Pause' : index === last ? 'Replay' : 'Play'}</button>
+          <button onClick={() => move(1)} disabled={index === last} title="Step into: the very next stop (→ or s)">Step<Icon name="forward" /></button>
+          <button onClick={() => seek(stepOver()!)} disabled={stepOver() === undefined}
+            title="Step over: the next stop in this call, skipping the calls it makes (n)"><Icon name="over" />Over</button>
+          <button onClick={() => seek(stepOut()!)} disabled={stepOut() === undefined}
+            title="Step out: the first stop after this call returns (f)"><Icon name="out" />Out</button>
+          <label className="playback-speed"><span className="sr-only">Playback speed</span><select aria-label="Playback speed" value={interval} onChange={e => setIntervalMs(Number(e.target.value))}><option value={1500}>0.5×</option><option value={750}>1×</option><option value={375}>2×</option></select></label>
+          <details className="jump-menu" ref={jumpMenu}><summary>Jump to<Icon name="chevron" size={16} /></summary>
+            <div className="jump-list">
+              <button onClick={() => jump(deepest)} disabled={!trace.snapshots.some(s => s.frames.length > 1)}>Deepest call</button>
+              <button onClick={() => jump(nextChange('heap'))} disabled={nextChange('heap') === undefined}>Next memory change</button>
+              <button onClick={() => jump(nextChange('output'))} disabled={nextChange('output') === undefined}>Next output</button>
+            </div>
+          </details>
+        </div>
+
+        {/* Announces where you are when stepping; silent during playback, which would chatter. */}
+        <div className="execution-context" aria-live={playing ? 'off' : 'polite'}>
+          <span className={`context-dot ${playing ? 'is-playing' : ''}`} /><strong>{step.frames[0]?.function ?? (step.event === 'exit' ? 'Finished' : 'Stopped')}</strong>
+          <span>{step.location ? `Line ${step.location.line}` : step.event.replace('_', ' ')}</span><span className="context-stat">{step.frames.length} active {step.frames.length === 1 ? 'call' : 'calls'}</span>
+          {changes.heap.includes(index) && <span className="change-tag">Memory changed</span>}{changes.output.includes(index) && <span className="change-tag">New output</span>}
+          {inspected && <button className="inspection-chip" onClick={() => setSelectedCall(null)} title="Clear call selection">
+            Inspecting {inspected.function} · line {inspected.location.line}<Icon name="close" size={14} /></button>}
+          <span className="shortcut-hint">Space play · ← → step · n over · f out</span></div>
+      </div>
       <div className="topbar-actions">
-        <span className={`event ${step.event}`}>{step.event.replace('_', ' ')}</span>
-        <button onClick={() => {setPlaying(false); setView('editor');}}>← Edit code</button>
-        <button onClick={download} title="Save this trace as JSON to open later or share">Download</button>
+        <button onClick={() => {setPlaying(false); setView('editor');}} title="Edit code"><Icon name="edit" /><span className="btn-label">Edit code</span></button>
+        <button onClick={download} title="Download: save this trace as JSON to open later or share"><Icon name="download" /><span className="btn-label">Download</span></button>
         {openTrace}
       </div>
     </header>
 
-    <div className="controls">
-      <div className="control-buttons">
-        <button onClick={() => seek(0)} disabled={index === 0} aria-label="First stop" title="First stop">⏮</button>
-        <button onClick={() => move(-1)} disabled={index === 0} aria-label="Previous stop" title="Back (←)">←</button>
-        <button className="primary play-button" onClick={togglePlayback} disabled={last === 0} title="Play / pause (Space)">{playing ? 'Ⅱ Pause' : index === last ? '↻ Replay' : '▶ Play'}</button>
-        <button onClick={() => move(1)} disabled={index === last} title="Step into: the very next stop (→ or s)">Step →</button>
-        <button onClick={() => seek(stepOver()!)} disabled={stepOver() === undefined}
-          title="Step over: the next stop in this call, skipping the calls it makes (n)">Over</button>
-        <button onClick={() => seek(stepOut()!)} disabled={stepOut() === undefined}
-          title="Step out: the first stop after this call returns (f)">Out</button>
-        <label className="playback-speed"><span className="sr-only">Playback speed</span><select aria-label="Playback speed" value={interval} onChange={e => setIntervalMs(Number(e.target.value))}><option value={1500}>0.5×</option><option value={750}>1×</option><option value={375}>2×</option></select></label>
-        <details className="jump-menu" ref={jumpMenu}><summary>Jump to</summary>
-          <div className="jump-list">
-            <button onClick={() => jump(deepest)} disabled={!trace.snapshots.some(s => s.frames.length > 1)}>Deepest call</button>
-            <button onClick={() => jump(nextChange('heap'))} disabled={nextChange('heap') === undefined}>Next memory change</button>
-            <button onClick={() => jump(nextChange('output'))} disabled={nextChange('output') === undefined}>Next output</button>
-          </div>
-        </details>
-      </div>
-      <div className="timeline">
-        <div className="timeline-track">
-          <EventTimeline trace={trace} index={index} onSeek={seek} />
-          <DepthSparkline trace={trace} index={index} onSeek={seek} />
-          <input id="timeline" type="range" min="0" max={last} value={index} aria-label="Execution timeline"
-          style={{background: `linear-gradient(to right, var(--brand) ${last ? index / last * 100 : 0}%, var(--line-strong) ${last ? index / last * 100 : 0}%)`}}
-          onChange={e => seek(Number(e.target.value))} />
-        </div>
-        <span className="stop-count">Stop <strong>{index + 1}</strong> / {last + 1}</span>
-      </div>
-    </div>
-
-    {/* Announces where you are when stepping; silent during playback, which would chatter. */}
-    <div className="execution-context" aria-live={playing ? 'off' : 'polite'}>
-      <span className={`context-dot ${playing ? 'is-playing' : ''}`} /><strong>{step.frames[0]?.function ?? (step.event === 'exit' ? 'Execution finished' : 'Execution stopped')}</strong>
-      <span>{step.location ? `Line ${step.location.line}` : step.event.replace('_', ' ')}</span><span className="context-stat">{step.frames.length} active {step.frames.length === 1 ? 'call' : 'calls'}</span>
-      {changes.heap.includes(index) && <span className="change-tag">Memory changed</span>}{changes.output.includes(index) && <span className="change-tag">New output</span>}
-      {inspected && <button className="inspection-chip" onClick={() => setSelectedCall(null)} title="Clear call selection">
-        Inspecting {inspected.function} · line {inspected.location.line} ×</button>}
-      <span className="shortcut-hint">Space play · ← → step · n over · f out</span></div>
 
     {watches.length > 0 && <Watches trace={trace} index={index} watches={watches} onRemove={toggleWatch} onSeek={seek} />}
 
@@ -338,12 +336,14 @@ function App() {
           </div>
           {/* Fullscreen covers the toolbar, so the panel carries its own stepping controls. */}
           {expanded && <div className="fullscreen-controls" role="group" aria-label="Playback">
-            <button onClick={() => move(-1)} disabled={index === 0} aria-label="Previous stop" title="Back (←)">←</button>
-            <button className="primary" onClick={togglePlayback} disabled={last === 0} title="Play / pause (Space)">{playing ? 'Ⅱ Pause' : index === last ? '↻ Replay' : '▶ Play'}</button>
-            <button onClick={() => move(1)} disabled={index === last} aria-label="Next stop" title="Step into (→ or s)">→</button>
+            <button onClick={() => move(-1)} disabled={index === 0} aria-label="Previous stop" title="Back (←)"><Icon name="back" /></button>
+            <button className="primary" onClick={togglePlayback} disabled={last === 0} title="Play / pause (Space)">
+              <Icon name={playing ? 'pause' : index === last ? 'replay' : 'play'} />{playing ? 'Pause' : index === last ? 'Replay' : 'Play'}</button>
+            <button onClick={() => move(1)} disabled={index === last} aria-label="Next stop" title="Step into (→ or s)"><Icon name="forward" /></button>
             <span className="stop-count">Stop <strong>{index + 1}</strong> / {last + 1}</span>
           </div>}
-          <button className="ghost expand-graph" onClick={() => void toggleExpanded()} aria-label={expanded ? 'Exit fullscreen graph' : 'Fullscreen graph'}>{expanded ? '↙ Restore' : '⛶ Expand'}</button>
+          <button className="ghost expand-graph" onClick={() => void toggleExpanded()} aria-label={expanded ? 'Exit fullscreen graph' : 'Fullscreen graph'}>
+            <Icon name={expanded ? 'restore' : 'expand'} /><span className="btn-label">{expanded ? 'Restore' : 'Expand'}</span></button>
           {!showCode && <button className="ghost show-code" onClick={() => setShowCode(true)}>Show code</button>}
         </div>
         <div className="tab-panel" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
@@ -372,6 +372,26 @@ function App() {
         {stats.output > 0 && <div><dt>Output</dt><dd>{stats.output.toLocaleString()} bytes</dd></div>}
       </dl>
     </div>}
+
+    {/* The chalk tray along the bottom of the board, in two strips so the scrubber can stay in view on
+        phones: event marks above, then the depth of the run, the scrubber and the stop count. */}
+    <div className="tray tray-events">
+      <div className="timeline">
+        <div className="timeline-track"><EventTimeline trace={trace} index={index} onSeek={seek} /></div>
+        <span className="stop-spacer" aria-hidden="true" />
+      </div>
+    </div>
+    <footer className="tray tray-strip">
+      <div className="timeline">
+        <div className="timeline-track">
+          <DepthSparkline trace={trace} index={index} onSeek={seek} />
+          <input id="timeline" type="range" min="0" max={last} value={index} aria-label="Execution timeline"
+          style={{background: `linear-gradient(to right, var(--run) ${last ? index / last * 100 : 0}%, var(--rail) ${last ? index / last * 100 : 0}%)`}}
+          onChange={e => seek(Number(e.target.value))} />
+        </div>
+        <span className="stop-count">Stop <strong>{index + 1}</strong> / {last + 1}</span>
+      </div>
+    </footer>
   </div>;
 }
 

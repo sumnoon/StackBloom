@@ -6,3 +6,9 @@ dist/
 test-results/
 .venv/
 .claude/
+# Impeccable working files: per-machine config, review captures, decision mocks.
+.impeccable/config.local.json
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/build/
+.impeccable/questions/

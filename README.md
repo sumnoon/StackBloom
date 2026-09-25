@@ -30,7 +30,10 @@ with your permissions.
   leftover memory. Hover any value for the raw debugger text and address.
 - **A recursion tree.** Every invocation with the arguments it received and the value
   it returned. With two calls the first is the left branch (L) and the second the
-  right (R), so `fib(n-1)` and `fib(n-2)` sit where you expect.
+  right (R), so `fib(n-1)` and `fib(n-2)` sit where you expect. Each new call is
+  written onto the board as you step, finished calls get a tick, a value coming back
+  is marked ↑ beside its caller, and a sticky note says in words what the step did:
+  *fib(3) returned 2 to fib(4).*
 
   ![The recursion tree for fib(4), with returned values on every call](docs/recursion-tree.png)
 
@@ -55,26 +58,30 @@ with your permissions.
 - **The shape of the run.** A depth sparkline sits behind the scrubber, so recursion
   looks like a mountain range and a loop like a flat line; click it to jump. Line
   numbers warm up with how often the program stopped there, changed locals show what
-  they were a moment ago, and edges into a new heap object draw themselves in. When a
+  they were a moment ago, and edges into a new heap object fade in. When a
   program finishes, a summary counts its stops, calls, deepest stack and heap objects.
 
-The editor includes illustrated example choices and shows actual elapsed time while
-compiling/tracing. The replay workspace colors C++ syntax and flags stops that change
-memory or output. Light/dark appearance follows your system, and decorative motion
-respects the reduced-motion setting.
+StackBloom looks like a lecture board: slate and coloured chalk in dark mode, a
+whiteboard in marker ink in light mode (it follows your system), with explanations on
+yellow sticky notes. Each colour means one thing: the running call, a value coming
+back, a finished or new call, a pointer. The editor includes illustrated example
+choices and shows actual elapsed time while compiling/tracing. The replay workspace
+colors C++ syntax and flags stops that change memory or output. Motion respects the
+reduced-motion setting, and the fonts ship with the app, so it looks the same offline.
 
 Both graphs scale to fit their panel, but never below a legible size: past that they
 scroll instead. Wide recursion trees switch to compact one-line nodes
 (`insert(a4, 4) → a4`) and scroll to keep the running call in view; untick **Follow
 call** to pan freely while you step. When a graph is bigger than its panel, an
-**Overview** in the corner shows the whole thing with your view outlined: click it to
-jump there, or hide it with ×. Pick a zoom level from the dropdown to read the details.
+**Overview** button appears in the corner: it opens a map of the whole graph with your
+view outlined, so you can click to jump there, and × folds it away again. Pick a zoom
+level from the dropdown to read the details.
 
 For more room, drag the divider between the source and the graph (arrow keys work
 too; double-click resets it), **Hide code** to give the graph the whole window, or
-**⛶ Expand** to take the graph fullscreen, with its own step and play controls. Each
-panel's explanation sits behind its ⓘ button, and **Wrap** folds long source lines
-instead of scrolling sideways.
+**Expand** to take the graph fullscreen, with its own step and play controls. Each
+panel's explanation sits on a sticky note behind its info button, and **Wrap** folds
+long source lines instead of scrolling sideways.
 
 Read the [design and data flow](docs/design.md), the exact
 [JSON trace schema](trace.schema.json), and the [phased roadmap](docs/roadmap.md).

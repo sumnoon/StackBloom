@@ -1,4 +1,5 @@
 import {useEffect, useState, type RefObject} from 'react';
+import {Icon} from './Icon';
 
 type Box = {x: number; y: number; width: number; height: number};
 /** A small overview tracks the real scroll viewport, not a separate graph camera. */
@@ -6,8 +7,8 @@ export function GraphOverview({canvas, width, height, zoom, nodes}: {
   canvas: RefObject<HTMLDivElement | null>; width: number; height: number; zoom: number; nodes: Box[];
 }) {
   const [viewport, setViewport] = useState<Box>({x:0, y:0, width:0, height:0});
-  // It sits over the graph's corner, so it folds away when that corner is what you want to read.
-  const [open, setOpen] = useState(true);
+  // It starts folded so it never covers the drawing; the Overview button in the corner opens it.
+  const [open, setOpen] = useState(false);
   useEffect(() => {
     const element = canvas.current;
     if (!element) return;
@@ -29,7 +30,7 @@ export function GraphOverview({canvas, width, height, zoom, nodes}: {
         top:event.key === 'ArrowUp' ? -100 : event.key === 'ArrowDown' ? 100 : 0});
     }}>
     <div className="graph-overview-head"><span>Overview</span>
-      <button className="ghost" onClick={() => setOpen(false)} aria-label="Hide graph overview" title="Hide overview">×</button></div>
+      <button className="ghost" onClick={() => setOpen(false)} aria-label="Hide graph overview" title="Hide overview"><Icon name="close" size={14} /></button></div>
     <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" aria-hidden="true"
       onClick={event => {
         const bounds = event.currentTarget.getBoundingClientRect();

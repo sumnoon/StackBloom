@@ -4,7 +4,8 @@ import {useLayoutEffect, useMemo, useRef, useState} from 'react';
 export type ZoomMode = 'fit' | number;
 
 const STEPS = [0.25, 0.5, 0.75, 1, 1.5, 2];
-const PADDING = 18;
+// Canvas padding (12px a side) plus a little air.
+const PADDING = 34;
 
 /** `minFit` keeps text legible: past it the graph scrolls rather than shrinking further. */
 export function useZoom(width: number, height: number, minFit = 0.1) {
