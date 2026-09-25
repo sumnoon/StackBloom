@@ -46,7 +46,7 @@ export function StackTree({snapshot, previousFrames = [], unset, previousUnset, 
         return <li className="call-node" key={`${depth}:${frame.id}`} style={{marginLeft: Math.min(depth, 6) * 12}}>
           {depth > 0 && <div className="call-connector" aria-hidden="true"><span>↓ {recursive ? 'recursive call' : 'calls'}</span></div>}
           <article className={`call-bubble ${current ? 'current-call' : ''} ${selectedCall === (frame.call_id ?? frame.id) ? 'inspected-call' : ''}`} aria-label={`${frame.function}, depth ${depth}${current ? ', active' : ''}`}>
-            <div className="call-heading"><h3><button className="inspect-call-button" onClick={() => onInspect?.(frame)} aria-pressed={selectedCall === (frame.call_id ?? frame.id)} title="Inspect this call in the source and recursion tree">{frame.function}</button></h3><span className="call-state">{current ? 'Executing' : 'Waiting'}</span></div>
+            <div className="call-heading"><h3><button className="inspect-call-button" onClick={() => onInspect?.(frame)} aria-pressed={selectedCall === (frame.call_id ?? frame.id)} title="Inspect this call in the source and recursion tree">{frame.function}</button></h3>{current && <span className="call-state">Running</span>}</div>
             <div className="call-meta"><span>Depth {depth}</span><span>Line {frame.location.line}</span>{recursive && <span className="recursion-tag">Recursion</span>}</div>
             <details open={current} className="call-values"><summary>{frame.locals.length} locals{!current && first ? ` · ${first.name} = ${summary.slice(0, 36)}` : ''}</summary>
             <div className="bubble-locals">{frame.locals.map(local => {

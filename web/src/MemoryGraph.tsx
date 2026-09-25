@@ -2,10 +2,12 @@ import {useMemo, useRef, useState} from 'react';
 import {useZoom, ZoomControl} from './zoom';
 import {pointerText, shortType, shortValue} from './display';
 import {GraphOverview} from './GraphOverview';
+import {MemoryLegend} from './Legend';
 import {InfoTip} from './InfoTip';
 import {CELL, HEADER, isCells, layoutHeap, MAX_ROWS, NODE_WIDTH, ROW, type Placed} from './layout';
 import type {HeapNode, PointerEdge, PointerState, Snapshot, Trace} from './trace';
 
+const HEAP_TOP = 24;
 const STACK_X = 24, STACK_WIDTH = 210, STACK_GAP = 26, ORIGIN = STACK_X + STACK_WIDTH + 70;
 
 const truncate = (text: string, length: number) => text.length > length ? text.slice(0, length - 1) + '…' : text;
@@ -59,21 +61,27 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
       // Reuse a remembered position only while it stays inside the new canvas.
       const stable = memory && memory.y + place.height <= layout.height + 1 && memory.x >= ORIGIN
         ? {...place, x: memory.x, y: memory.y} : place;
-      slots.set(place.key, fieldRows(node, stable));
+      // Heap boxes start a little below the top edge, level with the first stack box.
+      slots.set(place.key, fieldRows(node, {...stable, y: stable.y + HEAP_TOP}));
     }
+    // Remembered positions keep boxes still, but when the leftmost box goes away they would leave an empty
+    // column: slide the row back to the start so the drawing never loses width to a gap.
+    const left = Math.min(...[...slots.values()].map(slot => slot.x));
+    if (Number.isFinite(left) && left > ORIGIN) slots.forEach(slot => {slot.x -= left - ORIGIN;});
     const keep = new Map<string, {x: number; y: number}>();
-    slots.forEach((slot, key) => keep.set(`${key}:${snapshot.heap[key].allocation_id}`, {x: slot.x, y: slot.y}));
+    slots.forEach((slot, key) => keep.set(`${key}:${snapshot.heap[key].allocation_id}`, {x: slot.x, y: slot.y - HEAP_TOP}));
     remembered.current = keep;
     return {
       sources, stackSlots, slots, shape: layout.shape, cycles: layout.cycles,
-      width: Math.max(layout.width, STACK_X + STACK_WIDTH, 420) + 30,
-      height: Math.max(stackY, layout.height, 160) + 10,
+      // Remembered positions can sit right of the fresh layout, so measure what is drawn.
+      width: Math.max(layout.width, STACK_X + STACK_WIDTH, 420, ...[...slots.values()].map(slot => slot.x + slot.width)) + 30,
+      height: Math.max(stackY, layout.height + HEAP_TOP, 160) + 10,
     };
   }, [snapshot]);
 
   // Declared before the empty-state return so hook order stays stable.
-  // Field text stays legible: past 70% the graph scrolls rather than shrinking further.
-  const {ref, zoom, mode, setMode, fit} = useZoom(view.width, view.height, 0.7);
+  // 0.9 keeps 13.5px box text at 12px or more on screen; past that the graph scrolls.
+  const {ref, zoom, mode, setMode, fit} = useZoom(view.width, view.height, 0.9);
   const {sources, slots, stackSlots} = view;
   if (!sources.length && !Object.keys(snapshot.heap).length)
     return <section className="memory-graph" aria-label="Memory graph">
@@ -107,7 +115,11 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
       const drop = Math.max(sy, ty) + 46;
       return `M${sx},${sy} C${sx + 60},${drop} ${tx - 60},${drop} ${tx},${ty}`;
     }
-    const bend = Math.max(40, (tx - sx) / 2);
+    // Neighbours on one row get a straight line, not an S-hook through the gap.
+    const gap = tx - sx;
+    // Neighbours: a level line from the field across to the next box's side.
+    if (gap < 80) return `M${sx},${sy} L${tx},${Math.min(Math.max(sy, to.y + 10), to.y + to.height - 10)}`;
+    const bend = Math.max(40, gap / 2);
     return `M${sx},${sy} C${sx + bend},${sy} ${tx - bend},${ty} ${tx},${ty}`;
   }
 
@@ -135,8 +147,7 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
   return <section className="memory-graph" aria-label="Memory graph">
     <div className="panel-title"><h2>Memory</h2><span>{Object.keys(snapshot.heap).length} heap objects · {shapeText[view.shape]}</span></div>
     <div className="tree-controls">
-      <div className="tree-legend"><span className="heap">Heap object</span><span className="fresh">New here</span>
-        <span className="dangling">Dangling</span><span className="unknown">Unproven</span></div>
+      <MemoryLegend />
       <div className="panel-title-actions">
         <ZoomControl label="Memory zoom" mode={mode} setMode={setMode} fit={fit} />
         <InfoTip label="About the memory graph">Pointers on the left point into heap objects on the right; aliases meet
@@ -150,18 +161,19 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
     <div className="graph-stage"><div className="graph-canvas" ref={ref} tabIndex={0} aria-label="Scrollable memory graph">
       <svg width={view.width * zoom} height={view.height * zoom} viewBox={`0 0 ${view.width} ${view.height}`}
         role="group" aria-label="Pointers and heap objects">
-        <defs><marker id="heap-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-          <path d="M0,0 L8,4 L0,8" className="tree-arrow" /></marker></defs>
+        <defs><marker id="heap-arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="userSpaceOnUse">
+          <path d="M0.5,0.5 L8.5,4.5 L0.5,8.5" className="heap-arrow-head" /></marker></defs>
 
         {allEdges.map(({edge, slot, from}, i) => {
           const to = target(edge);
           const row = slot.rows.get(edge.path);
           if (!to || row === undefined) return null;
           const cycle = view.cycles.has(`${from}->${edge.target}`);
-          // Edges into a node that appeared at this stop draw themselves in.
+          // Edges into a node that appeared at this stop grow out of their pointer, like a new call's edge.
           const arriving = edge.state === 'heap' && edge.target ? fresh(edge.target) : false;
           return <path key={`edge-${i}`} className={`heap-edge ${cycle ? 'cycle' : ''} ${arriving ? 'arriving' : ''}`}
-            d={edgePath({x: slot.x + slot.width, y: slot.y + row}, to, cycle)} markerEnd="url(#heap-arrow)">
+            d={edgePath({x: slot.x + slot.width, y: slot.y + row}, to, cycle)} markerEnd="url(#heap-arrow)"
+            style={arriving ? {transformOrigin: `${slot.x + slot.width}px ${slot.y + row}px`} : undefined}>
             {cycle && <title>Cycle: this edge points back into the structure</title>}
           </path>;
         })}

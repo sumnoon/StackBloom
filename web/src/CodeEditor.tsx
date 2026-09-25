@@ -9,11 +9,11 @@ import {tags} from '@lezer/highlight';
 import type {Issue, EditorHandle} from './editorIssues';
 
 const colors = HighlightStyle.define([
-  {tag: tags.keyword, color: 'var(--accent)'},
-  {tag: [tags.string, tags.character], color: 'var(--ok)'},
-  {tag: [tags.number, tags.bool, tags.null], color: 'var(--warn)'},
-  {tag: tags.comment, color: 'var(--muted)', fontStyle: 'italic'},
-  {tag: [tags.typeName, tags.meta], color: 'var(--brand)'},
+  {tag: tags.keyword, color: 'var(--syn-keyword)'},
+  {tag: [tags.string, tags.character], color: 'var(--syn-string)'},
+  {tag: [tags.number, tags.bool, tags.null], color: 'var(--syn-number)'},
+  {tag: tags.comment, color: 'var(--syn-comment)', fontStyle: 'italic'},
+  {tag: [tags.typeName, tags.meta], color: 'var(--syn-type)'},
 ]);
 
 // Only decorate visible lines. Guides occupy leading whitespace, never the code.

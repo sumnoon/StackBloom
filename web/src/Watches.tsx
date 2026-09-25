@@ -1,6 +1,7 @@
 import {useMemo} from 'react';
 import type {Snapshot, Trace} from './trace';
 import {shortValue} from './display';
+import {Icon} from './Icon';
 
 /** A watched variable: a local name inside a function. Recursive calls share it,
  *  and the innermost (newest) call is the one watched at each stop. */
@@ -66,7 +67,7 @@ function WatchCard({trace, index, watch, onRemove, onSeek}:
       <line x1={(last ? index / last : 0) * 100} x2={(last ? index / last : 0) * 100} y1="0" y2="18" className="depth-cursor" />
     </svg>}
     {charted && <div className="watch-range"><span>{high}</span><span>{low}</span></div>}
-    <button className="ghost watch-remove" onClick={onRemove} aria-label={`Stop watching ${watch.name}`}>×</button>
+    <button className="ghost watch-remove" onClick={onRemove} aria-label={`Stop watching ${watch.name}`}><Icon name="close" size={16} /></button>
   </div>;
 }
 

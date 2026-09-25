@@ -1,6 +1,7 @@
 import {useMemo, useState} from 'react';
 import type {Trace} from './trace';
 import {traceEvents, type TraceEvent} from './traceEvents';
+import {Icon} from './Icon';
 
 export function EventTimeline({trace, index, onSeek}: {trace: Trace; index: number; onSeek: (index: number) => void}) {
   const [filter, setFilter] = useState('all');
@@ -25,8 +26,8 @@ export function EventTimeline({trace, index, onSeek}: {trace: Trace; index: numb
     <div className="event-key"><label>Events <select aria-label="Filter timeline events" value={filter} onChange={e => setFilter(e.target.value)}>
       <option value="all">All</option><option value="call">Calls</option><option value="return">Returns</option>
       <option value="memory">Heap objects</option><option value="output">Output</option><option value="error">Issues</option>
-    </select></label><button disabled={!previous} onClick={() => previous && onSeek(previous.index)} aria-label="Previous event">‹</button>
-      <button disabled={!next} onClick={() => next && onSeek(next.index)} aria-label="Next event">›</button>
+    </select></label><button disabled={!previous} onClick={() => previous && onSeek(previous.index)} aria-label="Previous event"><Icon name="prev" size={16} /></button>
+      <button disabled={!next} onClick={() => next && onSeek(next.index)} aria-label="Next event"><Icon name="next" size={16} /></button>
       <span>{filtered.length ? `${filtered.length} events` : 'No matching events'}</span>
     </div>
   </div>;
