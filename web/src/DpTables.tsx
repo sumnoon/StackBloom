@@ -1,3 +1,4 @@
+import {useState, type CSSProperties} from 'react';
 import {InfoTip} from './InfoTip';
 import {localKey, shortType} from './display';
 import type {Frame, Local, Snapshot, Trace} from './trace';
@@ -5,7 +6,7 @@ import './dp.css';
 
 type Grid = NonNullable<Local['table']>;
 type Entry = {key: string; name: string; owner: string; local: Local; grid: Grid; unset: boolean;
-  cursor: {row?: Cursor; col?: Cursor}};
+  cursor: {row?: Cursor; col?: Cursor}; frame?: Frame};
 type Cursor = {name: string; at: number};
 
 /** Loop indexes point at the cells a DP step reads and writes; the debugger records neither directly. */
@@ -31,7 +32,7 @@ function tablesAt(snapshot: Snapshot | undefined, unset: Set<string>): Entry[] {
     const cursor = grid.dims === 2
       ? {row: indexCursor(frame, ROW_NAMES, grid.rows.length), col: indexCursor(frame, COL_NAMES, width)}
       : {col: indexCursor(frame, [...ROW_NAMES, ...COL_NAMES], width)};
-    return {key, name: local.name, owner, local, grid, unset: isUnset, cursor};
+    return {key, name: local.name, owner, local, grid, unset: isUnset, cursor, frame};
   };
   const globals = (snapshot.globals ?? []).filter(local => local.table)
     .map(local => entry(`global|${local.name}`, 'file scope', local, innermost, false));
@@ -44,7 +45,59 @@ export function tableCount(snapshot: Snapshot) {
   return (snapshot.globals?.filter(l => l.table).length ?? 0) + snapshot.frames.reduce((n, frame) => n + frame.locals.filter(l => l.table).length, 0);
 }
 
-function Table({entry, before}: {entry: Entry; before?: Entry}) {
+/** Sorting and searching name their indexes more freely than DP loops do; bars mark all of them. */
+const BAR_NAMES = ['i', 'j', 'k', 'lo', 'hi', 'low', 'high', 'mid', 'l', 'r', 'left', 'right'];
+const BARS_KEY = 'stackbloom.bars';
+
+/** The values of a 1D table when every cell is a number, else null. */
+function numbers(grid: Grid) {
+  if (grid.dims !== 1 || !grid.rows[0]?.length) return null;
+  const values = grid.rows[0].map(cell => /^-?\d+(\.\d+)?(e[+-]?\d+)?$/i.test(cell) ? Number(cell) : NaN);
+  return values.every(Number.isFinite) ? values : null;
+}
+
+function barCursors(frame: Frame | undefined, size: number) {
+  const at = new Map<number, string[]>();
+  for (const name of BAR_NAMES) {
+    const local = frame?.locals.find(item => item.name === name && item.status === 'readable' && !item.table);
+    if (!local?.value || !/^-?\d+$/.test(local.value)) continue;
+    const index = Number(local.value);
+    if (index >= 0 && index < size) at.set(index, [...(at.get(index) ?? []), name]);
+  }
+  return at;
+}
+
+const PLOT = 132;
+
+/** A 1D array as bars: height is the value, green bars were written this step, index names sit underneath. */
+function Bars({entry, before, values}: {entry: Entry; before?: Entry; values: number[]}) {
+  const high = Math.max(0, ...values), low = Math.min(0, ...values);
+  const range = high - low || 1;
+  const zero = PLOT * high / range;
+  const cursors = barCursors(entry.frame, values.length);
+  const cells = entry.grid.rows[0];
+  const was = (c: number) => before && !before.unset ? before.grid.rows[0]?.[c] : undefined;
+  return <div className="dp-scroll" tabIndex={0} role="region" aria-label={`${entry.name} as bars`}>
+    <ol className="dp-bars" style={{'--plot': `${PLOT}px`} as CSSProperties}>
+      {values.map((value, c) => {
+        const old = was(c);
+        const isNew = old !== undefined && old !== cells[c];
+        const names = cursors.get(c);
+        const height = value === 0 ? 0 : Math.max(PLOT * Math.abs(value) / range, 2);
+        return <li key={c} className={[isNew ? 'dp-new' : '', names ? 'dp-aimed' : ''].join(' ').trim() || undefined}
+          title={isNew ? `${entry.name}[${c}] = ${cells[c]}, was ${old}` : `${entry.name}[${c}] = ${cells[c]}`}>
+          <span className="dp-plot"><span className="dp-bar" style={{top: value >= 0 ? zero - height : zero, height}} />
+            {low < 0 && <span className="dp-zero" style={{top: zero}} />}</span>
+          <span className="dp-bar-value">{cells[c]}</span>
+          <span className="dp-bar-index">{c}</span>
+          <span className="dp-bar-names">{names?.join(' ')}</span>
+        </li>;
+      })}
+    </ol>
+  </div>;
+}
+
+function Table({entry, before, bars}: {entry: Entry; before?: Entry; bars: boolean}) {
   const {grid, cursor} = entry;
   const width = Math.max(...grid.rows.map(row => row.length));
   const columns = Array.from({length: width}, (_, c) => c);
@@ -55,6 +108,7 @@ function Table({entry, before}: {entry: Entry; before?: Entry}) {
     return old !== undefined && old !== grid.rows[r][c];
   };
   const size = grid.dims === 2 ? `${grid.rows.length} × ${width}` : `${width} ${width === 1 ? 'cell' : 'cells'}`;
+  const values = bars && !entry.unset ? numbers(grid) : null;
   return <figure className="dp-table">
     <figcaption>
       <strong>{entry.name}</strong>
@@ -63,6 +117,7 @@ function Table({entry, before}: {entry: Entry; before?: Entry}) {
     </figcaption>
     {entry.unset
       ? <p className="dp-unset">not set yet</p>
+      : values ? <Bars entry={entry} before={before} values={values} />
       : <div className="dp-scroll" tabIndex={0} role="region" aria-label={`${entry.name} table`}>
           <table>
             <thead><tr>
@@ -92,6 +147,13 @@ export function DpTables({trace, index, unset, previousUnset}: {
 }) {
   const entries = tablesAt(trace.snapshots[index], unset);
   const before = new Map(tablesAt(trace.snapshots[index - 1], previousUnset).map(item => [item.key, item]));
+  // Browser storage may be unavailable; the choice then lasts only for this visit.
+  const [bars, setBars] = useState(() => {try {return localStorage.getItem(BARS_KEY) === '1';} catch {return false;}});
+  const toggleBars = () => setBars(on => {
+    try {localStorage.setItem(BARS_KEY, on ? '0' : '1');} catch {/* a convenience only */}
+    return !on;
+  });
+  const canBar = entries.some(entry => numbers(entry.grid));
   return <section className="dp-panel" aria-label="Arrays and DP tables">
     <div className="panel-title"><h2>Tables</h2><span>{entries.length} at this stop</span></div>
     <div className="tree-controls">
@@ -99,16 +161,19 @@ export function DpTables({trace, index, unset, previousUnset}: {
         <li><span className="dp-swatch new" aria-hidden="true">7</span>Written this step</li>
         <li><span className="dp-swatch cursor" aria-hidden="true">i</span>Where the loop index points</li>
       </ul>
+      {canBar && <button className={`ghost ${bars ? 'on' : ''}`} aria-pressed={bars} onClick={toggleBars}
+        title="Draw one-dimensional arrays of numbers as bars">Bars</button>}
       <InfoTip label="About tables">Arrays, <code>std::array</code> and <code>vector</code>s of numbers show up here as
         grids, including 2D tables like <code>dp[i][j]</code> and file-scope arrays such as a global
         <code> int dp[100]</code>. A cell marked green was written at this stop; hover it for the value it had before.
         The debugger records values, not reads, so the <strong>i</strong> and <strong>j</strong> marks show where loop
         indexes named i, j (or r, c) point: usually the cells the current line reads and writes. Large tables show
-        their first rows and columns.</InfoTip>
+        their first rows and columns. <strong>Bars</strong> draws 1D arrays of numbers as bar heights, which suits
+        sorting and searching; there the marks also cover indexes named k, lo, hi, mid, left and right.</InfoTip>
     </div>
     <div className="dp-list">
       {entries.length
-        ? entries.map(entry => <Table key={entry.key} entry={entry} before={before.get(entry.key)} />)
+        ? entries.map(entry => <Table key={entry.key} entry={entry} before={before.get(entry.key)} bars={bars} />)
         : <p className="empty">No arrays or vectors of numbers at this stop.</p>}
     </div>
   </section>;

@@ -150,6 +150,12 @@ class TraceTests(unittest.TestCase):
             ids = [v["id"] for v in frame["locals"]]
             self.assertEqual(len(ids), len(set(ids)))
 
+    def test_local_ids_survive_inner_blocks(self):
+        # Views match a local across stops by id, so leaving a loop body must not rename it.
+        stops = self.run_source("int main() {\n int total = 0;\n for (int i = 0; i < 2; ++i) {\n int step = i + 1;\n total += step;\n }\n return total;\n}\n")
+        ids = {v["id"] for s in stops for f in s["frames"] for v in f["locals"] if v["name"] == "total"}
+        self.assertEqual(len(ids), 1)
+
     def test_library_callback_is_traced(self):
         stops = self.run_source('#include <cstdlib>\nint compare(const void* a, const void* b) {\n return *(const int*)a - *(const int*)b;\n}\nint main() {\n int data[] = {3, 1, 2};\n std::qsort(data, 3, sizeof(int), compare);\n return 0;\n}\n')
         self.assertTrue(any(any("compare" in f["function"] for f in s["frames"]) for s in stops))
