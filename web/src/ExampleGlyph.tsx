@@ -1,5 +1,10 @@
 /** Small diagrams describe the examples without requiring external assets. */
-export function ExampleGlyph({kind}: {kind: 'chain' | 'fork' | 'list' | 'tree'}) {
+export function ExampleGlyph({kind}: {kind: 'chain' | 'fork' | 'list' | 'tree' | 'grid'}) {
+  // A DP table: a small grid whose last cell is being filled.
+  if (kind === 'grid') return <svg viewBox="0 0 72 56" aria-hidden="true" className="example-glyph grid">
+    {[0, 1, 2].map(r => [0, 1, 2, 3].map(c => <rect key={`${r}${c}`} x={6 + c * 16} y={6 + r * 15} width="14" height="13" rx="2"
+      className={r === 2 && c === 3 ? 'filled' : undefined} />))}
+  </svg>;
   const points = kind === 'chain' ? [[18, 10], [36, 26], [54, 42]]
     : kind === 'list' ? [[12, 26], [36, 26], [60, 26]]
     : [[36, 8], [18, 27], [54, 27], [8, 46], [28, 46], [62, 46]];

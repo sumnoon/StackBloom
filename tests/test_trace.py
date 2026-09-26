@@ -79,6 +79,22 @@ class TraceTests(unittest.TestCase):
         declared = {v["name"]: v.get("decl_line") for s in stops for f in s["frames"] for v in f["locals"]}
         self.assertEqual(declared, {"first": 2, "later": 3})
 
+    @unittest.skipUnless(printer_directory("g++"), "libstdc++ GDB printers not installed")
+    def test_arrays_and_vectors_become_tables(self):
+        """Numbers in arrays and vectors are recorded as grids; strings and maps are not."""
+        stops = self.run_source('#include <string>\n#include <vector>\nint dp[5];\nint main() {\n'
+                                ' int a[3] = {4, 5, 6};\n std::vector<int> v = {1, 2};\n'
+                                ' std::vector<std::vector<int>> g(2, std::vector<int>(3, 7));\n'
+                                ' std::string s = "hi";\n dp[2] = 9;\n return 0;\n}\n')
+        final = [s for s in stops if s["location"] and s["location"]["line"] == 10][-1]
+        tables = {v["name"]: v.get("table") for v in final["frames"][0]["locals"]}
+        self.assertEqual(tables["a"], {"dims": 1, "rows": [["4", "5", "6"]], "truncated": False})
+        self.assertEqual(tables["v"], {"dims": 1, "rows": [["1", "2"]], "truncated": False})
+        self.assertEqual(tables["g"], {"dims": 2, "rows": [["7", "7", "7"], ["7", "7", "7"]], "truncated": False})
+        self.assertIsNone(tables["s"])
+        globals_ = {v["name"]: v["table"] for v in final.get("globals", [])}
+        self.assertEqual(globals_["dp"]["rows"], [["0", "0", "9", "0", "0"]])
+
     def test_compile_error(self):
         self.assertEqual(self.run_source("int main( { broken")[0]["event"], "compile_error")
 

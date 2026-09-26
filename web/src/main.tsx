@@ -13,6 +13,7 @@ import {Icon, SproutMark} from './Icon';
 import {StackTree} from './StackTree';
 import {CallTree} from './CallTree';
 import {MemoryGraph} from './MemoryGraph';
+import {DpTables, tableCount} from './DpTables';
 import {DEFAULT_LIMITS, SubmissionPane, type Draft} from './SubmissionPane';
 import {Watches, type Watch} from './Watches';
 import {highlight} from './highlight';
@@ -21,10 +22,11 @@ import {unsetLocals} from './display';
 import {InfoTip} from './InfoTip';
 import {EventTimeline} from './EventTimeline';
 
-type TabId = 'stack' | 'calls' | 'memory' | 'output';
+type TabId = 'stack' | 'calls' | 'tables' | 'memory' | 'output';
 const TABS: {id: TabId; label: string}[] = [
   {id: 'stack', label: 'Call stack'},
   {id: 'calls', label: 'Recursion tree'},
+  {id: 'tables', label: 'Tables'},
   {id: 'memory', label: 'Memory'},
   {id: 'output', label: 'Output'},
 ];
@@ -150,6 +152,7 @@ function App() {
   const counts: Record<TabId, string | number> = {
     stack: step.frames.length,
     calls: '',
+    tables: tableCount(step) || '',
     memory: Object.keys(step.heap).length,
     output: (step.stdout + step.stderr).length ? '•' : '',
   };
@@ -350,6 +353,7 @@ function App() {
           {tab === 'stack' && <StackTree snapshot={step} previousFrames={trace.snapshots[index - 1]?.frames}
             selectedCall={selectedCall} onInspect={inspectCall} unset={unset} previousUnset={previousUnset} watched={watches} onWatch={toggleWatch} />}
           {tab === 'calls' && <CallTree trace={trace} index={index} onSelect={inspectCall} selectedCall={selectedCall} />}
+          {tab === 'tables' && <DpTables trace={trace} index={index} unset={unset} previousUnset={previousUnset} />}
           {tab === 'memory' && <MemoryGraph trace={trace} index={index} />}
           {tab === 'output' && <section className="output">
             <div><h2>stdout</h2><pre>{step.stdout || 'No output flushed yet.'}</pre></div>

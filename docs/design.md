@@ -27,12 +27,18 @@ needed. Headers and additional translation units require an explicit source allo
 in a later version. Static initialization before main is not traced in Phase 1.
 
 At each stop, record the newest user frame first and walk its lexical blocks for
-arguments and locals. Preserve shadowed names with separate IDs. Skip globals and
-library frames. Values are bounded GDB renderings, using the toolchain's libstdc++
+arguments and locals. Preserve shadowed names with separate IDs. Skip library frames,
+and skip globals except file-scope arrays and vectors of numbers (see tables below). Values are bounded GDB renderings, using the toolchain's libstdc++
 printers (never auto-loaded ones) for standard library types; do not execute inferior
 functions, `operator<<`, or method calls. Pointers carry a classified target
 (`null`, `heap`, `stack`, `dangling`, `unknown`); only proven heap extents are read.
 Stack arrays and structures have bounded textual renderings, not graphical children.
+Arrays, `std::array`, `std::vector` and `std::deque` of scalars (one level of nesting
+for 2D) also carry a `table`: a grid of cell texts of at most 24 rows, 32 columns and 400
+cells, read element by element through the same printers. File-scope variables of the
+traced source that read as tables are recorded per stop under `globals`, so a DP table
+kept at file scope is visible too. Reads are not observable without executing code, so
+the viewer marks written cells (values that changed) and the cells loop indexes point at.
 
 The highlighted line is about to execute. Multiple statements on a line cannot be
 individually promised. A local visible in DWARF may not yet be initialized: a readable

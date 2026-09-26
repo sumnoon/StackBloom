@@ -14,6 +14,80 @@ def render(value):
         return value.format_string(raw=True, max_elements=MAX_ELEMENTS, max_depth=3)
 
 
+# A table is a bounded, structured copy of an array or vector of numbers, for the DP table view.
+MAX_ROWS = 24
+MAX_COLS = 32
+MAX_CELLS = 400
+MAX_CELL_TEXT = 12
+SCALAR_CODES = (gdb.TYPE_CODE_INT, gdb.TYPE_CODE_FLT, gdb.TYPE_CODE_BOOL, gdb.TYPE_CODE_CHAR,
+                gdb.TYPE_CODE_ENUM)
+SEQUENCES = ("std::vector<", "std::array<", "std::deque<", "std::__cxx11::vector<")
+
+
+def _is_scalar(value):
+    return value.type.strip_typedefs().code in SCALAR_CODES
+
+
+def _elements(value, limit):
+    """Up to `limit` elements of a C array or a libstdc++ sequence, plus whether more exist.
+
+    Returns None for anything that is not a plain sequence (maps, strings, structs).
+    """
+    typ = value.type.strip_typedefs()
+    if typ.code == gdb.TYPE_CODE_ARRAY:
+        low, high = typ.range()
+        count = high - low + 1
+        return [value[low + i] for i in range(min(count, limit))], count > limit
+    if not str(typ).startswith(SEQUENCES):
+        return None
+    printer = gdb.default_visualizer(value)
+    if printer is None or not hasattr(printer, "children"):
+        return None
+    items = []
+    # An unconstructed vector has garbage bounds; the limit keeps that read short.
+    for position, (_, child) in enumerate(printer.children()):
+        if position >= limit:
+            return items, True
+        items.append(child)
+    return items, False
+
+
+def _cell(value):
+    try:
+        if value.type.strip_typedefs().code == gdb.TYPE_CODE_BOOL:
+            return "true" if bool(value) else "false"
+        text = value.format_string(raw=True)
+    except (gdb.error, gdb.MemoryError, RuntimeError, ValueError):
+        return "?"
+    return text if len(text) <= MAX_CELL_TEXT else text[:MAX_CELL_TEXT - 1] + "…"
+
+
+def read_table(value):
+    """A 1D or 2D grid of cell texts for arrays and vectors of numbers, or None."""
+    try:
+        first = _elements(value, 1)
+        if first is None or not first[0]:
+            return None
+        # A sequence of sequences is a 2D table; its rows are bounded separately from its columns.
+        nested = not _is_scalar(first[0][0])
+        items, truncated = _elements(value, MAX_ROWS if nested else MAX_CELLS)
+        if not nested:
+            return dict(dims=1, rows=[[_cell(item) for item in items]], truncated=truncated)
+        rows = []
+        for item in items:
+            inner = _elements(item, MAX_COLS)
+            if inner is None or not all(_is_scalar(cell) for cell in inner[0]):
+                return None
+            truncated |= inner[1]
+            rows.append([_cell(cell) for cell in inner[0]])
+            if sum(len(row) for row in rows) >= MAX_CELLS:
+                truncated |= len(rows) < len(items)
+                break
+        return dict(dims=2, rows=rows, truncated=truncated)
+    except (gdb.error, gdb.MemoryError, RuntimeError, ValueError):
+        return None
+
+
 def read_local(symbol, frame, scope):
     """Return (item, value); the value feeds the memory graph, never the trace."""
     item = dict(id=f"{scope}:{symbol.name}", name=symbol.name, type=str(symbol.type),
@@ -37,6 +111,9 @@ def read_local(symbol, frame, scope):
             item["value"] = render(value.referenced_value())[:MAX_TEXT]
         else:
             item["value"] = render(value)[:MAX_TEXT]
+            table = read_table(value)
+            if table and table["rows"] and table["rows"][0]:
+                item["table"] = table
         try:
             item["address"] = hex(int(value.address)) if value.address is not None else None
         except (gdb.error, ValueError):

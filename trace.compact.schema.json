@@ -47,6 +47,7 @@
             "output_truncated": {"type": "boolean"},
             "heap_truncated": {"type": "boolean"},
             "returns": {"type": "array"},
+            "globals": {"type": "array"},
             "frames": {"type": "array", "items": {"type": ["object", "null"]}},
             "heap_upsert": {"type": "object"},
             "heap_remove": {"type": "array", "items": {"type": "string"}},

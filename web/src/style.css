@@ -229,7 +229,7 @@ input[type=checkbox] {accent-color: var(--run); width: 16px; height: 16px; margi
 .demo-link {border: 0; color: var(--ink); padding: 6px 2px; text-decoration: underline 2px var(--run); text-underline-offset: 6px;}
 .submission {border-top: 2px solid var(--rail-strong);}
 /* The examples are sketches chalked across the board, not a row of cards. */
-.example-gallery {display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 28px; padding: 22px 0 18px; border-bottom: 1px solid var(--rail);}
+.example-gallery {display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px 28px; padding: 22px 0 18px; border-bottom: 1px solid var(--rail);}
 .example-choice {
   border: 0; border-radius: 0; padding: 4px 2px 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
   white-space: normal; text-align: left; justify-content: flex-start; font-weight: 400;
@@ -242,6 +242,8 @@ input[type=checkbox] {accent-color: var(--run); width: 16px; height: 16px; margi
 .example-choice.chosen .example-glyph {color: var(--ink);}
 .example-glyph line {stroke: currentColor; stroke-width: 2; stroke-linecap: round;}
 .example-glyph circle, .example-glyph rect {stroke: currentColor; stroke-width: 2.2; fill: var(--board);}
+.example-glyph.grid rect {stroke-width: 1.8;}
+.example-glyph.grid rect.filled {fill: currentColor;}
 @media (hover: hover) and (pointer: fine) {.example-choice:hover:not(:disabled) {background: transparent; border-color: transparent;} .example-choice:hover .example-glyph {color: var(--ink);}}
 .submission .panel-title {padding: 18px 0 6px; border: 0; flex-wrap: wrap;}
 .submission .panel-title h2 {font-size: 20px; font-weight: 800;}
@@ -612,6 +614,7 @@ code.unset {color: var(--ink-faint); font-style: italic;}
 .example-choice:nth-child(2) {animation-delay: 110ms;}
 .example-choice:nth-child(3) {animation-delay: 160ms;}
 .example-choice:nth-child(4) {animation-delay: 210ms;}
+.example-choice:nth-child(5) {animation-delay: 260ms;}
 @keyframes board-open {from {transform: translateY(8px); opacity: 0;}}
 
 /* ---------- desktop split ---------- */

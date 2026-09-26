@@ -47,7 +47,16 @@
         "initialization": {"const": "unknown"}
         ,"is_argument": {"type": "boolean"},
         "decl_line": {"type": "integer", "minimum": 1},
-        "pointers": {"type": "array", "maxItems": 32, "items": {"$ref": "#/$defs/pointerEdge"}}
+        "pointers": {"type": "array", "maxItems": 32, "items": {"$ref": "#/$defs/pointerEdge"}},
+        "table": {
+          "type": "object", "additionalProperties": false, "required": ["dims", "rows", "truncated"],
+          "properties": {
+            "dims": {"enum": [1, 2]},
+            "rows": {"type": "array", "maxItems": 400,
+                     "items": {"type": "array", "maxItems": 400, "items": {"type": "string", "maxLength": 12}}},
+            "truncated": {"type": "boolean"}
+          }
+        }
       }
     },
     "frame": {
@@ -106,7 +115,8 @@
         "output_truncated": {"type": "boolean"},
         "diagnostic": {"anyOf": [{"$ref": "#/$defs/diagnostic"}, {"type": "null"}]},
         "returns": {"type": "array", "maxItems": 5000, "items": {"$ref": "#/$defs/callReturn"}},
-        "heap_truncated": {"type": "boolean"}
+        "heap_truncated": {"type": "boolean"},
+        "globals": {"type": "array", "maxItems": 16, "items": {"$ref": "#/$defs/local"}}
       },
       "allOf": [{
         "if": {"properties": {"event": {"const": "step"}}},

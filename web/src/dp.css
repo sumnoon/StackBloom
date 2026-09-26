@@ -1,0 +1,24 @@
+/* DP tables: arrays and vectors chalked as grids on the board. The cell written at this
+   stop is new (done); the loop index marks where the step is looking (run, "now"). */
+.dp-list {flex: 1; min-height: 0; overflow: auto; padding: 6px 18px 24px; display: grid; gap: 22px; align-content: start;}
+.dp-table {margin: 0; min-width: 0;}
+.dp-table figcaption {display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin-bottom: 8px;}
+.dp-table figcaption strong {font: 700 16px var(--font-code);}
+.dp-owner {font: 17px var(--font-hand); color: var(--ink-soft);}
+.dp-type {font: 12.5px var(--font-code); color: var(--ink-soft);}
+.dp-scroll {overflow: auto; max-width: 100%; padding-top: 14px;}
+.dp-table table {border-collapse: collapse; font: 14px var(--font-code); font-variant-numeric: tabular-nums;}
+.dp-table th {font: 12.5px var(--font-code); color: var(--ink-faint); font-weight: 400; padding: 2px 6px; position: relative; text-align: center;}
+.dp-table thead th {padding-bottom: 5px;}
+.dp-table tbody th {text-align: right; padding-right: 10px;}
+.dp-table td {min-width: 44px; height: 36px; padding: 0 8px; text-align: center; border: 1.5px solid color-mix(in srgb, var(--ink) 30%, transparent);}
+.dp-table th.dp-cursor {color: var(--run); font-weight: 700;}
+.dp-cursor-name {position: absolute; left: 50%; top: -14px; transform: translateX(-50%); font: 16px/1 var(--font-hand); color: var(--run);}
+.dp-table tbody th .dp-cursor-name {left: auto; right: calc(100% - 2px); top: 50%; transform: translateY(-50%);}
+/* The cell the loop indexes aim at gets a run outline; a newly written value gets the done mark. */
+.dp-table td.dp-aimed {outline: 2.5px solid var(--run); outline-offset: -2px;}
+.dp-table td.dp-new {background: var(--done-wash); color: var(--ink); font-weight: 700; text-decoration: underline 2px var(--done); text-underline-offset: 4px;}
+.dp-unset {font: 18px var(--font-hand); color: var(--ink-faint); margin: 0;}
+.dp-swatch {display: inline-grid; place-items: center; min-width: 26px; height: 18px; font: 700 12px var(--font-code); border: 1.5px solid color-mix(in srgb, var(--ink) 30%, transparent);}
+.dp-swatch.new {background: var(--done-wash); text-decoration: underline 2px var(--done); text-underline-offset: 2px;}
+.dp-swatch.cursor {border: 0; font: 17px var(--font-hand); color: var(--run);}
