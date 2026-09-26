@@ -78,6 +78,11 @@ the available metadata supports that interpretation. See [limitations](limitatio
 
 ### Recursion tree
 
+Each node shows the call with its argument values, such as
+`towerOfHanoi(2, "B", "C", "A")`. Methods drop their class name and the hidden
+`this` pointer, so a LeetCode `Solution::` method reads like a plain function.
+Nodes widen to fit the arguments (up to 32 characters); hover a node for its full label.
+
 Calls branch in invocation order and retain recorded return values. L/R labels
 mean first/second child calls, not necessarily `left`/`right` fields. The active
 path and step note help you follow the running call.
