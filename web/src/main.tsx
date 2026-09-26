@@ -14,7 +14,7 @@ import {Icon, SproutMark} from './Icon';
 import {StackTree} from './StackTree';
 import {CallTree} from './CallTree';
 import {repeatedWork, type WorkSummary} from './RepeatReport';
-import {callHistory} from './callHistory';
+import {callHistory, shortName} from './callHistory';
 import {GraphView} from './GraphView';
 import {graphsAt, traceHasGraph} from './graph';
 import {MemoryGraph} from './MemoryGraph';
@@ -384,11 +384,11 @@ function App() {
 
         {/* Announces where you are when stepping; silent during playback, which would chatter. */}
         <div className="execution-context" aria-live={playing ? 'off' : 'polite'}>
-          <span className={`context-dot ${playing ? 'is-playing' : ''}`} /><strong>{step.frames[0]?.function ?? (step.event === 'exit' ? 'Finished' : 'Stopped')}</strong>
+          <span className={`context-dot ${playing ? 'is-playing' : ''}`} /><strong title={step.frames[0]?.function}>{step.frames[0] ? shortName(step.frames[0].function) : step.event === 'exit' ? 'Finished' : 'Stopped'}</strong>
           <span>{step.location ? `Line ${step.location.line}` : step.event.replace('_', ' ')}</span><span className="context-stat">{step.frames.length} active {step.frames.length === 1 ? 'call' : 'calls'}</span>
           {changes.heap.includes(index) && <span className="change-tag">Memory changed</span>}{changes.output.includes(index) && <span className="change-tag">New output</span>}
           {inspected && <button className="inspection-chip" onClick={() => setSelectedCall(null)} title="Clear call selection">
-            Inspecting {inspected.function} · line {inspected.location.line}<Icon name="close" size={14} /></button>}
+            Inspecting {shortName(inspected.function)} · line {inspected.location.line}<Icon name="close" size={14} /></button>}
           <span className="shortcut-hint">Space play · ← → step · n over · f out</span></div>
       </div>
       <div className="topbar-actions">

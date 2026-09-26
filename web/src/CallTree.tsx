@@ -10,8 +10,9 @@ import {useZoom, ZoomControl} from './zoom';
 type Dims = {width: number; height: number; gap: number; level: number};
 // Full nodes carry a status line; compact ones are a single, larger line for wide trees.
 const FULL: Dims = {width: 168, height: 44, gap: 22, level: 96};
-// Full labels: 16px bold monospace is about 9.7px per character.
-const FULL_CHARS = 15;
+// Full labels: 16px bold monospace is about 9.7px per character. Nodes grow with their longest
+// label, from 15 characters up to FULL_CHARS, so the arguments are not cut off.
+const FULL_CHARS = 32, FULL_CHAR_WIDTH = 9.7;
 const COMPACT: Dims = {width: 116, height: 38, gap: 12, level: 70};
 const MAX_NODES = 250;
 // Below this, labels stop being readable: the tree scrolls instead, following the running call.
@@ -20,7 +21,7 @@ const MIN_FIT = 0.8;
 // Switch to compact nodes when full ones would have to shrink this far to fit.
 const COMPACT_BELOW = 0.8;
 // Compact labels: 15px monospace is about 8.3px per character.
-const COMPACT_CHARS = 24, CHAR_WIDTH = 8.4;
+const COMPACT_CHARS = 32, CHAR_WIDTH = 8.4;
 // Steps closer together than this are a burst, not a step to watch.
 const RAPID_STEP_MS = 250;
 // Width added to compact nodes so ×N never overprints the label.
@@ -120,14 +121,16 @@ export function CallTree({trace, index, onSelect, selectedCall, baseline = null}
   visible.forEach(node => frequencies.set(node.label, (frequencies.get(node.label) ?? 0) + 1));
   // Room for a hand-lettered ×N inside the node when any call repeats, so it never meets an edge label.
   const anyRepeat = visible.some(node => (frequencies.get(node.label) ?? 0) > 1 && node.frame.locals.some(local => local.is_argument));
-  const fullDims = {...FULL, width: FULL.width + (anyRepeat ? REPEAT_ROOM : 0)};
+  const fullChars = Math.min(FULL_CHARS, Math.max(15, ...visible.map(node => node.label.length)));
+  // The width left for text: padding, the tick of a returned call and room for ×N.
+  const fullDims = {...FULL, width: Math.max(FULL.width, Math.round(fullChars * FULL_CHAR_WIDTH + 44)) + (anyRepeat ? REPEAT_ROOM : 0)};
   const full = layout(history, order, fullDims);
   const fullFit = box.width ? Math.min(1, (box.width - 34) / full.width, (box.height - 34) / full.height) : 1;
   const compact = (mode === 'fit' ? fullFit : zoom) < COMPACT_BELOW;
   // Compact nodes are as wide as their longest label (up to a cap), so "insert(null, 5) → a3"
   // is never cut to "insert(null, …": the arguments are the point of the label.
   const longest = Math.min(COMPACT_CHARS, Math.max(8, ...visible.map(node => compactLabel(node).length)));
-  const compactDims = {...COMPACT, width: Math.round(longest * CHAR_WIDTH + 24 + (anyRepeat ? REPEAT_ROOM : 0))};
+  const compactDims = {...COMPACT, width: Math.round(longest * CHAR_WIDTH + 32 + (anyRepeat ? REPEAT_ROOM : 0))};
   const dims = compact ? compactDims : fullDims;
   const {positions, labels, width, height} = compact ? layout(history, order, compactDims) : full;
   const seek = (node: CallNode) => onSelect(node.frame, node.last);
@@ -222,7 +225,7 @@ export function CallTree({trace, index, onSelect, selectedCall, baseline = null}
               <text x={compact ? (dims.width - (anyRepeat ? REPEAT_ROOM : 0)) / 2
                 : ((anyRepeat ? REPEAT_ROOM : 0) + dims.width - (node.state === 'completed' ? 18 : 0)) / 2} y={dims.height / 2 + 5.5} textAnchor="middle"
                 className={`node-label ${compact ? 'compact' : ''}`}>
-                {compact ? truncate(compactLabel(node), COMPACT_CHARS) : truncate(node.label, FULL_CHARS)}</text>
+                {compact ? truncate(compactLabel(node), COMPACT_CHARS) : truncate(node.label, fullChars)}</text>
               {/* A returned call is ticked off inside its box, so "done" never rests on colour alone. */}
               {/* Compact labels already say "→ value", so only full nodes carry the tick. */}
               {!compact && node.state === 'completed' && <path className="node-tick" d={`M${dims.width - 22},${dims.height / 2} l4 4.5 l8.5 -9.5`} />}

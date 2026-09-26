@@ -27,6 +27,12 @@ function returned(value: string | null, stop: Snapshot) {
   return shortValue(value).text;
 }
 
+/** A method named without its class, `towerOfHanoi` rather than `Solution::towerOfHanoi`:
+ *  the tree has room for the name or the values, and the values are the point. */
+export function shortName(name: string) {
+  return name.replace(/^(?:[A-Za-z_]\w*::)+(?=[A-Za-z_~])/, '');
+}
+
 /** Replay only the prefix: backward seeking must not reveal future calls. */
 export function callHistory(trace: Trace, index: number) {
   const nodes = new Map<string, CallNode>();
@@ -53,9 +59,10 @@ export function callHistory(trace: Trace, index: number) {
       // Display observed parameter values, not guessed locals or inferred returns.
       // A call's first stop is its entry address, before the prologue stores arguments.
       const entering = i === node.first && i > 0;
-      const args = frame.locals.filter(local => local.is_argument).map(local =>
+      // `this` is an address the reader never passed, so the label leaves it out.
+      const args = frame.locals.filter(local => local.is_argument && local.name !== 'this').map(local =>
         !entering && local.status === 'readable' ? argument(local, stop) : '?');
-      node.label = `${frame.function}(${args.join(', ')})`;
+      node.label = `${shortName(frame.function)}(${args.join(', ')})`;
       path.push(node);
     }
     for (const {call_id, value} of stop.returns ?? []) {
