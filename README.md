@@ -245,6 +245,14 @@ The trace opens on its own screen:
 - **Run to a line.** Line numbers the program stopped at are clickable; each click goes
   to the next time that line runs.
 - **Jump to** the deepest call, the next memory change or the next output.
+- **Predict before you look.** Turn on **Predict** and stepping pauses just before a call
+  returns: a sticky note asks what it will give back, you type a guess, and it tells you
+  whether you were right before stepping on, keeping score as you go. Step, Over, Out,
+  the s / n / f keys and Play all ask; the scrubber, Jump to and line clicks go straight
+  there. Calls that return a pointer are skipped.
+
+  ![Predict mode asking what fib(0) will return, with the score so far](docs/predict.png)
+
 - **Watch a variable.** Press **Watch** on any local in the call stack to pin it above the
   workspace, with its current value and a chart of how it changed across the run. Click
   the chart to jump there. Up to three at a time.
@@ -348,6 +356,7 @@ the same on a fresh GitHub runner. Pushing a `v*` tag attaches the zip to that r
 - `web/src/GraphOverview.tsx`: the corner overview for graphs larger than their panel.
 - `web/src/display.ts`: short type names, container values and pointer labels.
 - `web/src/Watches.tsx`: watched variables and their value history across the run.
+- `web/src/Predict.tsx`: Predict mode: the question before a return, answer checking and the score.
 - `web/src/zoom.tsx`: fit-to-panel zoom shared by both graph panels.
 - `web/src/compact.ts`: reader for compact traces.
 - `web/src/trace.ts`: runtime JSON Schema validation and TypeScript types.
