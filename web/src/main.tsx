@@ -13,6 +13,8 @@ import './style.css';
 import {Icon, SproutMark} from './Icon';
 import {StackTree} from './StackTree';
 import {CallTree} from './CallTree';
+import {repeatedWork, type WorkSummary} from './RepeatReport';
+import {callHistory} from './callHistory';
 import {MemoryGraph} from './MemoryGraph';
 import {DpTables, tableCount} from './DpTables';
 import {DEFAULT_LIMITS, SubmissionPane, type Draft} from './SubmissionPane';
@@ -140,6 +142,8 @@ function App() {
       setIndex(start); setTab(startTab); setExporting(null);
     }
   }
+  // The previous run's totals, so a memoized version can be compared with the plain one.
+  const [baseline, setBaseline] = useState<WorkSummary | null>(null);
   const seek = (position: number) => {setSelectedCall(null); setPlaying(false); setIndex(position);};
   const move = (delta: number) => {
     if (delta > 0) {forward(Math.min(last, index + delta)); return;}
@@ -280,6 +284,10 @@ function App() {
   function show(next: Trace) {
     setSelectedCall(null);
     setQuestion(null); asked.current = new Set(); setScore({right: 0, total: 0});
+    if (trace !== sample) {
+      const previous = repeatedWork(callHistory(trace, trace.snapshots.length - 1).nodes.values()).summary;
+      setBaseline(previous.calls ? previous : null);
+    }
     setPlaying(false);
     setTrace(next);
     setIndex(next.snapshots[0].event === 'step' ? 0 : next.snapshots.length - 1);
@@ -441,7 +449,7 @@ function App() {
         <div className="tab-panel" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
           {tab === 'stack' && <StackTree snapshot={step} previousFrames={trace.snapshots[index - 1]?.frames}
             selectedCall={selectedCall} onInspect={inspectCall} unset={unset} previousUnset={previousUnset} watched={watches} onWatch={toggleWatch} />}
-          {tab === 'calls' && <CallTree trace={trace} index={index} onSelect={inspectCall} selectedCall={selectedCall} />}
+          {tab === 'calls' && <CallTree trace={trace} index={index} onSelect={inspectCall} selectedCall={selectedCall} baseline={baseline} />}
           {tab === 'tables' && <DpTables trace={trace} index={index} unset={unset} previousUnset={previousUnset} />}
           {tab === 'memory' && <MemoryGraph trace={trace} index={index} />}
           {tab === 'output' && <section className="output">

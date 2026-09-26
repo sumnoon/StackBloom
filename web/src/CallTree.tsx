@@ -3,6 +3,7 @@ import {callHistory, type CallNode} from './callHistory';
 import {GraphOverview} from './GraphOverview';
 import {InfoTip} from './InfoTip';
 import {TreeLegend} from './Legend';
+import {RepeatReport, repeatedWork, type WorkSummary} from './RepeatReport';
 import type {Trace, Frame} from './trace';
 import {useZoom, ZoomControl} from './zoom';
 
@@ -90,7 +91,11 @@ function layout(history: ReturnType<typeof callHistory>, order: Map<string, numb
   return {positions, labels, width, height};
 }
 
-export function CallTree({trace, index, onSelect, selectedCall}: {trace: Trace; index: number; onSelect: (frame: Frame, index: number) => void; selectedCall: string | null}) {
+export function CallTree({trace, index, onSelect, selectedCall, baseline = null}: {trace: Trace; index: number;
+    onSelect: (frame: Frame, index: number) => void; selectedCall: string | null; baseline?: WorkSummary | null}) {
+  // The repeated-work report and the subproblem it spotlights in the tree.
+  const [showRepeats, setShowRepeats] = useState(false);
+  const [spotlight, setSpotlight] = useState<string | null>(null);
   // Off lets the reader pan freely while stepping; on keeps the running call in view.
   const [follow, setFollow] = useState(true);
   // Placeholder extents; the real ones are known once the layout below is built.
@@ -130,6 +135,7 @@ export function CallTree({trace, index, onSelect, selectedCall}: {trace: Trace; 
   const activePath = new Set<string>();
   for (let node = active; node; node = node.parent ? history.nodes.get(node.parent) : undefined) activePath.add(node.id);
   const note = stepNote(history, returnedNow, active, index);
+  const work = useMemo(() => repeatedWork(history.nodes.values()), [history]);
   // The breadcrumb reads the active path from main down to the running call.
   const crumbs: CallNode[] = [];
   for (let node = active; node; node = node.parent ? history.nodes.get(node.parent) : undefined) crumbs.unshift(node);
@@ -154,11 +160,15 @@ export function CallTree({trace, index, onSelect, selectedCall}: {trace: Trace; 
     if (!inView) canvas.scrollTo({left: x - canvas.clientWidth / 2, top: y - canvas.clientHeight / 3});
   }, [index, zoom, compact, active?.id, follow]);
 
-  return <section className="history-tree" aria-label="Recursion call tree">
+  return <section className={`history-tree ${showRepeats && spotlight ? 'spotlit' : ''}`} aria-label="Recursion call tree">
     <div className="panel-title"><h2>Recursion tree</h2><span>{history.nodes.size} calls recorded so far</span></div>
     <div className="tree-controls">
       <TreeLegend />
       <div className="panel-title-actions">
+        <button type="button" className={`ghost repeat-toggle ${showRepeats ? 'on' : ''}`} aria-expanded={showRepeats}
+          title="How many calls recomputed a subproblem, and which ones"
+          onClick={() => {setShowRepeats(value => !value); setSpotlight(null);}}>
+          Repeated work{work.summary.wasted > 0 && <span className="repeat-count">{work.summary.wasted}</span>}</button>
         <label className="follow-call"><input type="checkbox" checked={follow} onChange={e => setFollow(e.target.checked)} />Follow call</label>
         <ZoomControl label="Tree zoom" mode={mode} setMode={setMode} fit={fit} />
         <InfoTip label="About the recursion tree">Each call branches down into the calls it makes, in call order: with
@@ -169,6 +179,8 @@ export function CallTree({trace, index, onSelect, selectedCall}: {trace: Trace; 
           call to revisit its last stop. Large trees switch to compact nodes and follow the running call.</InfoTip>
       </div>
     </div>
+    {showRepeats && <RepeatReport rows={work.rows} summary={work.summary} baseline={baseline}
+      spotlight={spotlight} onSpotlight={setSpotlight} />}
     {history.approximate && <p className="note">Legacy trace: call boundaries are approximate. Run the code again for invocation tracking.</p>}
     <div className="graph-stage">
     {/* Pinned to the board's top-right corner like a sticky note; clicks pass through to the tree. */}
@@ -199,7 +211,7 @@ export function CallTree({trace, index, onSelect, selectedCall}: {trace: Trace; 
         {visible.map(node => {
           const p = positions.get(node.id)!;
           const repeated = node.frame.locals.some(local => local.is_argument) && (frequencies.get(node.label) ?? 0) > 1;
-          return <g key={node.id} transform={`translate(${p.x - dims.width / 2},${p.y})`} className={`history-node ${node.state} ${selectedCall === (node.frame.call_id ?? node.frame.id) ? 'inspected-call' : ''} ${forwardStep && node.first === index ? 'call-arriving' : ''}`} role="button" tabIndex={0} aria-pressed={selectedCall === (node.frame.call_id ?? node.frame.id)}
+          return <g key={node.id} transform={`translate(${p.x - dims.width / 2},${p.y})`} className={`history-node ${node.state} ${showRepeats && spotlight === node.label ? 'spotlight' : ''} ${selectedCall === (node.frame.call_id ?? node.frame.id) ? 'inspected-call' : ''} ${forwardStep && node.first === index ? 'call-arriving' : ''}`} role="button" tabIndex={0} aria-pressed={selectedCall === (node.frame.call_id ?? node.frame.id)}
             aria-label={`${node.label}, ${statusText(node)}, visit stop ${node.last + 1}`} onClick={() => seek(node)} onKeyDown={e => {if (e.key === 'Enter' || e.key === ' ') {e.preventDefault(); e.stopPropagation(); seek(node);}}}>
             <title>{node.label} · {statusText(node)} · call #{order.get(node.id)}</title>
             {/* The group above is placed by an SVG transform; motion runs on this inner group. */}

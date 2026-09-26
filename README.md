@@ -37,6 +37,14 @@ with your permissions.
 
   ![The recursion tree for fib(4), with returned values on every call](docs/recursion-tree.png)
 
+- **Repeated work, counted.** **Repeated work** on the recursion tree lists every
+  subproblem computed more than once — `fib(1)` ×3, 2 calls wasted — with its result and
+  the share of calls that recomputed something. Click a row to spotlight its copies in
+  the tree. After you run a second program, it compares the two runs, so a memoized
+  version's savings show up as numbers.
+
+  ![The repeated-work report for fib(4) with fib(1) spotlit in the tree](docs/repeated-work.png)
+
 - **DP tables.** Arrays, `std::array` and `vector`s of numbers appear on the **Tables** tab
   as grids, including 2D tables like `dp[i][j]` and file-scope arrays such as a global
   `int dp[100]`. The cell a step writes is marked with its old value on hover, and loop
@@ -361,6 +369,7 @@ the same on a fresh GitHub runner. Pushing a `v*` tag attaches the zip to that r
 - `web/src/main.tsx`: two-screen shell, replay controls, tabs and change navigation.
 - `web/src/StackTree.tsx`: connected call bubbles, locals and pointer states.
 - `web/src/CallTree.tsx`: branching recursion tree built from recorded invocations.
+- `web/src/RepeatReport.tsx`: repeated subproblems, wasted calls and the comparison with the previous run.
 - `web/src/MemoryGraph.tsx`: pointer and heap-object graph for the current stop.
 - `web/src/DpTables.tsx`: arrays and vectors as grids, with written cells and loop-index cursors.
 - `web/src/layout.ts`: structure heuristics (list, tree, grid, graph) and positions.

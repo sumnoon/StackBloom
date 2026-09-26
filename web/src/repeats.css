@@ -1,0 +1,20 @@
+/* The repeated-work report: a short board section above the tree, in ink with hand-lettered counts. */
+.repeat-report {padding: 4px 18px 10px; max-height: 240px; overflow: auto; border-bottom: 1px solid var(--rail); flex-shrink: 0;}
+.repeat-summary, .repeat-compare, .repeat-hint {margin: 4px 0 8px; font-size: 14px; line-height: 1.5;}
+.repeat-compare {color: var(--ink-soft); font-family: var(--font-code); font-size: 13px;}
+.repeat-hint {font: 18px/1.3 var(--font-hand); color: var(--ink-soft);}
+.repeat-table {border-collapse: collapse; font-size: 13.5px; margin: 2px 0 6px;}
+.repeat-table th, .repeat-table td {padding: 3px 18px 3px 0; text-align: left; border-bottom: 1px dashed var(--rail-strong);}
+.repeat-table thead th {font-size: 12.5px; color: var(--ink-soft); font-weight: 600;}
+.repeat-table code {font: 600 13.5px var(--font-code);}
+.repeat-times {font: 18px/1 var(--font-hand);}
+.repeat-pending {color: var(--ink-faint); font-style: italic;}
+.repeat-pick {font: 600 13.5px var(--font-code); padding: 1px 6px; min-height: 0; border-color: transparent; margin-left: -6px;}
+.repeat-table tr.on .repeat-pick {border-color: var(--ink); border-style: dashed;}
+button.repeat-toggle.on {color: var(--ink); box-shadow: inset 0 -2.5px var(--run);}
+.repeat-count {font: 600 12px var(--font-code); margin-left: 2px;}
+/* A spotlit subproblem: its copies are outlined in dashed ink, everything else steps back. */
+.history-tree.spotlit .history-node:not(.spotlight) .node-ink {opacity: .3;}
+.history-tree.spotlit .tree-edge {opacity: .45;}
+.history-node.spotlight .node-body {stroke: var(--ink); stroke-width: 3; stroke-dasharray: 6 4;}
+@media (pointer: coarse) {.repeat-pick {min-height: 44px;}}
