@@ -12,7 +12,9 @@ export type Local = {id: string; name: string; type: string; value: string | nul
   address: string | null; status: 'readable' | 'optimized_out' | 'unavailable'; initialization: 'unknown';
   is_argument?: boolean; decl_line?: number; pointers?: PointerEdge[];
   /** Arrays and vectors of numbers, as a bounded grid (one row when 1D). */
-  table?: {dims: 1 | 2; rows: string[][]; truncated: boolean}};
+  table?: {dims: 1 | 2; rows: string[][]; truncated: boolean};
+  /** Maps and sets: [key, value] per entry for maps, [key] for sets, in the container's own order. */
+  entries?: {kind: 'map' | 'set'; items: string[][]; truncated: boolean}};
 export type Frame = {id: string; call_id?: string; function: string; location: Location; locals: Local[]; truncated: boolean};
 export type Snapshot = {id: number; event: string; location: Location | null; thread_id: number | null;
   frames: Frame[]; heap: Record<string, HeapNode>; heap_truncated?: boolean;

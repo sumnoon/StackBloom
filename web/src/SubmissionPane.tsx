@@ -98,6 +98,28 @@ int main() {
 }
 `;
 
+const memoFib = `#include <iostream>
+#include <map>
+
+// memo[n] remembers fib(n) once it is known, so no subproblem is computed twice.
+std::map<int, long long> memo;
+
+long long fib(int n) {
+    if (n <= 1) return n;
+    if (memo.count(n)) return memo[n];
+    long long value = fib(n - 1) + fib(n - 2);
+    memo[n] = value;
+    return value;
+}
+
+int main() {
+    int n = 4;
+    std::cin >> n;
+    std::cout << "fib(" << n << ") = " << fib(n) << std::endl;
+    return 0;
+}
+`;
+
 const gridPaths = `#include <iostream>
 #include <vector>
 
@@ -168,6 +190,7 @@ export function SubmissionPane({draft, onDraft, onTrace, compilerOutput = ''}: {
   const examples = [
     {title: 'Factorial', description: 'Follow calls down, then back up.', kind: 'chain' as const, code: recursion, input: '4\n'},
     {title: 'Fibonacci', description: 'Watch one call become a tree.', kind: 'fork' as const, code: fibonacci, input: '4\n'},
+    {title: 'Memo Fibonacci', description: 'Remember answers in a map.', kind: 'memo' as const, code: memoFib, input: '5\n'},
     {title: 'Linked list', description: 'Trace pointers from node to node.', kind: 'list' as const, code: linkedList, input: ''},
     {title: 'Binary search tree', description: 'See a tree take shape in memory.', kind: 'tree' as const, code: bst, input: ''},
     {title: 'Grid paths', description: 'Watch a DP table fill in.', kind: 'grid' as const, code: gridPaths, input: ''},

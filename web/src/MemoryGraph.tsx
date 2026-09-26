@@ -3,9 +3,10 @@ import {useZoom, ZoomControl} from './zoom';
 import {pointerText, shortType, shortValue} from './display';
 import {GraphOverview} from './GraphOverview';
 import {MemoryLegend} from './Legend';
+import {entryText} from './Entries';
 import {InfoTip} from './InfoTip';
 import {CELL, HEADER, isCells, layoutHeap, MAX_ROWS, NODE_WIDTH, ROW, type Placed} from './layout';
-import type {HeapNode, PointerEdge, PointerState, Snapshot, Trace} from './trace';
+import type {HeapNode, Local, PointerEdge, PointerState, Snapshot, Trace} from './trace';
 
 const HEAP_TOP = 24;
 const STACK_X = 24, STACK_WIDTH = 210, STACK_GAP = 26, ORIGIN = STACK_X + STACK_WIDTH + 70;
@@ -52,6 +53,21 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
       stackSlots.set(source.local, {key: source.local, x: STACK_X, y: stackY, width: STACK_WIDTH, height, rows});
       stackY += height + STACK_GAP;
     }
+    // Maps and sets live on the stack too: each gets its own box of entries in the stack column.
+    const containers: {key: string; label: string; entries: NonNullable<Local['entries']>; slot: Slot}[] = [];
+    const owned = [
+      ...(snapshot.globals ?? []).map(local => ({owner: 'global', id: 'global', local})),
+      ...[...snapshot.frames].reverse().flatMap(frame => frame.locals.map(local => ({owner: frame.function, id: frame.id, local}))),
+    ];
+    for (const {owner, id, local} of owned) {
+      if (local.status !== 'readable' || !local.entries?.items.length) continue;
+      const more = local.entries.items.length > MAX_ROWS || local.entries.truncated;
+      const height = HEADER + (Math.min(local.entries.items.length, MAX_ROWS) + (more ? 1 : 0)) * ROW + 10;
+      const key = `${id}|${local.id}`;
+      containers.push({key, label: `${owner}: ${local.name}`, entries: local.entries,
+        slot: {key, x: STACK_X, y: stackY, width: STACK_WIDTH, height, rows: new Map()}});
+      stackY += height + STACK_GAP;
+    }
     const roots = sources.flatMap(s => s.edges.filter(e => e.state === 'heap' && e.target).map(e => e.target!));
     const layout = layoutHeap(snapshot, roots, ORIGIN);
     const slots = new Map<string, Slot>();
@@ -72,7 +88,7 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
     slots.forEach((slot, key) => keep.set(`${key}:${snapshot.heap[key].allocation_id}`, {x: slot.x, y: slot.y - HEAP_TOP}));
     remembered.current = keep;
     return {
-      sources, stackSlots, slots, shape: layout.shape, cycles: layout.cycles,
+      sources, stackSlots, slots, containers, shape: layout.shape, cycles: layout.cycles,
       // Remembered positions can sit right of the fresh layout, so measure what is drawn.
       width: Math.max(layout.width, STACK_X + STACK_WIDTH, 420, ...[...slots.values()].map(slot => slot.x + slot.width)) + 30,
       height: Math.max(stackY, layout.height + HEAP_TOP, 160) + 10,
@@ -82,8 +98,8 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
   // Declared before the empty-state return so hook order stays stable.
   // 0.9 keeps 13.5px box text at 12px or more on screen; past that the graph scrolls.
   const {ref, zoom, mode, setMode, fit} = useZoom(view.width, view.height, 0.9);
-  const {sources, slots, stackSlots} = view;
-  if (!sources.length && !Object.keys(snapshot.heap).length)
+  const {sources, slots, stackSlots, containers} = view;
+  if (!sources.length && !containers.length && !Object.keys(snapshot.heap).length)
     return <section className="memory-graph" aria-label="Memory graph">
       <div className="panel-title"><h2>Memory</h2><span>no pointers at this stop</span></div>
       <p className="note">Pointers, references and heap objects appear here as they are created.</p>
@@ -190,6 +206,23 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
           </g>;
         })}
 
+        {containers.map(({key, label, entries, slot}) => {
+          const count = entries.items.length;
+          const shown = entries.items.slice(0, MAX_ROWS);
+          return <g key={key} transform={`translate(${slot.x},${slot.y})`} className="container-box">
+            <rect className="box" width={STACK_WIDTH} height={slot.height} rx="10" />
+            <text x="12" y="19" className="box-title">{truncate(label, 18)}
+              <tspan className="box-meta"> {entries.kind} · {count}{entries.truncated ? '+' : ''}</tspan></text>
+            {shown.map((item, i) => <text key={item[0] + i} x="12" y={HEADER + i * ROW + 14} className="box-row">
+              <title>{item.join(' → ')}</title>
+              <tspan className="entry-key">{truncate(entryText(item[0]), entries.kind === 'map' ? 11 : 24)}</tspan>
+              {entries.kind === 'map' && <><tspan className="entry-sep"> → </tspan>{truncate(entryText(item[1] ?? ''), 10)}</>}
+            </text>)}
+            {(count > MAX_ROWS || entries.truncated) && <text x="12" y={HEADER + shown.length * ROW + 14} className="box-row">
+              +{count > MAX_ROWS ? count - MAX_ROWS : ''} more</text>}
+          </g>;
+        })}
+
         {[...slots.values()].map(slot => {
           const node = snapshot.heap[slot.key];
           return <g key={slot.key} transform={`translate(${slot.x},${slot.y})`}
@@ -219,7 +252,7 @@ export function MemoryGraph({trace, index}: {trace: Trace; index: number}) {
         })}
       </svg>
     </div>
-    <GraphOverview canvas={ref} width={view.width} height={view.height} zoom={zoom} nodes={[...stackSlots.values(), ...slots.values()].map(({x, y, width, height}) => ({x, y, width, height}))} />
+    <GraphOverview canvas={ref} width={view.width} height={view.height} zoom={zoom} nodes={[...stackSlots.values(), ...containers.map(item => item.slot), ...slots.values()].map(({x, y, width, height}) => ({x, y, width, height}))} />
     </div>
   </section>;
 }

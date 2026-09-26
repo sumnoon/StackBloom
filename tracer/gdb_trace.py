@@ -29,10 +29,11 @@ global_symbols = None
 
 
 def global_tables(frame):
-    """File-scope arrays and vectors of the traced source, for the DP table view.
+    """File-scope arrays, vectors, maps and sets of the traced source, for tables and entries.
 
-    DP solutions often keep their table at file scope (`int dp[100];`), so those are
-    recorded too, but only when they read as a table; other globals stay out.
+    DP solutions often keep their table or memo at file scope (`int dp[100];`,
+    `std::map<int, long long> memo;`), so those are recorded too, but only when they read
+    as a table or a map/set; other globals stay out.
     """
     global global_symbols
     if global_symbols is None:
@@ -48,7 +49,7 @@ def global_tables(frame):
     items = []
     for symbol in global_symbols[:MAX_GLOBALS]:
         item, _ = read_local(symbol, frame, "global")
-        if item.get("table"):
+        if item.get("table") or item.get("entries"):
             items.append(item)
     return items
 

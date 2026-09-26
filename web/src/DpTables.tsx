@@ -33,14 +33,15 @@ function tablesAt(snapshot: Snapshot | undefined, unset: Set<string>): Entry[] {
       : {col: indexCursor(frame, [...ROW_NAMES, ...COL_NAMES], width)};
     return {key, name: local.name, owner, local, grid, unset: isUnset, cursor};
   };
-  const globals = (snapshot.globals ?? []).map(local => entry(`global|${local.name}`, 'file scope', local, innermost, false));
+  const globals = (snapshot.globals ?? []).filter(local => local.table)
+    .map(local => entry(`global|${local.name}`, 'file scope', local, innermost, false));
   const locals = [...snapshot.frames].reverse().flatMap(frame => frame.locals.filter(local => local.table)
     .map(local => entry(localKey(frame, local), frame.function, local, frame, unset.has(localKey(frame, local)))));
   return [...globals, ...locals];
 }
 
 export function tableCount(snapshot: Snapshot) {
-  return (snapshot.globals?.length ?? 0) + snapshot.frames.reduce((n, frame) => n + frame.locals.filter(l => l.table).length, 0);
+  return (snapshot.globals?.filter(l => l.table).length ?? 0) + snapshot.frames.reduce((n, frame) => n + frame.locals.filter(l => l.table).length, 0);
 }
 
 function Table({entry, before}: {entry: Entry; before?: Entry}) {

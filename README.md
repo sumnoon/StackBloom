@@ -45,6 +45,16 @@ with your permissions.
 
   ![The Tables tab filling a grid-paths DP table, with the written cell marked and i, j on the headers](docs/dp-table.png)
 
+- **Maps and sets you can read.** `map`, `set` and their `multi`/`unordered` variants show
+  as a small key → value table (or a row of keys) instead of one long string, in the call
+  stack and as their own box in the memory graph. A key the step added is marked new, and
+  a value that changed under an old key shows what it was on hover. File-scope tables and
+  maps, like a global `memo`, appear in a **file scope** section above the calls, and a
+  reference parameter such as `vector<int>& dp` shows the table it refers to. Try the
+  **Memo Fibonacci** example, then compare it with plain Fibonacci in **Repeated work**.
+
+  ![A global memo map shown as a key → value table in the call stack, with the new key marked](docs/stl-views.png)
+
 - **A memory graph.** Pointers, heap objects, aliases meeting at one box, cycles that
   loop back, and dangling pointers after `delete`. The shape is detected per stop —
   list, tree, grid or general graph — and nodes keep their position as you step.
@@ -226,7 +236,8 @@ change, so pulling new code needs no extra step.
 
 Paste a single-file C++17 program into **C++ source**, add **Program input** if it reads
 `std::cin`, and click **Run & visualize**. The cards at the top load ready-made
-examples: factorial, Fibonacci, a linked list, a binary search tree and a grid-paths DP table.
+examples: factorial, Fibonacci, memoized Fibonacci, a linked list, a binary search tree and a
+grid-paths DP table.
 
 - **An editor that knows C++.** Syntax colours, indentation guides, bracket matching and
   a highlighted current line, with a **Text size** control from 12 to 20px.
@@ -357,6 +368,7 @@ the same on a fresh GitHub runner. Pushing a `v*` tag attaches the zip to that r
 - `web/src/CallTree.tsx`: branching recursion tree built from recorded invocations.
 - `web/src/MemoryGraph.tsx`: pointer and heap-object graph for the current stop.
 - `web/src/DpTables.tsx`: arrays and vectors as grids, with written cells and loop-index cursors.
+- `web/src/Entries.tsx`: maps and sets as key → value tables, with new and changed entries marked.
 - `web/src/layout.ts`: structure heuristics (list, tree, grid, graph) and positions.
 - `web/src/Sparkline.tsx`: depth sparkline, run totals and per-line stop counts.
 - `web/src/CodeEditor.tsx`: CodeMirror C++ editor with compiler-error markers, loaded separately so replay never downloads it.
@@ -381,12 +393,13 @@ npm --prefix web run build
 node --test web/tests/traceEvents.test.mjs
 ```
 
-41 tests run real compilers and debuggers, not fixtures:
+43 tests run real compilers and debuggers, not fixtures:
 
 - `tests/test_trace.py`: nested locals, loop stops, stdin, output truncation, shadowing,
   library callbacks, thread detection, compile errors, signals, step limits, wall
   timeout, the recursion call tree, standard library values, declaration lines and
-  arrays and vectors recorded as tables.
+  arrays and vectors recorded as tables, maps and sets recorded as entries, and a global memo
+  and a reference parameter.
 - `tests/test_memory.py`: aliases, cycles, stack pointers, null versus dangling, reused
   addresses, array extents, `malloc`/`void*`, and the fallback when a program replaces
   `operator new`.

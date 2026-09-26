@@ -1,0 +1,19 @@
+/* Maps and sets on the board: a small ink table of key → value, or a row of keys. A key this
+   stop added is new (done); a value that changed under an old key gets the wavy ink mark. */
+.entry-view {display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 0; max-width: 70%;}
+.entry-table {border-collapse: collapse; font: 13.5px var(--font-code);}
+.entry-table th, .entry-table td {padding: 2px 6px; text-align: left; font-weight: 400; border-bottom: 1px dashed var(--rail);}
+.entry-table th {font-weight: 600;}
+.entry-table .entry-arrow {color: var(--ink-faint); padding: 2px 2px;}
+.entry-keys {display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; margin: 0; padding: 0; list-style: none;}
+.entry-keys li {font: 13.5px var(--font-code); padding: 1px 8px; border: 1.5px solid color-mix(in srgb, var(--ink) 35%, transparent); border-radius: 999px;}
+.entry-new th, .entry-new td:not(.entry-arrow), .entry-keys li.entry-new {background: var(--done-wash); text-decoration: underline 2px var(--done); text-underline-offset: 3px;}
+.entry-changed {font-weight: 700; text-decoration: underline wavy 1.5px var(--ink-soft); text-underline-offset: 4px;}
+.entry-count {font-size: 12px; color: var(--ink-soft);}
+/* In the memory graph, a container is its own box in the stack column. */
+.container-box rect.box {fill: var(--board-raised); stroke: color-mix(in srgb, var(--ink) 60%, transparent); stroke-width: 1.8; stroke-dasharray: 2 0;}
+.container-box .box-row .entry-key {font-weight: 700;}
+.container-box .box-row .entry-sep {fill: var(--ink-faint);}
+/* The file-scope bubble reads as board context, not as a call: dashed, with a hand-lettered heading. */
+.call-bubble.file-scope {border-style: dashed; margin-bottom: 14px;}
+.call-bubble.file-scope:not(.current-call) .call-heading h3 {font: 20px var(--font-hand); font-weight: 400; color: var(--ink-soft); text-decoration: none;}

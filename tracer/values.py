@@ -88,6 +88,48 @@ def read_table(value):
         return None
 
 
+# Associative containers (maps and sets), as bounded key/value entries for the structured view.
+MAX_ENTRIES = 32
+MAX_ENTRY_TEXT = 40
+ASSOCIATIVE = ("std::map<", "std::multimap<", "std::unordered_map<", "std::unordered_multimap<",
+               "std::set<", "std::multiset<", "std::unordered_set<", "std::unordered_multiset<")
+
+
+def _entry_text(value):
+    try:
+        text = render(value)
+    except (gdb.error, gdb.MemoryError, RuntimeError, ValueError):
+        return "?"
+    return text if len(text) <= MAX_ENTRY_TEXT else text[:MAX_ENTRY_TEXT - 1] + "…"
+
+
+def read_entries(value):
+    """Keys (and values, for maps) of a map or set, in the container's own order, or None."""
+    typ = str(value.type.strip_typedefs())
+    if not typ.startswith(ASSOCIATIVE):
+        return None
+    try:
+        printer = gdb.default_visualizer(value)
+        if printer is None or not hasattr(printer, "children"):
+            return None
+        is_map = typ.split("<", 1)[0].endswith("map")
+        children = []
+        # Map printers yield key, value, key, value...; set printers yield the elements.
+        limit = MAX_ENTRIES * (2 if is_map else 1)
+        for position, (_, child) in enumerate(printer.children()):
+            if position >= limit:
+                break
+            children.append(_entry_text(child))
+        truncated = len(children) >= limit
+        if is_map:
+            items = [[children[i], children[i + 1]] for i in range(0, len(children) - 1, 2)]
+        else:
+            items = [[key] for key in children]
+        return dict(kind="map" if is_map else "set", items=items, truncated=truncated)
+    except (gdb.error, gdb.MemoryError, RuntimeError, ValueError):
+        return None
+
+
 def read_local(symbol, frame, scope):
     """Return (item, value); the value feeds the memory graph, never the trace."""
     item = dict(id=f"{scope}:{symbol.name}", name=symbol.name, type=str(symbol.type),
@@ -106,12 +148,14 @@ def read_local(symbol, frame, scope):
         # follows pointers only into allocations whose extent the ledger proved.
         if typ.code == gdb.TYPE_CODE_PTR:
             item["value"] = hex(int(value))
-        elif typ.code in (gdb.TYPE_CODE_REF, gdb.TYPE_CODE_RVALUE_REF):
-            # A reference aliases existing storage; show the referent itself.
-            item["value"] = render(value.referenced_value())[:MAX_TEXT]
         else:
-            item["value"] = render(value)[:MAX_TEXT]
-            table = read_table(value)
+            # A reference aliases existing storage; show the referent itself, and its structure.
+            target = value.referenced_value() if typ.code in (gdb.TYPE_CODE_REF, gdb.TYPE_CODE_RVALUE_REF) else value
+            item["value"] = render(target)[:MAX_TEXT]
+            entries = read_entries(target)
+            if entries is not None:
+                item["entries"] = entries
+            table = read_table(target)
             if table and table["rows"] and table["rows"][0]:
                 item["table"] = table
         try:

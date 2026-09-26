@@ -1,5 +1,12 @@
 /** Small diagrams describe the examples without requiring external assets. */
-export function ExampleGlyph({kind}: {kind: 'chain' | 'fork' | 'list' | 'tree' | 'grid'}) {
+export function ExampleGlyph({kind}: {kind: 'chain' | 'fork' | 'list' | 'tree' | 'grid' | 'memo'}) {
+  // A memo: a small key → value table beside one call.
+  if (kind === 'memo') return <svg viewBox="0 0 72 56" aria-hidden="true" className="example-glyph memo">
+    <circle cx="12" cy="28" r="6" />
+    <line x1="18" y1="28" x2="28" y2="28" />
+    {[0, 1, 2].map(r => <g key={r}><rect x="30" y={8 + r * 15} width="16" height="12" rx="2" />
+      <rect x="50" y={8 + r * 15} width="16" height="12" rx="2" className={r === 2 ? 'filled' : undefined} /></g>)}
+  </svg>;
   // A DP table: a small grid whose last cell is being filled.
   if (kind === 'grid') return <svg viewBox="0 0 72 56" aria-hidden="true" className="example-glyph grid">
     {[0, 1, 2].map(r => [0, 1, 2, 3].map(c => <rect key={`${r}${c}`} x={6 + c * 16} y={6 + r * 15} width="14" height="13" rx="2"
