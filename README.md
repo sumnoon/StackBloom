@@ -64,10 +64,16 @@ Once that feels familiar, try **Grid paths** and open **Tables** to watch a DP
 table fill, **Memo Fibonacci** to inspect a memo map, or **Linked list** and
 open **Memory** to follow pointers.
 
+Practising on LeetCode? Switch the editor to **LeetCode solution**, paste your
+`class Solution`, and copy the example test case (`nums = [2,7,11,15], target = 9`).
+StackBloom writes `main()`, builds lists and trees, and prints the result.
+[LeetCode mode details](docs/usage.md#paste-a-leetcode-solution)
+
 ## Explore at your own pace
 
 | When you want to… | Use… |
 |---|---|
+| Trace a LeetCode answer without writing `main()` | **LeetCode solution** in the editor |
 | Inspect each call's variables | **Call stack**, with **Watch** to pin a value |
 | Understand recursion and returns | **Recursion tree**, with **Predict** to test a guess |
 | Find repeated calls | **Repeated work**, which highlights matching call labels |

@@ -48,7 +48,8 @@ def _elements(value, limit):
     for position, (_, child) in enumerate(printer.children()):
         if position >= limit:
             return items, True
-        items.append(child)
+        # The vector<bool> printer yields Python bools rather than gdb values.
+        items.append(child if isinstance(child, gdb.Value) else gdb.Value(child))
     return items, False
 
 
