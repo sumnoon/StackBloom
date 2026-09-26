@@ -17,7 +17,7 @@ import {repeatedWork, type WorkSummary} from './RepeatReport';
 import {callHistory} from './callHistory';
 import {MemoryGraph} from './MemoryGraph';
 import {DpTables, tableCount} from './DpTables';
-import {DEFAULT_LIMITS, SubmissionPane, type Draft} from './SubmissionPane';
+import {DEFAULT_LEETCODE, DEFAULT_LIMITS, SubmissionPane, type Draft} from './SubmissionPane';
 import {Watches, type Watch} from './Watches';
 import {highlight} from './highlight';
 import {DepthSparkline, lineHeat, runStats} from './Sparkline';
@@ -43,7 +43,7 @@ function App() {
   const [selectedCall, setSelectedCall] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [view, setView] = useState<'editor' | 'trace'>('editor');
-  const [draft, setDraft] = useState<Draft>({source: sample.source.text, stdin: '3\n', ...DEFAULT_LIMITS});
+  const [draft, setDraft] = useState<Draft>({mode: 'program', source: sample.source.text, stdin: '3\n', ...DEFAULT_LEETCODE, ...DEFAULT_LIMITS});
   const [compileOutput, setCompileOutput] = useState('');
   const [watches, setWatches] = useState<Watch[]>([]);
   const [dragging, setDragging] = useState(false);

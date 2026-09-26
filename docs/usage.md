@@ -25,6 +25,24 @@ to jump to its location.
 has a separate deadline. **Recent runs** keeps the last eight submitted programs
 and inputs in this browser. **← Edit code** returns to your current draft.
 
+## Paste a LeetCode solution
+
+Switch the editor to **LeetCode solution** and paste the `class Solution` from the
+problem page. In **Test case**, copy the example input as it appears there, either
+as `name = value` pairs (`nums = [2,7,11,15], target = 9`) or with one value per line.
+StackBloom writes `main()` for you: it builds the arguments, calls the first public
+method, and prints the result the way LeetCode does. Methods that return `void`
+print the first parameter they modify.
+
+Parameters can be integers, `double`, `bool`, `char`, `string`, `ListNode*`,
+`TreeNode*`, and vectors of these. `ListNode` and `TreeNode` are defined for you,
+as they are on LeetCode; trees use LeetCode's level order with `null` for gaps.
+
+The recording shows the whole generated file, so you can see how your method
+is called. The builders and printers are tagged as a separate file, so the trace
+never stops inside them. Compile errors point at lines of your pasted class.
+Each mode keeps its own code, so switching back to **Whole program** loses nothing.
+
 ## Navigate a recording
 
 | Control | What it does | Shortcut |

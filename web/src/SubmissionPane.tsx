@@ -1,5 +1,6 @@
 import {lazy, Suspense, useEffect, useMemo, useRef, useState} from 'react';
 import {parseIssues, type EditorHandle} from './editorIssues';
+import {buildHarness, shiftIssues, LEETCODE_STARTER, LEETCODE_TESTCASE, type Harness} from './leetcode';
 const CodeEditor = lazy(() => import('./CodeEditor').then(module => ({default: module.CodeEditor})));
 import {parseTrace, type Trace} from './trace';
 import {ExampleGlyph} from './ExampleGlyph';
@@ -136,10 +137,13 @@ int main() {
 `;
 
 /** Draft state lives in the shell, so switching screens never discards edits. */
-export type Draft = {source: string; stdin: string; maxSteps: number; timeout: number};
+export type Mode = 'program' | 'leetcode';
+/** Each mode keeps its own code and input, so switching back and forth loses nothing. */
+export type Draft = {mode: Mode; source: string; stdin: string; solution: string; testcase: string; maxSteps: number; timeout: number};
 export const DEFAULT_LIMITS = {maxSteps: 1000, timeout: 15};
+export const DEFAULT_LEETCODE = {solution: LEETCODE_STARTER, testcase: LEETCODE_TESTCASE};
 
-type Recent = {source: string; stdin: string; at: number; title: string};
+type Recent = {source: string; stdin: string; at: number; title: string; mode?: Mode};
 const RECENT_KEY = 'stackbloom.recent';
 
 /** Name a run after its first function other than main, which says more than "main.cpp". */
@@ -153,11 +157,11 @@ function titleOf(source: string) {
 function readRecent(): Recent[] {
   try {return JSON.parse(localStorage.getItem(RECENT_KEY) ?? '[]');} catch {return [];}
 }
-function remember(source: string, stdin: string) {
+function remember(source: string, stdin: string, mode: Mode) {
   try {
     const kept = readRecent().filter(item => item.source !== source || item.stdin !== stdin);
     localStorage.setItem(RECENT_KEY, JSON.stringify(
-      [{source, stdin, at: Date.now(), title: titleOf(source)}, ...kept].slice(0, 8)));
+      [{source, stdin, at: Date.now(), title: titleOf(source), mode}, ...kept].slice(0, 8)));
   } catch {/* Recent runs are a convenience only. */}
 }
 function ago(time: number) {
@@ -171,16 +175,25 @@ function ago(time: number) {
 export function SubmissionPane({draft, onDraft, onTrace, compilerOutput = ''}: {
   draft: Draft; onDraft: (draft: Draft) => void; onTrace: (trace: Trace) => void; compilerOutput?: string;
 }) {
-  const {source, stdin, maxSteps, timeout} = draft;
+  const {mode, maxSteps, timeout} = draft;
+  const leetcode = mode === 'leetcode';
+  // The editor and input box show whichever mode is chosen.
+  const source = leetcode ? draft.solution : draft.source, stdin = leetcode ? draft.testcase : draft.stdin;
   const update = (change: Partial<Draft>) => onDraft({...draft, ...change});
-  const load = (example: string, input: string) => {update({source: example, stdin: input}); setError('');};
+  const edit = (code: string) => update(leetcode ? {solution: code} : {source: code});
+  const input = (text: string) => update(leetcode ? {testcase: text} : {stdin: text});
+  const load = (example: string, text: string) => {update({mode: 'program', source: example, stdin: text}); setError('');};
+  const switchMode = (next: Mode) => {update({mode: next}); setError('');};
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [elapsed, setElapsed] = useState(0);
   const [recent, setRecent] = useState<Recent[]>(readRecent);
   const editor = useRef<EditorHandle>(null);
   const recentMenu = useRef<HTMLDetailsElement>(null);
-  const issues = useMemo(() => parseIssues(compilerOutput), [compilerOutput]);
+  // Compiler lines in LeetCode mode refer to the generated file; map them back to the pasted class.
+  const [ran, setRan] = useState<Harness | null>(null);
+  const shownOutput = leetcode && ran ? shiftIssues(compilerOutput, ran) : compilerOutput;
+  const issues = useMemo(() => parseIssues(shownOutput), [shownOutput]);
   useEffect(() => {
     if (!busy) return;
     const started = Date.now();
@@ -197,13 +210,19 @@ export function SubmissionPane({draft, onDraft, onTrace, compilerOutput = ''}: {
   ];
 
   async function run() {
+    let harness: Harness | null = null;
+    if (leetcode) {
+      try {harness = buildHarness(source, stdin);}
+      catch (e) {setError(e instanceof Error ? e.message : String(e)); return;}
+    }
+    setRan(harness);
     setBusy(true); setElapsed(0); setError('');
-    remember(source, stdin);
+    remember(source, stdin, mode);
     setRecent(readRecent());
     try {
       const response = await fetch('/api/trace', {
         method: 'POST', headers: {'Content-Type': 'application/json', 'X-CPPV-Request': 'trace'},
-        body: JSON.stringify({source, stdin, max_steps: maxSteps, timeout}),
+        body: JSON.stringify({source: harness ? harness.program : source, stdin: harness ? '' : stdin, max_steps: maxSteps, timeout}),
       });
       const text = await response.text();
       if (!text) throw new Error('Start the local backend with python tracer/server.py, then try again.');
@@ -223,37 +242,46 @@ export function SubmissionPane({draft, onDraft, onTrace, compilerOutput = ''}: {
   const errors = issues.filter(issue => issue.severity === 'error').length;
   return <section className="submission" aria-label="Submit C++ code">
     <div className="example-gallery" aria-label="Example programs">{examples.map(example => <button key={example.title}
-      className={`example-choice ${source === example.code ? 'chosen' : ''}`} aria-pressed={source === example.code}
+      className={`example-choice ${!leetcode && source === example.code ? 'chosen' : ''}`} aria-pressed={!leetcode && source === example.code}
       disabled={busy} onClick={() => load(example.code, example.input)}>
       <ExampleGlyph kind={example.kind} /><span><strong>{example.title}</strong><small>{example.description}</small></span>
     </button>)}</div>
     <div className="panel-title"><h2>Your program</h2>
+      <div className="mode-switch" role="group" aria-label="What you are pasting">
+        <button className={`ghost ${leetcode ? '' : 'on'}`} aria-pressed={!leetcode} disabled={busy} onClick={() => switchMode('program')}>Whole program</button>
+        <button className={`ghost ${leetcode ? 'on' : ''}`} aria-pressed={leetcode} disabled={busy} onClick={() => switchMode('leetcode')}>LeetCode solution</button>
+      </div>
       <div className="panel-title-actions">
         {recent.length > 0 && <details className="recent-runs" ref={recentMenu}>
           <summary>Recent runs ({recent.length})<Icon name="chevron" size={16} /></summary>
           <ul>{recent.map(item => <li key={item.at}><button disabled={busy} onClick={() => {
-            update({source: item.source, stdin: item.stdin}); setError('');
+            update(item.mode === 'leetcode' ? {mode: 'leetcode', solution: item.source, testcase: item.stdin}
+              : {mode: 'program', source: item.source, stdin: item.stdin});
+            setError('');
             recentMenu.current?.removeAttribute('open');
           }}><strong>{item.title}</strong>
             <small>{item.source.split('\n').length} lines{item.stdin.trim() ? ` · input ${item.stdin.trim().slice(0, 12)}` : ''} · {ago(item.at)}</small></button></li>)}</ul>
         </details>}
-        <span className="language-badge">C++17 <span aria-hidden="true">/</span> main.cpp</span>
+        <span className="language-badge">C++17 <span aria-hidden="true">/</span> {leetcode ? 'class Solution' : 'main.cpp'}</span>
       </div>
     </div>
     <div className="submission-fields">
-      <div className="editor-column"><span className="field-label">C++ source</span>
-        <Suspense fallback={<div className="code-editor">Loading editor…</div>}><CodeEditor ref={editor} value={source} onChange={value => update({source: value})} disabled={busy} issues={issues} /></Suspense>
+      <div className="editor-column"><span className="field-label">{leetcode ? 'Your class Solution' : 'C++ source'}</span>
+        <Suspense fallback={<div className="code-editor">Loading editor…</div>}><CodeEditor ref={editor} value={source} onChange={edit} disabled={busy} issues={issues} /></Suspense>
         <div className="editor-footer"><span>{source.split('\n').length} lines</span>
-          <span>Single file · {maxSteps.toLocaleString()} stop limit</span></div>
+          <span>{leetcode ? 'StackBloom writes main() for you' : 'Single file'} · {maxSteps.toLocaleString()} stop limit</span></div>
         {compilerOutput && <div className="compiler-issues" role="alert">
           <h3>{errors ? `${errors} compile ${errors === 1 ? 'error' : 'errors'}` : 'The program did not compile'}</h3>
           {issues.length > 0 && <ul>{issues.map((issue, i) => <li key={i} className={issue.severity}>
             <button onClick={() => editor.current?.reveal(issue.line, issue.column)}>
               <span className="issue-where">Line {issue.line}</span>{issue.message}</button></li>)}</ul>}
-          <details open={!issues.length}><summary>Full compiler output</summary><pre>{compilerOutput}</pre></details>
+          <details open={!issues.length}><summary>Full compiler output</summary><pre>{shownOutput}</pre></details>
         </div>}
       </div>
-      <div className="submission-options"><label>Program input <span className="optional">Optional</span><textarea aria-label="Standard input" spellCheck={false} value={stdin} onChange={e => update({stdin: e.target.value})} disabled={busy} placeholder="Values your program reads with std::cin" /></label>
+      <div className="submission-options">{leetcode
+        ? <label>Test case<textarea aria-label="Test case" spellCheck={false} value={stdin} onChange={e => input(e.target.value)} disabled={busy} placeholder="nums = [2,7,11,15], target = 9" />
+          <small className="field-hint">Copy it from the problem: <code>name = value</code> pairs, or one value per line.</small></label>
+        : <label>Program input <span className="optional">Optional</span><textarea aria-label="Standard input" spellCheck={false} value={stdin} onChange={e => input(e.target.value)} disabled={busy} placeholder="Values your program reads with std::cin" /></label>}
         <details className="execution-limits"><summary>Execution limits</summary><div className="limits">
           <label>Stop limit<select value={maxSteps} disabled={busy} onChange={e => update({maxSteps: Number(e.target.value)})}>
             {[1000, 2500, 5000].map(value => <option key={value} value={value}>{value.toLocaleString()} stops</option>)}</select></label>

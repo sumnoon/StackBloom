@@ -248,6 +248,11 @@ input[type=checkbox] {accent-color: var(--run); width: 16px; height: 16px; margi
 @media (hover: hover) and (pointer: fine) {.example-choice:hover:not(:disabled) {background: transparent; border-color: transparent;} .example-choice:hover .example-glyph {color: var(--ink);}}
 .submission .panel-title {padding: 18px 0 6px; border: 0; flex-wrap: wrap;}
 .submission .panel-title h2 {font-size: 20px; font-weight: 800;}
+/* Whole program or LeetCode solution: two plain tabs beside the heading. */
+.mode-switch {display: flex; gap: 4px; margin-right: auto; margin-left: 12px;}
+.mode-switch button {font-size: 14px;}
+.field-hint {font-weight: 400; font-size: 12.5px; line-height: 1.45;}
+.field-hint code {font-family: var(--font-code); color: var(--ink);}
 .language-badge {font: 12.5px var(--font-code); color: var(--ink-soft);}
 .language-badge span {color: var(--rail-strong); padding: 0 8px;}
 .submission-fields {display: grid; grid-template-columns: minmax(0, 2fr) minmax(250px, .85fr); gap: 32px; padding: 10px 0 20px;}
@@ -640,6 +645,7 @@ code.unset {color: var(--ink-faint); font-style: italic;}
 @media (max-width: 720px) {
   .app {height: auto; min-height: 100dvh; overflow: visible;}
   .topbar {padding: 10px 14px;}
+  .mode-switch {flex-basis: 100%; margin-left: -9px;}
   .brand p {display: none;}
   /* On phones the top bar's actions are icons; their names stay for screen readers. */
   .topbar .btn-label {position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;}

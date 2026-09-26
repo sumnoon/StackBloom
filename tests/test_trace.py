@@ -164,6 +164,26 @@ class TraceTests(unittest.TestCase):
         stops = self.run_source('#include <thread>\n#include <chrono>\nvoid worker() {\n std::this_thread::sleep_for(std::chrono::milliseconds(100));\n}\nint main() {\n std::thread t(worker);\n t.join();\n}\n')
         self.assertEqual(stops[-1]["event"], "unsupported")
 
+    @unittest.skipUnless(printer_directory("g++"), "libstdc++ GDB printers not installed")
+    def test_vector_of_bool_becomes_a_table(self):
+        stops = self.run_source('#include <vector>\nint main() {\n std::vector<bool> seen = {true, false};\n seen[1] = true;\n return 0;\n}\n')
+        tables = [v["table"]["rows"] for s in stops for f in s["frames"] for v in f["locals"] if v.get("table")]
+        self.assertIn([["true", "true"]], tables)
+
+    def test_line_directive_harness_stays_out_of_the_trace(self):
+        # LeetCode mode files its builders under another name; only the solution and main stop.
+        stops = self.run_source(
+            '#include <iostream>\n'
+            'int twice(int x) {\n return 2 * x;\n}\n'
+            '#line 1 "stackbloom_harness.h"\n'
+            'int build(int x) {\n int y = x + 1;\n return y;\n}\n'
+            '#line 11 "main.cpp"\n'
+            'int main() {\n int value = build(2);\n std::cout << twice(value) << "\\n";\n return 0;\n}\n')
+        self.assertEqual(stops[-1]["stdout"].replace("\r\n", "\n"), "6\n")
+        lines = {s["location"]["line"] for s in stops if s["location"]}
+        self.assertEqual(lines, {2, 3, 4, 12, 13, 14, 15})
+        self.assertFalse(any(f["function"] == "build" for s in stops for f in s["frames"]))
+
 
 if __name__ == "__main__":
     unittest.main()
