@@ -76,6 +76,7 @@ StackBloom writes `main()`, builds lists and trees, and prints the result.
 | Trace a LeetCode answer without writing `main()` | **LeetCode solution** in the editor |
 | Inspect each call's variables | **Call stack**, with **Watch** to pin a value |
 | Understand recursion and returns | **Recursion tree**, with **Predict** to test a guess |
+| Watch a BFS or DFS walk an adjacency list | **Graph**, which appears when the program builds one |
 | Find repeated calls | **Repeated work**, which highlights matching call labels |
 | Read map/set contents | **Call stack** or **Memory**, with new and changed entries marked |
 | See arrays and DP updates | **Tables**, with changed cells and loop-index markers; **Bars** for sorting and searching |

@@ -22,6 +22,17 @@ MAX_CELL_TEXT = 12
 SCALAR_CODES = (gdb.TYPE_CODE_INT, gdb.TYPE_CODE_FLT, gdb.TYPE_CODE_BOOL, gdb.TYPE_CODE_CHAR,
                 gdb.TYPE_CODE_ENUM)
 SEQUENCES = ("std::vector<", "std::array<", "std::deque<", "std::__cxx11::vector<")
+ADAPTERS = ("std::queue<", "std::stack<", "std::priority_queue<")
+
+
+def _container(value):
+    """The container inside std::queue, std::stack or std::priority_queue (member `c`), else the value."""
+    try:
+        if str(value.type.strip_typedefs()).startswith(ADAPTERS):
+            return value["c"]
+    except gdb.error:
+        pass
+    return value
 
 
 def _is_scalar(value):
@@ -156,7 +167,7 @@ def read_local(symbol, frame, scope):
             entries = read_entries(target)
             if entries is not None:
                 item["entries"] = entries
-            table = read_table(target)
+            table = read_table(_container(target))
             if table and table["rows"] and table["rows"][0]:
                 item["table"] = table
         try:

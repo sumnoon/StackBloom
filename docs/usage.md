@@ -124,6 +124,30 @@ Try **Memo Fibonacci**, then compare its call counts with plain Fibonacci using
 
 ![A global memo map with a newly recorded key marked](stl-views.png)
 
+### Graph
+
+When a run builds an adjacency list, a **Graph** tab appears. A
+`vector<vector<int>>` whose values are all valid row numbers is drawn as nodes
+on a circle, with row `u` listing the neighbours of node `u`. It needs a name
+such as `adj`, `graph` or `g`, or rows of different lengths. A named square
+table of 0s and 1s is read as an adjacency matrix. Edges that come in both
+directions are drawn as lines; one-way edges get arrows.
+
+The marks come from your variable names, so a typical BFS or DFS lights up
+with no extra work:
+
+- `u` (or `node`, `cur`) is the node being worked on; `v` (or `next`, `to`) is
+  the neighbour it is looking at, and the edge between them is highlighted.
+- In a recursive DFS, every call's `u` is on the call stack, so the path from
+  the first call to the current one is chalked in.
+- A `bool` array such as `visited` fills in the nodes it marks.
+- A `std::queue` or `std::stack` (or a vector named `q` or `stack`) shows its
+  nodes as dashed outlines, with a strip underneath in the order they come out.
+- Arrays such as `dist`, `parent` or `level` are written beside each node.
+- Edges added at this stop are green while the list is being built.
+
+![A BFS in the Graph tab: node 1 is u, the edge to v is highlighted, visited nodes are filled and node 2 waits in the queue](graph-view.png)
+
 ### Memory and output
 
 **Memory** shows bounded heap objects and pointer connections: aliases share a

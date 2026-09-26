@@ -124,6 +124,16 @@ class TraceTests(unittest.TestCase):
         memo = next(v for v in final.get("globals", []) if v["name"] == "memo")
         self.assertEqual(memo["entries"], {"kind": "map", "items": [["2", "9"]], "truncated": False})
 
+    @unittest.skipUnless(printer_directory("g++"), "libstdc++ GDB printers not installed")
+    def test_queue_and_stack_become_tables(self):
+        # The graph view numbers the nodes waiting in a queue or stack, so both need their contents.
+        stops = self.run_source('#include <queue>\n#include <stack>\nint main() {\n std::queue<int> q;\n std::stack<int> s;\n'
+                                ' q.push(4); q.push(2);\n s.push(1); s.push(3);\n return 0;\n}\n')
+        final = [s for s in stops if s["location"] and s["location"]["line"] == 8][-1]
+        tables = {v["name"]: v.get("table", {}).get("rows") for v in final["frames"][0]["locals"]}
+        self.assertEqual(tables["q"], [["4", "2"]])
+        self.assertEqual(tables["s"], [["1", "3"]])
+
     def test_compile_error(self):
         self.assertEqual(self.run_source("int main( { broken")[0]["event"], "compile_error")
 
