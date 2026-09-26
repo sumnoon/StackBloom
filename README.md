@@ -72,7 +72,7 @@ open **Memory** to follow pointers.
 | Understand recursion and returns | **Recursion tree**, with **Predict** to test a guess |
 | Find repeated calls | **Repeated work**, which highlights matching call labels |
 | Read map/set contents | **Call stack** or **Memory**, with new and changed entries marked |
-| See arrays and DP updates | **Tables**, with changed cells and loop-index markers |
+| See arrays and DP updates | **Tables**, with changed cells and loop-index markers; **Bars** for sorting and searching |
 | Follow pointers, aliases, and heap objects | **Memory** |
 | Revisit or share a run | The timeline, **Download** for JSON, or **Export** for images and animations |
 

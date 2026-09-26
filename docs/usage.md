@@ -86,6 +86,14 @@ hover. Indexes named `i`/`j` or `r`/`c` can appear on row/column headers. Try
 
 ![Grid paths with changed DP cells and index markers](dp-table.png)
 
+Turn on **Bars** to draw one-dimensional arrays of numbers as bars, which makes
+sorting and searching easier to follow. A bar written at this stop turns green;
+hover it for the old value. Indexes named `i`, `j`, `k`, `lo`, `hi`, `mid`,
+`left` or `right` outline the bar they point at and label it underneath. Negative
+values hang below a zero line. The choice is remembered in this browser.
+
+![Bubble sort drawn as bars, with the value just swapped in green and i and j marking their cells](array-bars.png)
+
 ### Maps, sets, and memoization
 
 Supported maps appear as key → value tables and sets as rows of keys, in the call

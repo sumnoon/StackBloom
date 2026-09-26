@@ -176,10 +176,15 @@ def locals_for(frame):
     """
     result, values = [], []
     try:
+        blocks = []
         block = frame.block()
-        depth = 0
         while block is not None and not block.is_global and not block.is_static:
-            scope = f"{depth}:{block.start:#x}"
+            blocks.append(block)
+            block = block.superblock
+        for inner, block in enumerate(blocks):
+            # Depth counts from the function's outermost block, so a local keeps its id
+            # when an inner block (a loop or if body) opens or closes around it.
+            scope = f"{len(blocks) - 1 - inner}:{block.start:#x}"
             for symbol in block:
                 if symbol.name and (symbol.is_argument or symbol.is_variable):
                     if len(result) >= MAX_LOCALS:
@@ -187,8 +192,6 @@ def locals_for(frame):
                     item, value = read_local(symbol, frame, scope)
                     result.append(item)
                     values.append(value)
-            block = block.superblock
-            depth += 1
     except gdb.error:
         return result, values, True
     return result, values, False
