@@ -17,6 +17,8 @@ import {repeatedWork, type WorkSummary} from './RepeatReport';
 import {callHistory} from './callHistory';
 import {MemoryGraph} from './MemoryGraph';
 import {DpTables, tableCount} from './DpTables';
+import {GraphView} from './GraphView';
+import {graphsAt, traceHasGraph} from './graph';
 import {DEFAULT_LIMITS, SubmissionPane, type Draft} from './SubmissionPane';
 import {Watches, type Watch} from './Watches';
 import {highlight} from './highlight';
@@ -28,11 +30,12 @@ import {findQuestion, PredictCard, type Question} from './Predict';
 import {ExportMenu, ExportProgress, type ExportKind} from './ExportMenu';
 import {captureSvg, download as saveBlob, encodeGif, encodeVideo, exportPicture, type Frame as VideoFrame} from './exporter';
 
-type TabId = 'stack' | 'calls' | 'tables' | 'memory' | 'output';
+type TabId = 'stack' | 'calls' | 'tables' | 'graph' | 'memory' | 'output';
 const TABS: {id: TabId; label: string}[] = [
   {id: 'stack', label: 'Call stack'},
   {id: 'calls', label: 'Recursion tree'},
   {id: 'tables', label: 'Tables'},
+  {id: 'graph', label: 'Graph'},
   {id: 'memory', label: 'Memory'},
   {id: 'output', label: 'Output'},
 ];
@@ -236,11 +239,16 @@ function App() {
   };
   const deepest = useMemo(() => trace.snapshots.reduce(
     (best, stop, i, stops) => stop.frames.length >= stops[best].frames.length ? i : best, 0), [trace]);
+  // The Graph tab is offered only to runs that build an adjacency list at some point.
+  const hasGraph = useMemo(() => traceHasGraph(trace), [trace]);
+  const tabs = hasGraph ? TABS : TABS.filter(item => item.id !== 'graph');
+  useEffect(() => {if (!hasGraph && tab === 'graph') setTab('stack');}, [hasGraph, tab]);
   // Badges answer "is there anything here?" before the tab is opened.
   const counts: Record<TabId, string | number> = {
     stack: step.frames.length,
     calls: '',
     tables: tableCount(step) || '',
+    graph: hasGraph ? graphsAt(step, unset).length || '' : '',
     memory: Object.keys(step.heap).length,
     output: (step.stdout + step.stderr).length ? '•' : '',
   };
@@ -304,8 +312,8 @@ function App() {
     const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
     if (!step) return;
     event.preventDefault();
-    const next = (position + step + TABS.length) % TABS.length;
-    setTab(TABS[next].id);
+    const next = (position + step + tabs.length) % tabs.length;
+    setTab(tabs[next].id);
     tabRefs.current[next]?.focus();
   }
 
@@ -426,7 +434,7 @@ function App() {
       <section className="detail-panel" ref={detailPanel}>
         <div className="tabs">
           <div className="tab-list" role="tablist" aria-label="Execution views">
-          {TABS.map((item, position) => <button key={item.id} role="tab" id={`tab-${item.id}`}
+          {tabs.map((item, position) => <button key={item.id} role="tab" id={`tab-${item.id}`}
             ref={element => {tabRefs.current[position] = element;}}
             aria-selected={tab === item.id} aria-controls={`panel-${item.id}`} tabIndex={tab === item.id ? 0 : -1}
             className={`tab ${tab === item.id ? 'selected' : ''}`}
@@ -451,6 +459,7 @@ function App() {
             selectedCall={selectedCall} onInspect={inspectCall} unset={unset} previousUnset={previousUnset} watched={watches} onWatch={toggleWatch} />}
           {tab === 'calls' && <CallTree trace={trace} index={index} onSelect={inspectCall} selectedCall={selectedCall} baseline={baseline} />}
           {tab === 'tables' && <DpTables trace={trace} index={index} unset={unset} previousUnset={previousUnset} />}
+          {tab === 'graph' && <GraphView trace={trace} index={index} unset={unset} previousUnset={previousUnset} />}
           {tab === 'memory' && <MemoryGraph trace={trace} index={index} />}
           {tab === 'output' && <section className="output">
             <div><h2>stdout</h2><pre>{step.stdout || 'No output flushed yet.'}</pre></div>

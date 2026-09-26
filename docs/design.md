@@ -35,7 +35,9 @@ functions, `operator<<`, or method calls. Pointers carry a classified target
 Stack arrays and structures have bounded textual renderings, not graphical children.
 Arrays, `std::array`, `std::vector` and `std::deque` of scalars (one level of nesting
 for 2D) also carry a `table`: a grid of cell texts of at most 24 rows, 32 columns and 400
-cells, read element by element through the same printers. File-scope variables of the
+cells, read element by element through the same printers. `std::queue`, `std::stack` and
+`std::priority_queue` are read through their underlying container, front or bottom first.
+The viewer draws a 2D table of valid row numbers as a graph (an adjacency list). File-scope variables of the
 traced source that read as tables are recorded per stop under `globals`, so a DP table
 kept at file scope is visible too. Reads are not observable without executing code, so
 the viewer marks written cells (values that changed) and the cells loop indexes point at.

@@ -1,0 +1,51 @@
+/* Graph view: an adjacency list chalked as nodes on a circle. Run marks the node being worked on,
+   the recursion path to it and the edge being looked at; done fills visited nodes and new edges.
+   Nodes waiting in a queue or stack stay ink: a dashed outline and their place in line. */
+.graph-list {flex: 1; min-height: 0; overflow: auto; padding: 6px 18px 24px; display: grid; gap: 26px; align-content: start;}
+.graph-figure {margin: 0; min-width: 0;}
+.graph-figure figcaption {display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin-bottom: 6px;}
+.graph-figure figcaption strong {font: 700 16px var(--font-code);}
+.graph-scroll {overflow: auto; max-width: 100%;}
+.graph-svg {display: block; width: min(100%, 500px); height: auto;}
+
+.graph-edge {stroke: color-mix(in srgb, var(--ink) 55%, transparent); stroke-width: 1.8; stroke-linecap: round;
+  transition: stroke var(--dur-write) var(--ease-out), stroke-width var(--dur-write) var(--ease-out);}
+.graph-edge.path {stroke: var(--run); stroke-width: 2.6;}
+.graph-edge.examining {stroke: var(--run); stroke-width: 3.2;}
+.graph-edge.new {stroke: var(--done); stroke-width: 2.6;}
+.graph-arrow {fill: color-mix(in srgb, var(--ink) 55%, transparent);}
+.graph-arrow.path, .graph-arrow.examining {fill: var(--run);}
+.graph-arrow.new {fill: var(--done);}
+
+.graph-node circle {fill: var(--board-raised); stroke: color-mix(in srgb, var(--ink) 60%, transparent); stroke-width: 1.8;
+  transition: fill var(--dur-write) var(--ease-out), stroke var(--dur-write) var(--ease-out);}
+.graph-node.visited circle {fill: var(--done-wash); stroke: var(--done); stroke-width: 2.2;}
+.graph-node.on-path circle {fill: var(--run-wash); stroke: var(--run); stroke-width: 2;}
+.graph-node.current circle {fill: var(--run-wash); stroke: var(--run); stroke-width: 3.2;}
+.graph-node.queued circle {stroke-dasharray: 4 3;}
+.graph-node.neighbour:not(.current) circle {stroke: var(--run); stroke-dasharray: 3 3; stroke-width: 2;}
+.graph-id {font: 600 14px var(--font-code); fill: var(--ink); text-anchor: middle; dominant-baseline: central;}
+.graph-name {font: 18px var(--font-hand); fill: var(--run); text-anchor: middle; dominant-baseline: central;}
+.graph-name.soft {opacity: .8;}
+.graph-label {font: 12px var(--font-code); fill: var(--ink-soft); text-anchor: middle; dominant-baseline: central;}
+
+/* The queue or stack as a row of node chips, in the order they come out. */
+.graph-frontier {display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-top: 6px; font-size: 13.5px; color: var(--ink-soft);}
+.graph-frontier code {font: 12.5px var(--font-code); color: var(--ink);}
+.graph-frontier ol {list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px;}
+.graph-frontier li {min-width: 28px; height: 28px; display: grid; place-items: center; padding: 0 6px; border-radius: 14px;
+  border: 1.8px dashed color-mix(in srgb, var(--ink) 60%, transparent); font: 600 13px var(--font-code); color: var(--ink);}
+.graph-frontier-empty {font: 16px var(--font-hand); color: var(--ink-faint);}
+.graph-key {list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 5px; font-size: 13.5px; color: var(--ink-soft);}
+.graph-key li {display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px;}
+.graph-key code {font: 12.5px var(--font-code); color: var(--ink);}
+.graph-swatch {width: 16px; height: 16px; border-radius: 50%; border: 1.8px solid color-mix(in srgb, var(--ink) 60%, transparent); flex: none;}
+.graph-swatch.current {background: var(--run-wash); border: 3px solid var(--run);}
+.graph-swatch.on-path {background: var(--run-wash); border-color: var(--run);}
+.graph-swatch.visited {background: var(--done-wash); border-color: var(--done);}
+.graph-swatch.queued {border-style: dashed;}
+.graph-line {display: inline-block; width: 22px; height: 0; border-top: 3px solid var(--run); vertical-align: middle;}
+.graph-line.new {border-top-color: var(--done);}
+.graph-label-key {font: 11.5px var(--font-code); color: var(--ink-soft); width: 16px; text-align: center;}
+
+@media (prefers-reduced-motion: reduce) {.graph-edge, .graph-node circle {transition: none;}}
