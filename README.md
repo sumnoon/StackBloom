@@ -42,6 +42,9 @@ with your permissions.
   `int dp[100]`. The cell a step writes is marked with its old value on hover, and loop
   indexes named `i` and `j` (or `r` and `c`) are drawn on the headers, so you can see
   which cells the current line is working on. Try the **Grid paths** example.
+
+  ![The Tables tab filling a grid-paths DP table, with the written cell marked and i, j on the headers](docs/dp-table.png)
+
 - **A memory graph.** Pointers, heap objects, aliases meeting at one box, cycles that
   loop back, and dangling pointers after `delete`. The shape is detected per stop —
   list, tree, grid or general graph — and nodes keep their position as you step.
