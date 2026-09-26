@@ -136,6 +136,10 @@ Jump to, and line clicks seek directly. Pointer returns are skipped.
 - **Export** saves the current recursion tree or memory graph as a PNG.
 - Export the recursion tree growing as a video or looping GIF. Video uses MP4
   where browser support permits, otherwise WebM.
+- **Export → The whole run** saves one HTML file with the viewer and this
+  recording inside. Anyone can open it in a browser, straight from disk, with no
+  install, server or network. It only replays the recording: it cannot edit or
+  run code, and it makes no requests. The file is about 1 MB plus the trace.
 
 ![A Fibonacci tree growing through its recorded calls](tree-growing.gif)
 

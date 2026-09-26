@@ -115,6 +115,12 @@ npm --prefix web run build
 node --test web/tests/traceEvents.test.mjs
 ```
 
+`npm run build` builds the viewer twice: the normal app in `web/dist`, then a
+single-file copy (`vite build --mode share`, inlined by `web/scripts/share-viewer.mjs`)
+saved as `web/dist/stackbloom-viewer.html`. **Export → The whole run** fetches that
+file and writes the trace into it, so the export needs the built viewer; under
+`npm run dev` it explains how to build.
+
 The Python suite covers integration and unit behavior. Compiler/debugger tests
 need the toolchain installed:
 
