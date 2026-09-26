@@ -1,0 +1,18 @@
+/* Export: a popover in the rail's file actions, and a sticky note that tracks a recording. */
+.export-menu {position: relative;}
+.export-menu summary {list-style: none;}
+.export-menu summary::-webkit-details-marker {display: none;}
+.export-list {position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; display: grid; gap: 2px; padding: 6px; min-width: 250px;
+  background: var(--board-raised); border: 1.5px solid var(--rail-strong); border-radius: var(--r-box); box-shadow: var(--lift);
+  transform-origin: top right; transition: opacity var(--dur-pop) var(--ease-out), transform var(--dur-pop) var(--ease-out);}
+@starting-style {.export-menu[open] .export-list {opacity: 0; transform: scale(.96);}}
+.export-list button {border: 0; justify-content: space-between; font-weight: 500;}
+.export-list small {color: var(--ink-soft); font: 12.5px var(--font-code);}
+.export-progress {position: fixed; left: 24px; bottom: 118px; z-index: 40; display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; background: var(--note); color: var(--note-ink); font: 19px var(--font-hand); border-radius: 2px 2px 3px 12px;
+  box-shadow: 0 1px 0 var(--note-edge), 0 16px 28px -14px rgba(0, 0, 0, .6); transform: rotate(-.8deg);}
+.export-progress button.ghost {color: var(--note-ink);}
+/* While frames are captured, nothing may be caught mid-animation. */
+.exporting *, .exporting *::before, .exporting *::after {animation: none !important; transition: none !important;}
+@media (max-width: 720px) {.export-progress {left: 12px; right: 12px; bottom: 72px;}}
+@media (prefers-reduced-motion: reduce) {.export-list {transition-property: opacity;}}

@@ -266,6 +266,12 @@ The trace opens on its own screen:
   the chart to jump there. Up to three at a time.
 - **Keep or share a trace.** **Download** saves it as JSON; drop a trace file anywhere on
   the window, or use **Open trace**, to load one. Opening a trace never runs code.
+- **Share what you saw.** **Export** saves the recursion tree or the memory graph as a PNG,
+  or records the recursion tree growing, stop by stop with each step's sticky note, as a
+  video (MP4 where the browser can record it, otherwise WebM) or a looping GIF, ready for
+  notes, a study group or a post.
+
+  ![The recursion tree for fib(4) growing, exported as a GIF](docs/tree-growing.gif)
 
 The **Call stack**, **Recursion tree**, **Memory** and **Output** tabs sit beside the
 source; arrow keys move between them once a tab has focus. **Hide code** gives a wide
@@ -366,6 +372,7 @@ the same on a fresh GitHub runner. Pushing a `v*` tag attaches the zip to that r
 - `web/src/display.ts`: short type names, container values and pointer labels.
 - `web/src/Watches.tsx`: watched variables and their value history across the run.
 - `web/src/Predict.tsx`: Predict mode: the question before a return, answer checking and the score.
+- `web/src/exporter.ts` and `web/src/ExportMenu.tsx`: PNG pictures, and the tree growing as MP4/WebM video or GIF (gifenc).
 - `web/src/zoom.tsx`: fit-to-panel zoom shared by both graph panels.
 - `web/src/compact.ts`: reader for compact traces.
 - `web/src/trace.ts`: runtime JSON Schema validation and TypeScript types.

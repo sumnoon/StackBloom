@@ -1,5 +1,6 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
+import {flushSync} from 'react-dom';
 import sample from '../../examples/sample.trace.json';
 import {parseTrace, type Trace, type Frame} from './trace';
 import '@fontsource-variable/bricolage-grotesque';
@@ -22,6 +23,8 @@ import {unsetLocals} from './display';
 import {InfoTip} from './InfoTip';
 import {EventTimeline} from './EventTimeline';
 import {findQuestion, PredictCard, type Question} from './Predict';
+import {ExportMenu, ExportProgress, type ExportKind} from './ExportMenu';
+import {captureSvg, download as saveBlob, encodeGif, encodeVideo, exportPicture, type Frame as VideoFrame} from './exporter';
 
 type TabId = 'stack' | 'calls' | 'tables' | 'memory' | 'output';
 const TABS: {id: TabId; label: string}[] = [
@@ -82,6 +85,61 @@ function App() {
   const [question, setQuestion] = useState<Question | null>(null);
   const asked = useRef(new Set<string>());
   const [score, setScore] = useState({right: 0, total: 0});
+  // Export: pictures of the current graph, and the recursion tree growing as a video or GIF.
+  const [exporting, setExporting] = useState<{done: number; total: number; phase: string} | null>(null);
+  const cancelExport = useRef(false);
+  const baseName = trace.source.path.replace(/\.cpp$/, '');
+  async function exportAs(kind: ExportKind) {
+    setError('');
+    const svg = document.querySelector<SVGSVGElement>(tab === 'memory' ? '.graph-canvas svg' : '.tree-canvas svg');
+    try {
+      if (kind === 'picture') {
+        if (!svg) throw new Error('Open the recursion tree or the memory graph to export a picture.');
+        await exportPicture(svg, `${baseName}-${tab === 'memory' ? 'memory' : 'tree'}-stop${index + 1}.png`);
+        return;
+      }
+      await recordTree(kind);
+    } catch (e) {setError(e instanceof Error ? e.message : 'The export failed.');}
+  }
+  /** Replays the run stop by stop on the recursion tree, capturing one frame per stop (at most 240). */
+  async function recordTree(kind: 'video' | 'gif') {
+    const start = index, startTab = tab;
+    const every = Math.max(1, Math.ceil((last + 1) / 240));
+    const stops = Array.from({length: Math.ceil((last + 1) / every)}, (_, n) => Math.min(last, n * every));
+    if (stops[stops.length - 1] !== last) stops.push(last);
+    cancelExport.current = false;
+    setPlaying(false);
+    // A recording replays the run itself; an open Predict question would only get in the way.
+    setQuestion(null);
+    document.documentElement.classList.add('exporting');
+    const frames: VideoFrame[] = [];
+    try {
+      flushSync(() => setTab('calls'));
+      await document.fonts.ready;
+      for (const [n, stop] of stops.entries()) {
+        if (cancelExport.current) return;
+        flushSync(() => {setIndex(stop); setExporting({done: n + 1, total: stops.length, phase: 'Capturing stop'});});
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        const svg = document.querySelector<SVGSVGElement>('.tree-canvas svg');
+        if (!svg) continue;
+        frames.push({drawing: await captureSvg(svg), note: document.querySelector('.step-note')?.textContent ?? '',
+          stop: `Stop ${stop + 1} / ${last + 1}`});
+      }
+      if (!frames.length) throw new Error('This run has no calls to draw.');
+      setExporting({done: 0, total: 0, phase: kind === 'video' ? 'Recording the video…' : 'Encoding the GIF…'});
+      const frameMs = Math.max(120, Math.min(420, Math.round(14000 / frames.length)));
+      if (kind === 'video') {
+        const {blob, extension} = await encodeVideo(frames, trace.source.path, frameMs);
+        if (!cancelExport.current) saveBlob(blob, `${baseName}-tree.${extension}`);
+      } else {
+        const blob = await encodeGif(frames, trace.source.path, frameMs);
+        if (!cancelExport.current) saveBlob(blob, `${baseName}-tree.gif`);
+      }
+    } finally {
+      document.documentElement.classList.remove('exporting');
+      setIndex(start); setTab(startTab); setExporting(null);
+    }
+  }
   const seek = (position: number) => {setSelectedCall(null); setPlaying(false); setIndex(position);};
   const move = (delta: number) => {
     if (delta > 0) {forward(Math.min(last, index + delta)); return;}
@@ -305,6 +363,7 @@ function App() {
       </div>
       <div className="topbar-actions">
         <button onClick={() => {setPlaying(false); setView('editor');}} title="Edit code"><Icon name="edit" /><span className="btn-label">Edit code</span></button>
+        <ExportMenu canPicture={tab === 'calls' || tab === 'memory'} canRecord={trace.snapshots.some(stop => stop.frames.length > 1)} busy={!!exporting} onExport={kind => void exportAs(kind)} />
         <button onClick={download} title="Download: save this trace as JSON to open later or share"><Icon name="download" /><span className="btn-label">Download</span></button>
         {openTrace}
       </div>
@@ -410,6 +469,7 @@ function App() {
     {question && <PredictCard question={question} score={score}
       onScore={right => setScore(value => ({right: value.right + (right ? 1 : 0), total: value.total + 1}))}
       onContinue={answered} onSkip={answered} />}
+    {exporting && <ExportProgress {...exporting} onCancel={() => {cancelExport.current = true;}} />}
 
     {/* The chalk tray along the bottom of the board, in two strips so the scrubber can stay in view on
         phones: event marks above, then the depth of the run, the scrubber and the stop count. */}
