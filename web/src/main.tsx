@@ -21,6 +21,7 @@ import {DepthSparkline, lineHeat, runStats} from './Sparkline';
 import {unsetLocals} from './display';
 import {InfoTip} from './InfoTip';
 import {EventTimeline} from './EventTimeline';
+import {findQuestion, PredictCard, type Question} from './Predict';
 
 type TabId = 'stack' | 'calls' | 'tables' | 'memory' | 'output';
 const TABS: {id: TabId; label: string}[] = [
@@ -76,8 +77,29 @@ function App() {
   const unset = useMemo(() => unsetLocals(trace, index), [trace, index]);
   const previousUnset = useMemo(() => unsetLocals(trace, index - 1), [trace, index]);
   const [wrap, setWrap] = useState(false);
+  // Predict mode: forward steps pause before a call returns and ask for the value first.
+  const [predict, setPredict] = useState(false);
+  const [question, setQuestion] = useState<Question | null>(null);
+  const asked = useRef(new Set<string>());
+  const [score, setScore] = useState({right: 0, total: 0});
   const seek = (position: number) => {setSelectedCall(null); setPlaying(false); setIndex(position);};
-  const move = (delta: number) => {setSelectedCall(null); setPlaying(false); setIndex(i => Math.max(0, Math.min(last, i + delta)));};
+  const move = (delta: number) => {
+    if (delta > 0) {forward(Math.min(last, index + delta)); return;}
+    setSelectedCall(null); setPlaying(false); setIndex(i => Math.max(0, Math.min(last, i + delta)));
+  };
+  /** Step, Over, Out and Play go through here; in Predict mode they stop to ask about a return first. */
+  const forward = (target: number) => {
+    const pending = predict && target > index ? findQuestion(trace, target, asked.current) : null;
+    if (pending) {setPlaying(false); setQuestion(pending); return;}
+    seek(target);
+  };
+  const answered = () => {
+    if (!question) return;
+    asked.current.add(question.callId);
+    const target = question.target;
+    setQuestion(null);
+    seek(target);
+  };
   const togglePlayback = () => {
     setSelectedCall(null);
     if (index === last) setIndex(0);
@@ -86,9 +108,13 @@ function App() {
   useEffect(() => {
     if (!playing || view !== 'trace') return;
     if (index >= last) {setPlaying(false); return;}
-    const timer = window.setTimeout(() => setIndex(i => Math.min(last, i + 1)), interval);
+    const timer = window.setTimeout(() => {
+      const pending = predict ? findQuestion(trace, index + 1, asked.current) : null;
+      if (pending) {setPlaying(false); setQuestion(pending); return;}
+      setIndex(i => Math.min(last, i + 1));
+    }, interval);
     return () => window.clearTimeout(timer);
-  }, [playing, index, interval, last, view]);
+  }, [playing, index, interval, last, view, predict, trace]);
   useEffect(() => {
     const pauseWhenHidden = () => {if (document.hidden) setPlaying(false);};
     document.addEventListener('visibilitychange', pauseWhenHidden);
@@ -165,7 +191,7 @@ function App() {
       // GDB's own verbs: s(tep) into, n(ext) over, f(inish) out.
       if (!e.ctrlKey && !e.metaKey && !e.altKey) {
         const target = e.key === 'n' ? stepOver() : e.key === 'f' ? stepOut() : e.key === 's' ? Math.min(last, index + 1) : undefined;
-        if (target !== undefined) {e.preventDefault(); seek(target); return;}
+        if (target !== undefined) {e.preventDefault(); forward(target); return;}
       }
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
         e.preventDefault(); move(e.key === 'ArrowRight' ? 1 : -1);
@@ -173,7 +199,7 @@ function App() {
     };
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
-  }, [last, view, index, trace]);
+  }, [last, view, index, trace, predict]);
   useEffect(() => {
     const line = active.current;
     const pane = line?.parentElement;
@@ -195,6 +221,7 @@ function App() {
 
   function show(next: Trace) {
     setSelectedCall(null);
+    setQuestion(null); asked.current = new Set(); setScore({right: 0, total: 0});
     setPlaying(false);
     setTrace(next);
     setIndex(next.snapshots[0].event === 'step' ? 0 : next.snapshots.length - 1);
@@ -250,9 +277,9 @@ function App() {
           <button className="primary play-button" onClick={togglePlayback} disabled={last === 0} title="Play / pause (Space)">
             <Icon name={playing ? 'pause' : index === last ? 'replay' : 'play'} />{playing ? 'Pause' : index === last ? 'Replay' : 'Play'}</button>
           <button onClick={() => move(1)} disabled={index === last} title="Step into: the very next stop (→ or s)">Step<Icon name="forward" /></button>
-          <button onClick={() => seek(stepOver()!)} disabled={stepOver() === undefined}
+          <button onClick={() => forward(stepOver()!)} disabled={stepOver() === undefined}
             title="Step over: the next stop in this call, skipping the calls it makes (n)"><Icon name="over" />Over</button>
-          <button onClick={() => seek(stepOut()!)} disabled={stepOut() === undefined}
+          <button onClick={() => forward(stepOut()!)} disabled={stepOut() === undefined}
             title="Step out: the first stop after this call returns (f)"><Icon name="out" />Out</button>
           <label className="playback-speed"><span className="sr-only">Playback speed</span><select aria-label="Playback speed" value={interval} onChange={e => setIntervalMs(Number(e.target.value))}><option value={1500}>0.5×</option><option value={750}>1×</option><option value={375}>2×</option></select></label>
           <details className="jump-menu" ref={jumpMenu}><summary>Jump to<Icon name="chevron" size={16} /></summary>
@@ -262,6 +289,9 @@ function App() {
               <button onClick={() => jump(nextChange('output'))} disabled={nextChange('output') === undefined}>Next output</button>
             </div>
           </details>
+          <button className={`ghost predict-toggle ${predict ? 'on' : ''}`} aria-pressed={predict}
+            title="Predict: before a call returns, guess its value, then step on to check"
+            onClick={() => {setPredict(value => !value); setQuestion(null);}}>Predict</button>
         </div>
 
         {/* Announces where you are when stepping; silent during playback, which would chatter. */}
@@ -376,6 +406,10 @@ function App() {
         {stats.output > 0 && <div><dt>Output</dt><dd>{stats.output.toLocaleString()} bytes</dd></div>}
       </dl>
     </div>}
+
+    {question && <PredictCard question={question} score={score}
+      onScore={right => setScore(value => ({right: value.right + (right ? 1 : 0), total: value.total + 1}))}
+      onContinue={answered} onSkip={answered} />}
 
     {/* The chalk tray along the bottom of the board, in two strips so the scrubber can stay in view on
         phones: event marks above, then the depth of the run, the scrubber and the stop count. */}

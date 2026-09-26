@@ -1,0 +1,29 @@
+/* Predict mode: a sticky note that stops the step before a call returns and asks for the value. */
+.predict-card {
+  position: fixed; right: 28px; bottom: 118px; z-index: 40; width: min(320px, calc(100vw - 24px));
+  padding: 14px 16px 12px; background: var(--note); color: var(--note-ink); border-radius: 2px 2px 3px 12px;
+  box-shadow: 0 1px 0 var(--note-edge), 0 16px 28px -14px rgba(0, 0, 0, .6);
+  transform: rotate(-1deg); transform-origin: bottom right;
+  transition: opacity var(--dur-pop) var(--ease-out), transform var(--dur-pop) var(--ease-out);
+}
+@starting-style {.predict-card {opacity: 0; transform: rotate(-1deg) scale(.95);}}
+.predict-card h2 {font: 24px/1 var(--font-hand); font-weight: 400; margin-bottom: 6px;}
+.predict-question {margin: 0 0 10px; font-size: 15px; line-height: 1.45;}
+.predict-card code {font: 600 14px var(--font-code);}
+.predict-form {display: flex; gap: 8px;}
+.predict-form input {flex: 1; min-width: 0; font: 600 15px var(--font-code); color: var(--note-ink); background: color-mix(in srgb, #fff 55%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--note-ink) 45%, transparent); border-radius: var(--r-btn); padding: 6px 10px; caret-color: var(--note-ink);}
+.predict-form input:focus-visible {outline: 2px solid var(--note-ink); outline-offset: 1px;}
+.predict-card button.primary {background: var(--note-ink); border-color: var(--note-ink); color: var(--note);}
+.predict-card button.ghost {color: var(--note-ink);}
+.predict-card :focus-visible {outline-color: var(--note-ink);}
+/* Right and wrong are said in words first; the mark only doubles them. */
+.predict-verdict {margin: 0; font: 19px/1.3 var(--font-hand);}
+.predict-verdict code {font-size: 14px;}
+.predict-verdict.right::before {content: '✓ '; font-weight: 700;}
+.predict-verdict.wrong::before {content: '✗ '; font-weight: 700;}
+.predict-foot {display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px;}
+.predict-score {font-size: 13px;}
+button.predict-toggle.on {color: var(--ink); box-shadow: inset 0 -2.5px var(--run);}
+@media (max-width: 720px) {.predict-card {right: 12px; left: 12px; width: auto; bottom: 72px;}}
+@media (prefers-reduced-motion: reduce) {.predict-card {transition-property: opacity;}}
