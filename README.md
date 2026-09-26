@@ -11,7 +11,9 @@ single-file C++17 programs. Runs locally; no account needed.
 
 [Get started](#get-started) · [User guide](docs/usage.md) · [Development](docs/development.md)
 
-![A Fibonacci recursion tree showing calls and their return values in StackBloom](docs/recursion-tree.png)
+![A tour of StackBloom: picking an example, stepping through a Fibonacci recursion tree, the repeated-work report, a DP table filling in and pointers in the memory graph](docs/intro.gif)
+
+[View the still preview](docs/recursion-tree.png)
 
 ## Get started
 
