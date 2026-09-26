@@ -1,4 +1,5 @@
 import {applyPalette, GIFEncoder, quantize} from 'gifenc';
+import type {Trace} from './trace';
 
 /** Turning the board's SVG drawings into pictures, videos and GIFs, in the browser. */
 
@@ -84,6 +85,24 @@ export function download(blob: Blob, name: string) {
   link.download = name;
   link.click();
   setTimeout(() => URL.revokeObjectURL(link.href), 4000);
+}
+
+const TRACE_SLOT = '<script type="application/json" id="stackbloom-trace">null</script>';
+
+/** One HTML file holding the viewer and this trace. It opens from disk and never runs code. */
+export async function shareHtml(trace: Trace, name: string) {
+  const response = await fetch('stackbloom-viewer.html', {cache: 'no-store'});
+  const template = response.ok ? await response.text() : '';
+  // The dev server answers unknown paths with the app itself, so check for the slot, not the status.
+  if (!template.includes(TRACE_SLOT))
+    throw new Error('Sharing as HTML needs the built viewer. Run npm run build, then open StackBloom with python stackbloom.py.');
+  // JSON cannot end the script element early once every "<" is escaped.
+  const json = JSON.stringify(trace).replace(/</g, '\\u003c');
+  const title = `${trace.source.path} · StackBloom`.replace(/[<&]/g, c => (c === '<' ? '&lt;' : '&amp;'));
+  const html = template
+    .replace(TRACE_SLOT, () => `<script type="application/json" id="stackbloom-trace">${json}</script>`)
+    .replace(/<title>[^<]*<\/title>/, () => `<title>${title}</title>`);
+  download(new Blob([html], {type: 'text/html'}), name);
 }
 
 /** The current graph as a PNG on the board's ground, at twice its drawn size. */

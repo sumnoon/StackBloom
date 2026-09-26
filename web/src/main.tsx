@@ -28,7 +28,7 @@ import {InfoTip} from './InfoTip';
 import {EventTimeline} from './EventTimeline';
 import {findQuestion, PredictCard, type Question} from './Predict';
 import {ExportMenu, ExportProgress, type ExportKind} from './ExportMenu';
-import {captureSvg, download as saveBlob, encodeGif, encodeVideo, exportPicture, type Frame as VideoFrame} from './exporter';
+import {captureSvg, download as saveBlob, encodeGif, encodeVideo, exportPicture, shareHtml, type Frame as VideoFrame} from './exporter';
 
 type TabId = 'stack' | 'calls' | 'tables' | 'graph' | 'memory' | 'output';
 const TABS: {id: TabId; label: string}[] = [
@@ -40,8 +40,16 @@ const TABS: {id: TabId; label: string}[] = [
   {id: 'output', label: 'Output'},
 ];
 
+/** A shared HTML file carries its trace inside the page; the viewer then opens straight onto it. */
+function embeddedTrace(): Trace | null {
+  const text = document.getElementById('stackbloom-trace')?.textContent;
+  if (!text || text === 'null') return null;
+  try {return parseTrace(JSON.parse(text));} catch {return null;}
+}
+const shared = embeddedTrace();
+
 function App() {
-  const [trace, setTrace] = useState<Trace>(() => parseTrace(sample));
+  const [trace, setTrace] = useState<Trace>(() => shared ?? parseTrace(sample));
   const [index, setIndex] = useState(0);
   const [selectedCall, setSelectedCall] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -51,6 +59,8 @@ function App() {
   const [watches, setWatches] = useState<Watch[]>([]);
   const [dragging, setDragging] = useState(false);
   const jumpMenu = useRef<HTMLDetailsElement>(null);
+  // A shared file has no tracer behind it, so it always shows the trace, never the editor.
+  const screen = shared ? 'trace' : view;
   const [tab, setTab] = useState<TabId>('stack');
   const [sourceWidth, setSourceWidth] = useState(42);
   const workspace = useRef<HTMLDivElement>(null);
@@ -98,6 +108,10 @@ function App() {
     setError('');
     const svg = document.querySelector<SVGSVGElement>(tab === 'memory' ? '.graph-canvas svg' : '.tree-canvas svg');
     try {
+      if (kind === 'html') {
+        await shareHtml(trace, `${baseName}-stackbloom.html`);
+        return;
+      }
       if (kind === 'picture') {
         if (!svg) throw new Error('Open the recursion tree or the memory graph to export a picture.');
         await exportPicture(svg, `${baseName}-${tab === 'memory' ? 'memory' : 'tree'}-stop${index + 1}.png`);
@@ -171,7 +185,7 @@ function App() {
     setPlaying(value => !value);
   };
   useEffect(() => {
-    if (!playing || view !== 'trace') return;
+    if (!playing || screen !== 'trace') return;
     if (index >= last) {setPlaying(false); return;}
     const timer = window.setTimeout(() => {
       const pending = predict ? findQuestion(trace, index + 1, asked.current) : null;
@@ -179,7 +193,7 @@ function App() {
       setIndex(i => Math.min(last, i + 1));
     }, interval);
     return () => window.clearTimeout(timer);
-  }, [playing, index, interval, last, view, predict, trace]);
+  }, [playing, index, interval, last, screen, predict, trace]);
   useEffect(() => {
     const pauseWhenHidden = () => {if (document.hidden) setPlaying(false);};
     document.addEventListener('visibilitychange', pauseWhenHidden);
@@ -256,7 +270,7 @@ function App() {
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement).closest('input, button, textarea, select, summary, [role="button"], [role="separator"], [contenteditable="true"]')) return;
-      if (view !== 'trace') return;
+      if (screen !== 'trace') return;
       if (e.code === 'Space' && !e.repeat) {e.preventDefault(); togglePlayback(); return;}
       // GDB's own verbs: s(tep) into, n(ext) over, f(inish) out.
       if (!e.ctrlKey && !e.metaKey && !e.altKey) {
@@ -269,7 +283,7 @@ function App() {
     };
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
-  }, [last, view, index, trace, predict]);
+  }, [last, screen, index, trace, predict]);
   useEffect(() => {
     const line = active.current;
     const pane = line?.parentElement;
@@ -321,7 +335,7 @@ function App() {
     <input aria-label="Open JSON trace" type="file" accept=".json"
       onChange={e => {void load(e.target.files?.[0]); e.target.value = '';}} /></label>;
 
-  if (view === 'editor') return <div className={`app editor-view ${dragging ? 'dragging' : ''}`} {...drop}>
+  if (screen === 'editor') return <div className={`app editor-view ${dragging ? 'dragging' : ''}`} {...drop}>
     <header className="topbar">
       <div className="brand"><SproutMark />
         <div><h1>StackBloom</h1><p>Watch your C++ grow, one call at a time.</p></div></div>
@@ -343,7 +357,7 @@ function App() {
     {/* One rail: brand, transport and where you are, then the file actions. Wraps to two rows below 1280px. */}
     <header className="topbar trace-rail">
       <div className="brand"><SproutMark />
-        <div><h1>StackBloom</h1><p className="file">{trace.source.path} · C++17</p></div></div>
+        <div><h1>StackBloom</h1><p className="file">{trace.source.path} · C++17{shared && trace === shared ? ' · shared' : ''}</p></div></div>
       <div className="controls">
         <div className="control-buttons">
           <button onClick={() => seek(0)} disabled={index === 0} aria-label="First stop" title="First stop"><Icon name="first" /></button>
@@ -378,8 +392,8 @@ function App() {
           <span className="shortcut-hint">Space play · ← → step · n over · f out</span></div>
       </div>
       <div className="topbar-actions">
-        <button onClick={() => {setPlaying(false); setView('editor');}} title="Edit code"><Icon name="edit" /><span className="btn-label">Edit code</span></button>
-        <ExportMenu canPicture={tab === 'calls' || tab === 'memory'} canRecord={trace.snapshots.some(stop => stop.frames.length > 1)} busy={!!exporting} onExport={kind => void exportAs(kind)} />
+        {!shared && <button onClick={() => {setPlaying(false); setView('editor');}} title="Edit code"><Icon name="edit" /><span className="btn-label">Edit code</span></button>}
+        <ExportMenu canPicture={tab === 'calls' || tab === 'memory'} canRecord={trace.snapshots.some(stop => stop.frames.length > 1)} canShare={!shared} busy={!!exporting} onExport={kind => void exportAs(kind)} />
         <button onClick={download} title="Download: save this trace as JSON to open later or share"><Icon name="download" /><span className="btn-label">Download</span></button>
         {openTrace}
       </div>

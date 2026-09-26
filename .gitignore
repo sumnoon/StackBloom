@@ -12,3 +12,4 @@ test-results/
 .impeccable/mocks/
 .impeccable/build/
 .impeccable/questions/
+dist-share/

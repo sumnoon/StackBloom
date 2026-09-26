@@ -81,7 +81,7 @@ StackBloom writes `main()`, builds lists and trees, and prints the result.
 | Read map/set contents | **Call stack** or **Memory**, with new and changed entries marked |
 | See arrays and DP updates | **Tables**, with changed cells and loop-index markers; **Bars** for sorting and searching |
 | Follow pointers, aliases, and heap objects | **Memory** |
-| Revisit or share a run | The timeline, **Download** for JSON, or **Export** for images and animations |
+| Revisit or share a run | The timeline, **Download** for JSON, or **Export** for images, animations, or one HTML file anyone can open |
 
 You do not need every control to get started. The [user guide](docs/usage.md)
 covers stepping, graph navigation, predictions, and exports.
