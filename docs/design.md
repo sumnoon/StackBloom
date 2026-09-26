@@ -39,6 +39,10 @@ cells, read element by element through the same printers. File-scope variables o
 traced source that read as tables are recorded per stop under `globals`, so a DP table
 kept at file scope is visible too. Reads are not observable without executing code, so
 the viewer marks written cells (values that changed) and the cells loop indexes point at.
+Maps and sets (`std::map`, `set` and their `multi`/`unordered` variants) carry `entries`:
+up to 32 `[key, value]` (maps) or `[key]` (sets) texts in the container's own order. File-scope
+maps and sets are recorded under `globals` like file-scope tables, and a reference is read
+through its referent, so `std::vector<int>& dp` carries the table of the vector it names.
 
 The highlighted line is about to execute. Multiple statements on a line cannot be
 individually promised. A local visible in DWARF may not yet be initialized: a readable

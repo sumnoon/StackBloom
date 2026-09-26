@@ -95,6 +95,35 @@ class TraceTests(unittest.TestCase):
         globals_ = {v["name"]: v["table"] for v in final.get("globals", [])}
         self.assertEqual(globals_["dp"]["rows"], [["0", "0", "9", "0", "0"]])
 
+    @unittest.skipUnless(printer_directory("g++"), "libstdc++ GDB printers not installed")
+    def test_maps_and_sets_become_entries(self):
+        """Associative containers keep their keys (and values) as structured entries."""
+        stops = self.run_source('#include <map>\n#include <set>\n#include <string>\n#include <unordered_map>\n'
+                                'int main() {\n std::map<std::string, int> ages = {{"amy", 30}, {"bo", 7}};\n'
+                                ' std::set<int> seen = {3, 1, 2};\n std::unordered_map<int, int> memo = {{5, 8}};\n'
+                                ' std::map<std::pair<int, int>, int> grid = {{{1, 2}, 3}};\n return 0;\n}\n')
+        final = [s for s in stops if s["location"] and s["location"]["line"] == 10][-1]
+        entries = {v["name"]: v.get("entries") for v in final["frames"][0]["locals"]}
+        self.assertEqual(entries["ages"], {"kind": "map", "items": [['"amy"', "30"], ['"bo"', "7"]], "truncated": False})
+        self.assertEqual(entries["seen"], {"kind": "set", "items": [["1"], ["2"], ["3"]], "truncated": False})
+        self.assertEqual(entries["memo"]["items"], [["5", "8"]])
+        self.assertEqual(entries["grid"]["kind"], "map")
+        self.assertIn("1", entries["grid"]["items"][0][0])
+        self.assertEqual(entries["grid"]["items"][0][1], "3")
+
+    @unittest.skipUnless(printer_directory("g++"), "libstdc++ GDB printers not installed")
+    def test_global_memo_and_reference_parameters(self):
+        """A file-scope memo map is recorded, and a reference parameter shows its referent's table."""
+        stops = self.run_source('#include <map>\n#include <vector>\nstd::map<int, int> memo;\n'
+                                'void fill(std::vector<int>& dp) {\n dp[1] = 5;\n memo[2] = 9;\n}\n'
+                                'int main() {\n std::vector<int> dp(3, 0);\n fill(dp);\n return 0;\n}\n')
+        inside = [s for s in stops if s["location"] and s["location"]["line"] == 6][-1]
+        dp = next(v for v in inside["frames"][0]["locals"] if v["name"] == "dp")
+        self.assertEqual(dp["table"]["rows"], [["0", "5", "0"]])
+        final = [s for s in stops if s["location"] and s["location"]["line"] == 11][-1]
+        memo = next(v for v in final.get("globals", []) if v["name"] == "memo")
+        self.assertEqual(memo["entries"], {"kind": "map", "items": [["2", "9"]], "truncated": False})
+
     def test_compile_error(self):
         self.assertEqual(self.run_source("int main( { broken")[0]["event"], "compile_error")
 

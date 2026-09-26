@@ -447,7 +447,7 @@ function App() {
           {!showCode && <button className="ghost show-code" onClick={() => setShowCode(true)}>Show code</button>}
         </div>
         <div className="tab-panel" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
-          {tab === 'stack' && <StackTree snapshot={step} previousFrames={trace.snapshots[index - 1]?.frames}
+          {tab === 'stack' && <StackTree snapshot={step} previousFrames={trace.snapshots[index - 1]?.frames} previousGlobals={trace.snapshots[index - 1]?.globals}
             selectedCall={selectedCall} onInspect={inspectCall} unset={unset} previousUnset={previousUnset} watched={watches} onWatch={toggleWatch} />}
           {tab === 'calls' && <CallTree trace={trace} index={index} onSelect={inspectCall} selectedCall={selectedCall} baseline={baseline} />}
           {tab === 'tables' && <DpTables trace={trace} index={index} unset={unset} previousUnset={previousUnset} />}

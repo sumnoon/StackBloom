@@ -1,5 +1,6 @@
 import {localKey, ownPointer, pointerText, shortType, shortValue} from './display';
 import {InfoTip} from './InfoTip';
+import {EntryTable} from './Entries';
 import type {Frame, Local, Snapshot} from './trace';
 import type {Watch} from './Watches';
 
@@ -15,7 +16,8 @@ function display(local: Local, unset: boolean, snapshot: Snapshot) {
 }
 
 /** A snapshot contains the active branch, not the history of completed calls. */
-export function StackTree({snapshot, previousFrames = [], unset, previousUnset, watched = [], onWatch, selectedCall, onInspect}: {
+export function StackTree({snapshot, previousFrames = [], previousGlobals = [], unset, previousUnset, watched = [], onWatch, selectedCall, onInspect}: {
+  previousGlobals?: Local[];
   selectedCall?: string | null; onInspect?: (frame: Frame) => void;
   snapshot: Snapshot; previousFrames?: Frame[]; unset: Set<string>; previousUnset: Set<string>;
   watched?: Watch[]; onWatch?: (watch: Watch) => void;
@@ -28,6 +30,16 @@ export function StackTree({snapshot, previousFrames = [], unset, previousUnset, 
       locals; returned calls disappear. A value marked <em>not set yet</em> is leftover memory: the line
       that declares it, or the call's argument setup, has not run.</InfoTip>
     <div className="stack-tree" aria-label="Active call tree">
+      {/* File-scope tables and maps (a global dp[] or memo) sit above the calls that share them. */}
+      {!!snapshot.globals?.length && <article className="call-bubble file-scope" aria-label="File scope">
+        <div className="call-heading"><h3>file scope</h3></div>
+        <div className="bubble-locals">{snapshot.globals.map(local => <div className="local-box" key={local.id}>
+          <div><strong>{local.name}</strong><small title={local.type}>{shortType(local.type)}</small></div>
+          {local.entries
+            ? <EntryTable entries={local.entries} before={previousGlobals.find(item => item.id === local.id)?.entries} />
+            : <code title={local.value ?? undefined}>{shortValue(local.value ?? '').text}</code>}
+        </div>)}</div>
+      </article>}
       {path.length ? <ol className="call-path">{path.map((frame, depth) => {
         const current = depth === path.length - 1;
         const recursive = path.slice(0, depth).some(parent => parent.function === frame.function);
@@ -58,9 +70,12 @@ export function StackTree({snapshot, previousFrames = [], unset, previousUnset, 
                     aria-pressed={watched.some(w => w.fn === frame.function && w.name === local.name)}
                     title={`Watch ${local.name} across the whole run`}
                     onClick={() => onWatch({fn: frame.function, name: local.name})}>Watch</button>}</div>
-                <code className={shown.muted ? 'unset' : undefined} title={[shown.title, local.address && `at ${local.address}`].filter(Boolean).join(' · ') || undefined}>
+                {/* Maps and sets read as a small table of their entries rather than one long string. */}
+                {local.entries && !shown.muted
+                  ? <EntryTable entries={local.entries} before={previous?.locals.find(item => item.id === local.id)?.entries} />
+                  : <code className={shown.muted ? 'unset' : undefined} title={[shown.title, local.address && `at ${local.address}`].filter(Boolean).join(' · ') || undefined}>
                   {shown.text}{shown.count !== undefined && <span className="count-badge">{shown.count} {shown.count === 1 ? 'item' : 'items'}</span>}
-                  {changed.has(local.id) && <span className="value-change-label">was <s>{(changed.get(local.id) || '—').slice(0, 24)}</s></span>}</code>
+                  {changed.has(local.id) && <span className="value-change-label">was <s>{(changed.get(local.id) || '—').slice(0, 24)}</s></span>}</code>}
                 {members.length > 0 && <div className="pointer-chips">{members.map(edge =>
                   <span key={edge.path} className={`pointer-chip ${edge.state}`} title={edge.target ?? undefined}>{edge.path} {pointerText(edge, snapshot)}</span>)}</div>}
               </div>;
