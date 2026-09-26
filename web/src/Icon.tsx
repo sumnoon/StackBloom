@@ -20,6 +20,7 @@ const paths = {
   edit: 'M4 20h4L19 9l-4-4L4 16z M13.5 6.5l4 4',
   external: 'M14 5h5v5 M19 5l-8 8 M17 14v5H5V7h5',
   run: 'M8 5.5v13l11-6.5z',
+  export: 'M12 15V4 M7.5 8.5L12 4l4.5 4.5 M5 13.5V20h14v-6.5',
 } as const;
 
 export type IconName = keyof typeof paths;
