@@ -70,10 +70,10 @@ open **Memory** to follow pointers.
 |---|---|
 | Inspect each call's variables | **Call stack**, with **Watch** to pin a value |
 | Understand recursion and returns | **Recursion tree**, with **Predict** to test a guess |
+| Watch a BFS or DFS walk an adjacency list | **Graph**, which appears when the program builds one |
 | Find repeated calls | **Repeated work**, which highlights matching call labels |
 | Read map/set contents | **Call stack** or **Memory**, with new and changed entries marked |
 | See arrays and DP updates | **Tables**, with changed cells and loop-index markers |
-| Watch a BFS or DFS walk an adjacency list | **Graph**, which appears when the program builds one |
 | Follow pointers, aliases, and heap objects | **Memory** |
 | Revisit or share a run | The timeline, **Download** for JSON, or **Export** for images and animations |
 

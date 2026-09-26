@@ -86,6 +86,18 @@ hover. Indexes named `i`/`j` or `r`/`c` can appear on row/column headers. Try
 
 ![Grid paths with changed DP cells and index markers](dp-table.png)
 
+### Maps, sets, and memoization
+
+Supported maps appear as key → value tables and sets as rows of keys, in the call
+stack and memory view. New keys and changed values are marked. File-scope tables
+and maps have a **file scope** section; supported reference parameters expose their
+referred-to contents. Displays are bounded and may omit entries.
+
+Try **Memo Fibonacci**, then compare its call counts with plain Fibonacci using
+**Repeated work**. Keep the inputs the same for a useful comparison.
+
+![A global memo map with a newly recorded key marked](stl-views.png)
+
 ### Graph
 
 When a run builds an adjacency list, a **Graph** tab appears. A
@@ -109,18 +121,6 @@ with no extra work:
 - Edges added at this stop are green while the list is being built.
 
 ![A BFS in the Graph tab: node 1 is u, the edge to v is highlighted, visited nodes are filled and node 2 waits in the queue](graph-view.png)
-
-### Maps, sets, and memoization
-
-Supported maps appear as key → value tables and sets as rows of keys, in the call
-stack and memory view. New keys and changed values are marked. File-scope tables
-and maps have a **file scope** section; supported reference parameters expose their
-referred-to contents. Displays are bounded and may omit entries.
-
-Try **Memo Fibonacci**, then compare its call counts with plain Fibonacci using
-**Repeated work**. Keep the inputs the same for a useful comparison.
-
-![A global memo map with a newly recorded key marked](stl-views.png)
 
 ### Memory and output
 
