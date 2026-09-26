@@ -14,7 +14,8 @@ import copy
 
 FORMAT = "cppv-compact-1.0"
 INTERVAL = 25
-SIMPLE = ("event", "location", "thread_id", "output_truncated", "diagnostic", "heap_truncated", "returns")
+SIMPLE = ("event", "location", "thread_id", "output_truncated", "diagnostic", "heap_truncated", "returns",
+          "globals")
 
 
 def _streams(before, after, changes):

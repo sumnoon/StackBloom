@@ -37,6 +37,11 @@ with your permissions.
 
   ![The recursion tree for fib(4), with returned values on every call](docs/recursion-tree.png)
 
+- **DP tables.** Arrays, `std::array` and `vector`s of numbers appear on the **Tables** tab
+  as grids, including 2D tables like `dp[i][j]` and file-scope arrays such as a global
+  `int dp[100]`. The cell a step writes is marked with its old value on hover, and loop
+  indexes named `i` and `j` (or `r` and `c`) are drawn on the headers, so you can see
+  which cells the current line is working on. Try the **Grid paths** example.
 - **A memory graph.** Pointers, heap objects, aliases meeting at one box, cycles that
   loop back, and dangling pointers after `delete`. The shape is detected per stop —
   list, tree, grid or general graph — and nodes keep their position as you step.
@@ -218,7 +223,7 @@ change, so pulling new code needs no extra step.
 
 Paste a single-file C++17 program into **C++ source**, add **Program input** if it reads
 `std::cin`, and click **Run & visualize**. The cards at the top load ready-made
-examples: factorial, Fibonacci, a linked list and a binary search tree.
+examples: factorial, Fibonacci, a linked list, a binary search tree and a grid-paths DP table.
 
 - **An editor that knows C++.** Syntax colours, indentation guides, bracket matching and
   a highlighted current line, with a **Text size** control from 12 to 20px.
@@ -340,6 +345,7 @@ the same on a fresh GitHub runner. Pushing a `v*` tag attaches the zip to that r
 - `web/src/StackTree.tsx`: connected call bubbles, locals and pointer states.
 - `web/src/CallTree.tsx`: branching recursion tree built from recorded invocations.
 - `web/src/MemoryGraph.tsx`: pointer and heap-object graph for the current stop.
+- `web/src/DpTables.tsx`: arrays and vectors as grids, with written cells and loop-index cursors.
 - `web/src/layout.ts`: structure heuristics (list, tree, grid, graph) and positions.
 - `web/src/Sparkline.tsx`: depth sparkline, run totals and per-line stop counts.
 - `web/src/CodeEditor.tsx`: CodeMirror C++ editor with compiler-error markers, loaded separately so replay never downloads it.
@@ -363,11 +369,12 @@ npm --prefix web run build
 node --test web/tests/traceEvents.test.mjs
 ```
 
-40 tests run real compilers and debuggers, not fixtures:
+41 tests run real compilers and debuggers, not fixtures:
 
 - `tests/test_trace.py`: nested locals, loop stops, stdin, output truncation, shadowing,
   library callbacks, thread detection, compile errors, signals, step limits, wall
-  timeout, the recursion call tree, standard library values and declaration lines.
+  timeout, the recursion call tree, standard library values, declaration lines and
+  arrays and vectors recorded as tables.
 - `tests/test_memory.py`: aliases, cycles, stack pointers, null versus dangling, reused
   addresses, array extents, `malloc`/`void*`, and the fallback when a program replaces
   `operator new`.

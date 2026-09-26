@@ -8,7 +8,7 @@ import gdb
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from memory import Ledger, capture
-from values import locals_for
+from values import locals_for, read_local
 
 CFG = json.loads(Path(os.environ["CPPV_CONFIG"]).read_text(encoding="utf-8"))
 SOURCE = Path(CFG["source"]).resolve()
@@ -24,6 +24,33 @@ returned_values = []
 ledger = Ledger()
 next_call_id = 0
 MAX_RETURN_TEXT = 512
+MAX_GLOBALS = 16
+global_symbols = None
+
+
+def global_tables(frame):
+    """File-scope arrays and vectors of the traced source, for the DP table view.
+
+    DP solutions often keep their table at file scope (`int dp[100];`), so those are
+    recorded too, but only when they read as a table; other globals stay out.
+    """
+    global global_symbols
+    if global_symbols is None:
+        global_symbols = []
+        try:
+            block = frame.block()
+            for scope in (block.global_block, block.static_block):
+                for symbol in scope:
+                    if symbol.is_variable and symbol.symtab and                             Path(symbol.symtab.fullname()).resolve() == SOURCE:
+                        global_symbols.append(symbol)
+        except (gdb.error, RuntimeError):
+            pass
+    items = []
+    for symbol in global_symbols[:MAX_GLOBALS]:
+        item, _ = read_local(symbol, frame, "global")
+        if item.get("table"):
+            items.append(item)
+    return items
 
 
 class CallReturn(gdb.FinishBreakpoint):
@@ -145,10 +172,13 @@ def snapshot(event, diagnostic=None):
             if edges:
                 local["pointers"] = edges
     stdout, stderr, truncated = streams()
+    tables = global_tables(gdb.newest_frame()) if thread and frames else []
     result = dict(id=index, event=event, location=frames[0]["location"] if frames else None,
                   thread_id=thread.num if thread else None, frames=frames, heap=heap,
                   stdout=stdout, stderr=stderr, output_truncated=truncated, diagnostic=diagnostic,
                   returns=list(returned_values), heap_truncated=heap_truncated)
+    if tables:
+        result["globals"] = tables
     returned_values.clear()
     with open(CFG["journal"], "a", encoding="utf-8") as stream:
         stream.write(json.dumps(result, ensure_ascii=True) + "\n")

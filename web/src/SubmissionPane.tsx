@@ -98,6 +98,21 @@ int main() {
 }
 `;
 
+const gridPaths = `#include <iostream>
+#include <vector>
+
+int main() {
+    int rows = 4, cols = 5;
+    // paths[i][j] = ways to reach (i, j) moving only right or down.
+    std::vector<std::vector<int>> paths(rows, std::vector<int>(cols, 1));
+    for (int i = 1; i < rows; ++i)
+        for (int j = 1; j < cols; ++j)
+            paths[i][j] = paths[i - 1][j] + paths[i][j - 1];
+    std::cout << "paths = " << paths[rows - 1][cols - 1] << std::endl;
+    return 0;
+}
+`;
+
 /** Draft state lives in the shell, so switching screens never discards edits. */
 export type Draft = {source: string; stdin: string; maxSteps: number; timeout: number};
 export const DEFAULT_LIMITS = {maxSteps: 1000, timeout: 15};
@@ -155,6 +170,7 @@ export function SubmissionPane({draft, onDraft, onTrace, compilerOutput = ''}: {
     {title: 'Fibonacci', description: 'Watch one call become a tree.', kind: 'fork' as const, code: fibonacci, input: '4\n'},
     {title: 'Linked list', description: 'Trace pointers from node to node.', kind: 'list' as const, code: linkedList, input: ''},
     {title: 'Binary search tree', description: 'See a tree take shape in memory.', kind: 'tree' as const, code: bst, input: ''},
+    {title: 'Grid paths', description: 'Watch a DP table fill in.', kind: 'grid' as const, code: gridPaths, input: ''},
   ];
 
   async function run() {

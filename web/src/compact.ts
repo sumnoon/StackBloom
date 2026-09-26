@@ -9,7 +9,7 @@ export const COMPACT_FORMAT = 'cppv-compact-1.0';
 
 type Changes = {
   event?: string; location?: unknown; thread_id?: unknown; diagnostic?: unknown;
-  output_truncated?: boolean; heap_truncated?: boolean; returns?: unknown[];
+  output_truncated?: boolean; heap_truncated?: boolean; returns?: unknown[]; globals?: unknown[];
   frames?: (unknown | null)[]; heap_upsert?: Record<string, HeapNode>; heap_remove?: string[];
   stdout?: string; stderr?: string; stdout_append?: string; stderr_append?: string; drop?: string[];
 };
@@ -18,7 +18,7 @@ type Compact = {format: string; checkpoint_interval: number; schema_version: str
   source: unknown; limits: unknown; entries: Entry[]};
 
 const SIMPLE = ['event', 'location', 'thread_id', 'output_truncated', 'diagnostic',
-  'heap_truncated', 'returns'] as const;
+  'heap_truncated', 'returns', 'globals'] as const;
 
 export function isCompact(value: unknown): value is Compact {
   return !!value && typeof value === 'object' && (value as Compact).format === COMPACT_FORMAT;
