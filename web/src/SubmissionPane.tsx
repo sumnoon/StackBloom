@@ -1,6 +1,6 @@
 import {lazy, Suspense, useEffect, useMemo, useRef, useState} from 'react';
 import {parseIssues, type EditorHandle} from './editorIssues';
-import {buildHarness, shiftIssues, LEETCODE_STARTER, LEETCODE_TESTCASE, type Harness} from './leetcode';
+import {buildHarness, findMethod, shiftIssues, LEETCODE_STARTER, LEETCODE_TESTCASE, type Harness} from './leetcode';
 const CodeEditor = lazy(() => import('./CodeEditor').then(module => ({default: module.CodeEditor})));
 import {parseTrace, type Trace} from './trace';
 import {ExampleGlyph} from './ExampleGlyph';
@@ -190,7 +190,13 @@ export function SubmissionPane({draft, onDraft, onTrace, compilerOutput = ''}: {
   const [recent, setRecent] = useState<Recent[]>(readRecent);
   const editor = useRef<EditorHandle>(null);
   const recentMenu = useRef<HTMLDetailsElement>(null);
-  // Compiler lines in LeetCode mode refer to the generated file; map them back to the pasted class.
+  // Say which function LeetCode mode will call before the run, so a surprise shows up early.
+  const entry = useMemo(() => {
+    if (!leetcode) return null;
+    try {return findMethod(source);} catch {return null;}
+  }, [leetcode, source]);
+  const ownMain = leetcode && /\bint\s+main\s*\(/.test(source);
+  // Compiler lines in LeetCode mode refer to the generated file; map them back to the pasted code.
   const [ran, setRan] = useState<Harness | null>(null);
   const shownOutput = leetcode && ran ? shiftIssues(compilerOutput, ran) : compilerOutput;
   const issues = useMemo(() => parseIssues(shownOutput), [shownOutput]);
@@ -262,14 +268,14 @@ export function SubmissionPane({draft, onDraft, onTrace, compilerOutput = ''}: {
           }}><strong>{item.title}</strong>
             <small>{item.source.split('\n').length} lines{item.stdin.trim() ? ` · input ${item.stdin.trim().slice(0, 12)}` : ''} · {ago(item.at)}</small></button></li>)}</ul>
         </details>}
-        <span className="language-badge">C++17 <span aria-hidden="true">/</span> {leetcode ? 'class Solution' : 'main.cpp'}</span>
+        <span className="language-badge">C++17 <span aria-hidden="true">/</span> {leetcode ? 'LeetCode style' : 'main.cpp'}</span>
       </div>
     </div>
     <div className="submission-fields">
-      <div className="editor-column"><span className="field-label">{leetcode ? 'Your class Solution' : 'C++ source'}</span>
+      <div className="editor-column"><span className="field-label">{leetcode ? 'Your solution' : 'C++ source'}</span>
         <Suspense fallback={<div className="code-editor">Loading editor…</div>}><CodeEditor ref={editor} value={source} onChange={edit} disabled={busy} issues={issues} /></Suspense>
         <div className="editor-footer"><span>{source.split('\n').length} lines</span>
-          <span>{leetcode ? 'StackBloom writes main() for you' : 'Single file'} · {maxSteps.toLocaleString()} stop limit</span></div>
+          <span>{leetcode ? entry ? `Calls ${entry.name}(${entry.params.map(p => p.name).join(', ')}) for you` : 'StackBloom writes main() for you' : 'Single file'} · {maxSteps.toLocaleString()} stop limit</span></div>
         {compilerOutput && <div className="compiler-issues" role="alert">
           <h3>{errors ? `${errors} compile ${errors === 1 ? 'error' : 'errors'}` : 'The program did not compile'}</h3>
           {issues.length > 0 && <ul>{issues.map((issue, i) => <li key={i} className={issue.severity}>
@@ -279,8 +285,9 @@ export function SubmissionPane({draft, onDraft, onTrace, compilerOutput = ''}: {
         </div>}
       </div>
       <div className="submission-options">{leetcode
-        ? <label>Test case<textarea aria-label="Test case" spellCheck={false} value={stdin} onChange={e => input(e.target.value)} disabled={busy} placeholder="nums = [2,7,11,15], target = 9" />
-          <small className="field-hint">Copy it from the problem: <code>name = value</code> pairs, or one value per line.</small></label>
+        ? <label>Test case<textarea aria-label="Test case" spellCheck={false} value={stdin} onChange={e => input(e.target.value)} disabled={busy} placeholder={entry?.params.length ? entry.params.map(p => `${p.name} = …`).join(', ') : 'nums = [2,7,11,15], target = 9'} />
+          <small className="field-hint">Copy it from the problem: <code>name = value</code> pairs, or one value per line.
+            {ownMain && <> Leave it empty to run your own <code>main()</code> instead.</>}</small></label>
         : <label>Program input <span className="optional">Optional</span><textarea aria-label="Standard input" spellCheck={false} value={stdin} onChange={e => input(e.target.value)} disabled={busy} placeholder="Values your program reads with std::cin" /></label>}
         <details className="execution-limits"><summary>Execution limits</summary><div className="limits">
           <label>Stop limit<select value={maxSteps} disabled={busy} onChange={e => update({maxSteps: Number(e.target.value)})}>
