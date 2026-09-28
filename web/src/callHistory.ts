@@ -5,13 +5,24 @@ export type CallNode = {id: string; parent: string | null; children: string[]; f
   first: number; last: number; state: 'active' | 'waiting' | 'completed' | 'interrupted'; label: string;
   returned: boolean; returnValue: string | null};
 
+/** A heap object by name and, when it has one, its value: `a3:1` for a node whose first
+ *  plain field (val, data, key...) holds 1. The value is what the reader recognises;
+ *  the name is what the Memory tab calls the same box. */
+function objectName(stop: Snapshot, address: string) {
+  const object = stop.heap[address];
+  if (!object) return 'ptr';
+  const field = object.fields?.find(item => !item.state && !item.type?.includes('*') && item.value != null);
+  const value = field && shortValue(field.value!).text;
+  return value && value.length <= 11 ? `${object.allocation_id}:${value}` : object.allocation_id;
+}
+
 /** An argument as the reader thinks of it: a pointer names the object it points
- *  at (a3, null) rather than an address that changes on every run. */
+ *  at (a3:1, null) rather than an address that changes on every run. */
 function argument(local: Local, stop: Snapshot) {
   const pointer = ownPointer(local);
   if (pointer) {
     if (pointer.state === 'null') return 'null';
-    if (pointer.state === 'heap' && pointer.target) return stop.heap[pointer.target]?.allocation_id ?? 'ptr';
+    if (pointer.state === 'heap' && pointer.target) return objectName(stop, pointer.target);
     if (pointer.state === 'dangling') return 'dangling';
     return local.value ?? '?';
   }
@@ -23,7 +34,7 @@ function argument(local: Local, stop: Snapshot) {
 function returned(value: string | null, stop: Snapshot) {
   if (value === null) return null;
   const address = value.match(/^(?:\([^)]*\)\s*)?(0x[0-9a-f]+)$/)?.[1];
-  if (address) return address === '0x0' ? 'null' : stop.heap[address]?.allocation_id ?? value;
+  if (address) return address === '0x0' ? 'null' : stop.heap[address] ? objectName(stop, address) : value;
   return shortValue(value).text;
 }
 

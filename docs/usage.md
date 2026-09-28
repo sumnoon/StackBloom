@@ -82,6 +82,10 @@ Each node shows the call with its argument values, such as
 `towerOfHanoi(2, "B", "C", "A")`. Methods drop their class name and the hidden
 `this` pointer, so a LeetCode `Solution::` method reads like a plain function.
 Nodes widen to fit the arguments (up to 32 characters); hover a node for its full label.
+A pointer argument names the heap object it points to, as the Memory tab does,
+followed by that object's first plain field: `pre_order(a3:1)` is a call on the node
+whose `val` is 1. An unexpected number there, such as a never-set `val`, shows up
+without opening Memory.
 
 Calls branch in invocation order and retain recorded return values. L/R labels
 mean first/second child calls, not necessarily `left`/`right` fields. The active
