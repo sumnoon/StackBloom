@@ -27,21 +27,36 @@ and inputs in this browser. **← Edit code** returns to your current draft.
 
 ## Paste a LeetCode solution
 
-Switch the editor to **LeetCode solution** and paste the `class Solution` from the
-problem page. In **Test case**, copy the example input as it appears there, either
-as `name = value` pairs (`nums = [2,7,11,15], target = 9`) or with one value per line.
-StackBloom writes `main()` for you: it builds the arguments, calls the first public
-method, and prints the result the way LeetCode does. Methods that return `void`
-print the first parameter they modify.
+Switch the editor to **LeetCode solution** and paste your solution: LeetCode's
+`class Solution`, or plain functions with your own structs. In **Test case**, copy
+the example input as it appears on the problem page, either as `name = value` pairs
+(`nums = [2,7,11,15], target = 9`) or with one value per line. StackBloom writes
+`main()` for you: it builds the arguments, calls your code, and prints the result the
+way LeetCode does. Functions that return `void` print the first parameter they modify.
+The editor footer says which function it will call.
 
-Parameters can be integers, `double`, `bool`, `char`, `string`, `ListNode*`,
-`TreeNode*`, and vectors of these. `ListNode` and `TreeNode` are defined for you,
-as they are on LeetCode; trees use LeetCode's level order with `null` for gaps.
+**Which function runs.** With a `class Solution`, its first public method. Without
+one, the function that no other function calls (calling itself is fine), so a helper
+like `height()` is skipped in favour of `isBalanced()`. If several qualify and your
+code has a `main()`, the first one that `main()` calls wins.
 
-The recording shows the whole generated file, so you can see how your method
-is called. The builders and printers are tagged as a separate file, so the trace
-never stops inside them. Compile errors point at lines of your pasted class.
-Each mode keeps its own code, so switching back to **Whole program** loses nothing.
+**Parameters** can be integers, `double`, `bool`, `char`, `string`, vectors of these,
+and pointers to node structs. `ListNode` and `TreeNode` are defined for you when your
+code uses them, as on LeetCode. Your own struct works too when it has one value
+field and one pointer to itself (a linked list, e.g. `data` and `next`) or two (a
+binary tree, e.g. `val`, `left` and `right`), whatever the names. StackBloom builds
+nodes with your constructor when it takes the value, or sets the value field
+directly when there is no constructor. Trees use LeetCode's level order with `null`
+for gaps: `root = [1,2,4,null,3]`.
+
+**A whole program works too.** If you paste code with its own `main()`, that `main()`
+is set aside and the test case drives your function instead. Leave the test case
+empty to run your own `main()` unchanged.
+
+The recording shows the whole generated file, so you can see how your code is
+called. The builders and printers are tagged as a separate file, so the trace never
+stops inside them. Compile errors point at lines of your pasted code. Each mode keeps
+its own code, so switching back to **Whole program** loses nothing.
 
 ## Navigate a recording
 
